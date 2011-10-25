@@ -1,6 +1,5 @@
 package org.sonatype.maven.mojo.sisu;
 
-import java.io.File;
 import java.net.URL;
 
 import org.apache.maven.plugin.logging.Log;
@@ -26,9 +25,7 @@ public class LogbackModule
 
     private final LoggerContext loggerContext;
 
-    private final ErrorNoticeAppender errorDetector;
-
-    public LogbackModule( String scanId, File outputDirectory, Log log )
+    public LogbackModule( final Log log )
     {
         loggerContext = new LoggerContext();
         fillContext( loggerContext );
@@ -49,18 +46,15 @@ public class LogbackModule
             }
         }
 
-        errorDetector = new ErrorNoticeAppender();
-        errorDetector.setContext( loggerContext );
-        errorDetector.start();
-
         MavenAppender mavenBridge = new MavenAppender( log );
         mavenBridge.setContext( loggerContext );
         mavenBridge.start();
 
         Logger root = loggerContext.getLogger( Logger.ROOT_LOGGER_NAME );
         LogbackUtils.syncLogLevelWithMaven( root, log );
-        root.addAppender( errorDetector );
         root.addAppender( mavenBridge );
+
+        configureRootLogger( root );
 
         StatusPrinter.printInCaseOfErrorsOrWarnings( loggerContext );
     }
@@ -76,9 +70,9 @@ public class LogbackModule
         return null;
     }
 
-    public boolean hasErrors()
+    protected void configureRootLogger( final Logger rootLogger )
     {
-        return errorDetector.hasErrors();
+        // override if needed
     }
 
     @Override
