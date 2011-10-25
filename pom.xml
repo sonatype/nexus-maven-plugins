@@ -63,7 +63,7 @@
       </exclusions>
     </dependency>
 
-    <!-- LogBack support (optinal, to not drag it if not needed) -->
+    <!-- LogBack support (optional, to not drag it if not needed) -->
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
@@ -71,6 +71,8 @@
       <scope>compile</scope>
       <optional>true</optional>
     </dependency>
+
+    <!-- SISU support (optional, to not drag it if not needed) -->
     <dependency>
       <groupId>org.sonatype.sisu</groupId>
       <artifactId>sisu-inject-bean</artifactId>
