@@ -1,5 +1,6 @@
 package org.sonatype.maven.mojo.execution;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -11,9 +12,23 @@ import org.apache.maven.project.MavenProject;
 public class MojoExecution
 {
     /**
-     * Returns true if the current project is located at the Execution Root Directory (where mvn was launched).
+     * Returns true if the current project is located at the Execution Root Directory (from where mvn was launched).
      * 
-     * @return true if execution root.
+     * @param mavenSession the MavenSession
+     * @param basedir the basedir
+     * @return true if execution root equals to the passed in basedir.
+     */
+    public static boolean isThisTheExecutionRoot( final MavenSession mavenSession, final File basedir )
+    {
+        return isThisTheExecutionRoot( mavenSession, basedir.getAbsolutePath() );
+    }
+
+    /**
+     * Returns true if the current project is located at the Execution Root Directory (from where mvn was launched).
+     * 
+     * @param mavenSession the MavenSession
+     * @param basedir the basedir
+     * @return true if execution root equals to the passed in basedir.
      */
     public static boolean isThisTheExecutionRoot( final MavenSession mavenSession, final String basedir )
     {
@@ -23,9 +38,10 @@ public class MojoExecution
     /**
      * Returns true if the current project is the last one being executed in this build.
      * 
+     * @param mavenSession the MavenSession
      * @return true if last project is being built.
      */
-    public static boolean isThisLastProjectInExecution( final MavenSession mavenSession )
+    public static boolean isCurrentTheLastProjectInExecution( final MavenSession mavenSession )
     {
         final MavenProject currentProject = mavenSession.getCurrentProject();
         final MavenProject lastProject =
@@ -35,13 +51,73 @@ public class MojoExecution
     }
 
     /**
-     * Returns true if the current project is the last one being executed in this build that has this Mojo defined.
+     * Returns true if the current project is the first one being executed in this build that has this Mojo defined.
      * 
+     * @param mavenSession the MavenSession.
+     * @param pluginGroupId the plugin's groupId.
+     * @param pluginArtifactId the plugin's artifactId.
      * @return true if last project with given plugin is being built.
      */
-    public static boolean isThisLastProjectWithMojoInExecution( final MavenSession mavenSession,
-                                                                final String pluginGroupId,
-                                                                final String pluginArtifactId )
+    public static boolean isCurrentTheFirstProjectWithMojoInExecution( final MavenSession mavenSession,
+                                                                       final String pluginGroupId,
+                                                                       final String pluginArtifactId )
+    {
+        return mavenSession.getCurrentProject() == getFirstProjectWithMojoInExecution( mavenSession, pluginGroupId,
+            pluginArtifactId );
+    }
+
+    /**
+     * Returns true if the current project is the last one being executed in this build that has this Mojo defined.
+     * 
+     * @param mavenSession the MavenSession.
+     * @param pluginGroupId the plugin's groupId.
+     * @param pluginArtifactId the plugin's artifactId.
+     * @return true if last project with given plugin is being built.
+     */
+    public static boolean isCurrentTheLastProjectWithMojoInExecution( final MavenSession mavenSession,
+                                                                      final String pluginGroupId,
+                                                                      final String pluginArtifactId )
+    {
+        return mavenSession.getCurrentProject() == getLastProjectWithMojoInExecution( mavenSession, pluginGroupId,
+            pluginArtifactId );
+    }
+
+    /**
+     * Returns first MavenProject from projects being built that has this Mojo defined.
+     * 
+     * @param mavenSession the MavenSession.
+     * @param pluginGroupId the plugin's groupId.
+     * @param pluginArtifactId the plugin's artifactId.
+     * @return MavenProject of first project with given plugin is being built or null.
+     */
+    public static MavenProject getFirstProjectWithMojoInExecution( final MavenSession mavenSession,
+                                                                   final String pluginGroupId,
+                                                                   final String pluginArtifactId )
+    {
+        final ArrayList<MavenProject> projects = new ArrayList<MavenProject>( mavenSession.getSortedProjects() );
+        MavenProject firstWithThisMojo = null;
+        for ( MavenProject project : projects )
+        {
+            if ( null != findPlugin( project.getBuild(), pluginGroupId, pluginArtifactId ) )
+            {
+                firstWithThisMojo = project;
+                break;
+            }
+        }
+        return firstWithThisMojo;
+    }
+
+    /**
+     * Returns last MavenProject from projects being built that has this Mojo defined.
+     * 
+     * @param mavenSession the MavenSession.
+     * @param pluginGroupId the plugin's groupId.
+     * @param pluginArtifactId the plugin's artifactId.
+     * @return MavenProject of last project with given plugin is being built or null.
+     */
+    public static MavenProject getLastProjectWithMojoInExecution( final MavenSession mavenSession,
+                                                                  final String pluginGroupId,
+                                                                  final String pluginArtifactId )
     {
         final ArrayList<MavenProject> projects = new ArrayList<MavenProject>( mavenSession.getSortedProjects() );
         Collections.reverse( projects );
@@ -54,7 +130,7 @@ public class MojoExecution
                 break;
             }
         }
-        return mavenSession.getCurrentProject() == lastWithThisMojo;
+        return lastWithThisMojo;
     }
 
     /**
