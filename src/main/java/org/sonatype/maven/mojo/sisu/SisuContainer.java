@@ -17,7 +17,6 @@ import com.google.inject.Module;
  */
 public class SisuContainer
 {
-
     static
     {
         // disable nasty finalizer thread which would cause class loader leaks
@@ -39,11 +38,8 @@ public class SisuContainer
     public SisuContainer( Module... modules )
     {
         List<Module> mods = new ArrayList<Module>( modules.length + 1 );
-
         mods.add( new SpaceModule( new URLClassSpace( getClass().getClassLoader() ) ) );
-
         Collections.addAll( mods, modules );
-
         injector = Guice.createInjector( new WireModule( mods ) );
     }
 
@@ -51,5 +47,4 @@ public class SisuContainer
     {
         return injector.getInstance( type );
     }
-
 }
