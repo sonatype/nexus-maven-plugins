@@ -145,6 +145,13 @@ public abstract class AbstractDeployMojo
      */
     private boolean keepOnFailure = false;
 
+    /**
+     * Set this to {@code true} to bypass staging repository closing at the workflow end.
+     * 
+     * @parameter expression="${nexus.deploy.skipClose}"
+     */
+    private boolean skipClose = false;
+
     // getters
 
     protected ArtifactRepository getLocalRepository()
@@ -231,7 +238,7 @@ public abstract class AbstractDeployMojo
         }
         finally
         {
-            afterUpload( successful );
+            afterUpload( skipClose, successful );
         }
     }
 
@@ -329,7 +336,7 @@ public abstract class AbstractDeployMojo
         }
     }
 
-    protected void afterUpload( final boolean successful )
+    protected void afterUpload( final boolean skipClose, final boolean successful )
         throws ArtifactDeploymentException, MojoExecutionException
     {
         // in any other case nothing happens
@@ -339,72 +346,97 @@ public abstract class AbstractDeployMojo
             final StagingWorkflowService stagingService = getStagingWorkflowService();
             try
             {
-                if ( successful )
+                if ( !skipClose )
                 {
-                    getLog().info( " * Closing staging repository with ID \"" + managedStagingRepositoryId + "\"." );
-                    stagingService.finishStaging( stagingProfile, managedStagingRepositoryId, getDescription() );
-                }
-                else
-                {
-                    if ( !keepOnFailure )
+                    if ( successful )
                     {
-                        getLog().warn(
-                            "Dropping failed staging repository with ID \"" + managedStagingRepositoryId
-                                + "\" (due to unsuccesful upload)." );
-                        stagingService.dropStagingRepositories(
-                            "Dropped by nexus-maven-plugin (due to unsuccesful upload).", managedStagingRepositoryId );
+                        getLog().info( " * Closing staging repository with ID \"" + managedStagingRepositoryId + "\"." );
+                        stagingService.finishStaging( stagingProfile, managedStagingRepositoryId, getDescription() );
                     }
                     else
                     {
-                        getLog().warn(
-                            "Not dropping failed staging repository with ID \"" + managedStagingRepositoryId
-                                + "\" (due to unsuccesful upload)." );
+                        if ( !keepOnFailure )
+                        {
+                            getLog().warn(
+                                "Dropping failed staging repository with ID \"" + managedStagingRepositoryId
+                                    + "\" (due to unsuccesful upload)." );
+                            stagingService.dropStagingRepositories(
+                                "Dropped by nexus-maven-plugin (due to unsuccesful upload).",
+                                managedStagingRepositoryId );
+                        }
+                        else
+                        {
+                            getLog().warn(
+                                "Not dropping failed staging repository with ID \"" + managedStagingRepositoryId
+                                    + "\" (due to unsuccesful upload)." );
+                        }
                     }
+                }
+                else
+                {
+                    getLog().info( " * Not closing staging repository with ID \"" + managedStagingRepositoryId + "\"." );
                 }
                 getLog().info( "Finished staging against Nexus " + ( successful ? "with success." : "with failure." ) );
             }
             catch ( UniformInterfaceException e )
             {
-                getLog().error( "Failed to close staging repository with ID \"" + managedStagingRepositoryId + "\"." );
+                getLog().error(
+                    "Error while trying to close staging repository with ID \"" + managedStagingRepositoryId + "\"." );
                 throw new ArtifactDeploymentException(
                     "Error after upload while managing staging repository! Staging repository in question is "
                         + managedStagingRepositoryId, e );
             }
         }
 
-        // this variable will be filled in only if we really staged: is it targeted repo (someone else created or not)
-        // does not matter, see managed flag
-        // deployUrl perform "plain deploy", hence this will be no written out, it will be written out in any other case
-        if ( stagingRepositoryId != null )
+        if ( successful )
         {
-            final Properties stagingProperties = new Properties();
-            // the staging repository ID where the staging went
-            stagingProperties.put( "stagingRepository.id", stagingRepositoryId );
-            // the staging repository's profile ID where the staging went
-            stagingProperties.put( "stagingRepository.profileId", stagingProfileId );
-            // the staging repository URL (if closed! see below)
-            stagingProperties.put( "stagingRepository.url",
-                concat( getNexusUrl(), "/content/repositories", stagingRepositoryId ) );
-            // targeted repo mode or not (are we closing it or someone else? If false, the URL above might not yet
-            // exists if not yet closed....
-            stagingProperties.put( "stagingRepository.managed", String.valueOf( managedStagingRepositoryId != null ) );
+            // this variable will be filled in only if we really staged: is it targeted repo (someone else created or
+            // not)
+            // does not matter, see managed flag
+            // deployUrl perform "plain deploy", hence this will be no written out, it will be written out in any other
+            // case
+            if ( stagingRepositoryId != null )
+            {
+                final String stagingRepositoryUrl =
+                    concat( getNexusUrl(), "/content/repositories", stagingRepositoryId );
 
-            final File stagingPropertiesFile = new File( getStagingDirectory(), "stagingRepository.properties" );
-            FileOutputStream fout = null;
-            try
-            {
-                fout = new FileOutputStream( stagingPropertiesFile );
-                stagingProperties.store( fout, "Generated by nexus-maven-plugin" );
-                fout.flush();
+                final Properties stagingProperties = new Properties();
+                // the staging repository ID where the staging went
+                stagingProperties.put( "stagingRepository.id", stagingRepositoryId );
+                // the staging repository's profile ID where the staging went
+                stagingProperties.put( "stagingRepository.profileId", stagingProfileId );
+                // the staging repository URL (if closed! see below)
+                stagingProperties.put( "stagingRepository.url", stagingRepositoryUrl );
+                // targeted repo mode or not (are we closing it or someone else? If false, the URL above might not yet
+                // exists if not yet closed....
+                stagingProperties.put( "stagingRepository.managed", String.valueOf( managedStagingRepositoryId != null ) );
+
+                final File stagingPropertiesFile = new File( getStagingDirectory(), "stagingRepository.properties" );
+                FileOutputStream fout = null;
+                try
+                {
+                    fout = new FileOutputStream( stagingPropertiesFile );
+                    stagingProperties.store( fout, "Generated by nexus-maven-plugin" );
+                    fout.flush();
+                }
+                catch ( IOException e )
+                {
+                    throw new ArtifactDeploymentException( "Error saving staging repository properties to file "
+                        + stagingPropertiesFile, e );
+                }
+                finally
+                {
+                    IOUtil.close( fout );
+                }
             }
-            catch ( IOException e )
+        }
+        else
+        {
+            getLog().error( "Remote staging was unsuccesful!" );
+            // maybe a switch "upload error fail the build?"
+            if ( true )
             {
-                throw new ArtifactDeploymentException( "Error saving staging repository properties to file "
-                    + stagingPropertiesFile, e );
-            }
-            finally
-            {
-                IOUtil.close( fout );
+                throw new ArtifactDeploymentException( "Remote staging was unsuccesful!" );
             }
         }
     }

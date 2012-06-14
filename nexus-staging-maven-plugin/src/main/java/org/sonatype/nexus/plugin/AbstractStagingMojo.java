@@ -23,6 +23,7 @@ import org.sonatype.nexus.client.ProxyInfo;
 import org.sonatype.nexus.client.UsernamePasswordAuthenticationInfo;
 import org.sonatype.nexus.client.internal.JerseyNexusClientFactory;
 import org.sonatype.nexus.client.srv.staging.StagingWorkflowService;
+import org.sonatype.nexus.client.srv.staging.internal.StagingFeatures;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
 
@@ -293,7 +294,7 @@ public abstract class AbstractStagingMojo
 
             final ConnectionInfo connectionInfo = new ConnectionInfo( baseUrl, authenticationInfo, proxyInfos );
             LogbackUtils.syncLogLevelWithMaven( getLog() );
-            this.nexusClient = new JerseyNexusClientFactory().createFor( connectionInfo );
+            this.nexusClient = new JerseyNexusClientFactory( StagingFeatures.defaults() ).createFor( connectionInfo );
             getLog().debug( "NexusClient created aginst Nexus instance on URL: " + baseUrl.toString() + "." );
         }
         catch ( MalformedURLException e )

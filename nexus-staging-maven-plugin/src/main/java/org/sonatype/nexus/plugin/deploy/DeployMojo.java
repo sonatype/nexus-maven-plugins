@@ -74,23 +74,23 @@ public class DeployMojo
     /**
      * Set this to {@code true} to bypass complete Mojo execution.
      * 
-     * @parameter expression="${nexus.deploy.skip}" default-value="false"
+     * @parameter expression="${nexus.deploy.skip}"
      */
-    private boolean skip;
+    private boolean skip = false;
 
     /**
      * Set this to {@code true} to bypass artifact deploy that would happen once last project is being staged.
      * 
-     * @parameter expression="${nexus.deploy.skipLocalStaging}" default-value="false"
+     * @parameter expression="${nexus.deploy.skipLocalStaging}"
      */
-    private boolean skipLocalStaging;
+    private boolean skipLocalStaging = false;
 
     /**
      * Set this to {@code true} to bypass artifact deploy that would happen once last project is being staged.
      * 
-     * @parameter expression="${nexus.deploy.skipRemoteStaging}" default-value="false"
+     * @parameter expression="${nexus.deploy.skipRemoteStaging}"
      */
-    private boolean skipRemoteStaging;
+    private boolean skipRemoteStaging = false;
 
     public void execute()
         throws MojoExecutionException, MojoFailureException
@@ -162,7 +162,6 @@ public class DeployMojo
             for ( Iterator<Artifact> i = attachedArtifacts.iterator(); i.hasNext(); )
             {
                 Artifact attached = i.next();
-
                 stageLocally( attached.getFile(), attached, repo, getLocalRepository() );
             }
         }
