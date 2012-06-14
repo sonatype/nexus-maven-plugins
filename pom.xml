@@ -33,6 +33,12 @@
   <name>Nexus Maven Plugins : Parent</name>
   <description>Sonatype Nexus Maven Plugins Parent</description>
 
+  <scm>
+    <url>https://github.com/sonatype/nexus-maven-plugins</url>
+    <connection>scm:git:git://github.com/sonatype/nexus-maven-plugins.git</connection>
+    <developerConnection>scm:git:git@github.com:sonatype/nexus-maven-plugins.git</developerConnection>
+  </scm>
+
   <properties>
     <sisu-inject.version>2.3.0</sisu-inject.version>
     <slf4j.version>1.6.4</slf4j.version>
