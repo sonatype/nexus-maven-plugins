@@ -25,24 +25,47 @@ public class LogbackUtils
         }
     }
 
+    /**
+     * Synchronizes Logback's root log level with the level passed in as parameter.
+     */
+    public static void syncLogLevelWithLevel( Level level )
+    {
+        Object factory = LoggerFactory.getILoggerFactory();
+        if ( factory instanceof LoggerContext )
+        {
+            Logger logger = ( (LoggerContext) factory ).getLogger( Logger.ROOT_LOGGER_NAME );
+            syncLogLevelWithLevel( logger, level );
+        }
+    }
+
+    /**
+     * Syncs the passed in logback logger with the passed in Mojo Log level.
+     * 
+     * @param logger
+     * @param log
+     */
     public static void syncLogLevelWithMaven( Logger logger, Log log )
     {
         if ( log.isDebugEnabled() )
         {
-            logger.setLevel( Level.DEBUG );
+            syncLogLevelWithLevel( logger, Level.DEBUG );
         }
         else if ( log.isInfoEnabled() )
         {
-            logger.setLevel( Level.INFO );
+            syncLogLevelWithLevel( logger, Level.INFO );
         }
         else if ( log.isWarnEnabled() )
         {
-            logger.setLevel( Level.WARN );
+            syncLogLevelWithLevel( logger, Level.WARN );
         }
         else
         {
-            logger.setLevel( Level.ERROR );
+            syncLogLevelWithLevel( logger, Level.ERROR );
         }
     }
 
+    public static void syncLogLevelWithLevel( Logger logger, Level level )
+    {
+        logger.setLevel( level );
+    }
 }
