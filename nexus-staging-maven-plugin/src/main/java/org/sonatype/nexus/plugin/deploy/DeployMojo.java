@@ -72,32 +72,32 @@ public class DeployMojo
     protected boolean updateReleaseInfo;
 
     /**
-     * Set this to {@code true} to bypass complete Mojo execution.
+     * Set this to {@code true} to bypass staging altogether (skip complete Mojo execution).
      * 
-     * @parameter expression="${nexus.deploy.skip}"
+     * @parameter expression="${skipStaging}"
      */
-    private boolean skip = false;
+    private boolean skipStaging = false;
 
     /**
      * Set this to {@code true} to bypass artifact deploy that would happen once last project is being staged.
      * 
-     * @parameter expression="${nexus.deploy.skipLocalStaging}"
+     * @parameter expression="${skipLocalStaging}"
      */
     private boolean skipLocalStaging = false;
 
     /**
      * Set this to {@code true} to bypass artifact deploy that would happen once last project is being staged.
      * 
-     * @parameter expression="${nexus.deploy.skipRemoteStaging}"
+     * @parameter expression="${skipRemoteStaging}"
      */
     private boolean skipRemoteStaging = false;
 
     public void execute()
         throws MojoExecutionException, MojoFailureException
     {
-        if ( skip )
+        if ( skipStaging )
         {
-            getLog().info( "Skipping artifact deployment" );
+            getLog().info( "Skipping Nexus Staging." );
             return;
         }
 

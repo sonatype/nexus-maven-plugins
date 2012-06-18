@@ -143,16 +143,16 @@ public abstract class AbstractDeployMojo
      * hence, it's contents are partial Defaults to {{false}}. If {{true}}, even in case of upload failure, the staging
      * repository (with partial content) will be left as is, left to the user to do whatever he wants.
      * 
-     * @parameter expression="${nexus.deploy.keepOnFailure}"
+     * @parameter expression="${keepStagingRepositoryOnFailure}"
      */
-    private boolean keepOnFailure = false;
+    private boolean keepStagingRepositoryOnFailure = false;
 
     /**
      * Set this to {@code true} to bypass staging repository closing at the workflow end.
      * 
-     * @parameter expression="${nexus.deploy.skipClose}"
+     * @parameter expression="${skipStagingRepositoryClose}"
      */
-    private boolean skipClose = false;
+    private boolean skipStagingRepositoryClose = false;
 
     // getters
 
@@ -240,7 +240,7 @@ public abstract class AbstractDeployMojo
         }
         finally
         {
-            afterUpload( skipClose, successful );
+            afterUpload( skipStagingRepositoryClose, successful );
         }
     }
 
@@ -357,7 +357,7 @@ public abstract class AbstractDeployMojo
                     }
                     else
                     {
-                        if ( !keepOnFailure )
+                        if ( !keepStagingRepositoryOnFailure )
                         {
                             getLog().warn(
                                 "Dropping failed staging repository with ID \"" + managedStagingRepositoryId
