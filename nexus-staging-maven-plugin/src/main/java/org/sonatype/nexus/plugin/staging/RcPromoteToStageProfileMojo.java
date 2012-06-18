@@ -14,17 +14,16 @@ package org.sonatype.nexus.plugin.staging;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.sonatype.nexus.client.srv.staging.StagingWorkflowService;
+import org.sonatype.nexus.client.srv.staging.StagingWorkflowV2Service;
 
 /**
  * Promotes a closed Nexus staging repository into a Nexus Build Promotion Profile.
  * 
  * @goal rc-promote
  * @requiresProject false
- * @aggregator
  */
 public class RcPromoteToStageProfileMojo
-    extends AbstractAggregatorStagingMojo
+    extends AbstractStagingRcActionMojo
 {
     /**
      * Specifies the staging build promotion profile ID on remote Nexus where to promotion happens. If not specified,
@@ -47,10 +46,10 @@ public class RcPromoteToStageProfileMojo
     }
 
     @Override
-    public void doExecute( final StagingWorkflowService stagingWorkflow )
+    public void doExecute( final StagingWorkflowV2Service stagingWorkflow )
         throws MojoExecutionException, MojoFailureException
     {
         stagingWorkflow.promoteStagingRepositories( getDescription(), getBuildPromotionProfileId(),
-            getStagingRepositoryId() );
+            getStagingRepositoryIds() );
     }
 }

@@ -17,18 +17,40 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.sonatype.nexus.client.srv.staging.StagingWorkflowV2Service;
 
 /**
- * Releases a single closed Nexus staging repository into a permanent Nexus repository for general consumption.
+ * Promotes a closed Nexus staging repository into a Nexus Build Promotion Profile.
  * 
- * @goal rc-release
- * @requiresProject false
+ * @author cstamas
+ * @since 2.1
+ * @goal promote
  */
-public class RcReleaseStageRepositoryMojo
-    extends AbstractStagingRcActionMojo
+public class PromoteToStageProfileMojo
+    extends AbstractStagingBuildActionMojo
 {
+    /**
+     * Specifies the staging build promotion profile ID on remote Nexus where to promotion happens. If not specified,
+     * goal will fail.
+     * 
+     * @parameter expression="${buildPromotionProfileId}"
+     */
+    private String buildPromotionProfileId;
+
+    protected String getBuildPromotionProfileId()
+        throws MojoExecutionException
+    {
+        if ( buildPromotionProfileId == null )
+        {
+            throw new MojoExecutionException(
+                "The staging staging build promotion profile ID to promote to is not defined! (use \"-DbuildPromotionProfileId=foo\" on CLI)" );
+        }
+
+        return buildPromotionProfileId;
+    }
+
     @Override
     public void doExecute( final StagingWorkflowV2Service stagingWorkflow )
         throws MojoExecutionException, MojoFailureException
     {
-        stagingWorkflow.releaseStagingRepositories( getDescription(), getStagingRepositoryIds() );
+        stagingWorkflow.promoteStagingRepositories( getDescription(), getBuildPromotionProfileId(),
+            getStagingRepositoryId() );
     }
 }

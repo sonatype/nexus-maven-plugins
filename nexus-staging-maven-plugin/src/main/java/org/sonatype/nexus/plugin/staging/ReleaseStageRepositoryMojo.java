@@ -19,16 +19,17 @@ import org.sonatype.nexus.client.srv.staging.StagingWorkflowV2Service;
 /**
  * Releases a single closed Nexus staging repository into a permanent Nexus repository for general consumption.
  * 
- * @goal rc-release
- * @requiresProject false
+ * @author cstamas
+ * @since 2.1
+ * @goal release
  */
-public class RcReleaseStageRepositoryMojo
-    extends AbstractStagingRcActionMojo
+public class ReleaseStageRepositoryMojo
+    extends AbstractStagingBuildActionMojo
 {
     @Override
     public void doExecute( final StagingWorkflowV2Service stagingWorkflow )
         throws MojoExecutionException, MojoFailureException
     {
-        stagingWorkflow.releaseStagingRepositories( getDescription(), getStagingRepositoryIds() );
+        stagingWorkflow.releaseStagingRepositories( getDescription(), getStagingRepositoryId() );
     }
 }

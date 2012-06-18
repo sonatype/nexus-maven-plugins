@@ -17,18 +17,19 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.sonatype.nexus.client.srv.staging.StagingWorkflowV2Service;
 
 /**
- * Releases a single closed Nexus staging repository into a permanent Nexus repository for general consumption.
+ * Closes a Nexus staging repository.
  * 
- * @goal rc-release
- * @requiresProject false
+ * @author cstamas
+ * @since 2.1
+ * @goal close
  */
-public class RcReleaseStageRepositoryMojo
-    extends AbstractStagingRcActionMojo
+public class CloseStageRepositoryMojo
+    extends AbstractStagingBuildActionMojo
 {
     @Override
     public void doExecute( final StagingWorkflowV2Service stagingWorkflow )
         throws MojoExecutionException, MojoFailureException
     {
-        stagingWorkflow.releaseStagingRepositories( getDescription(), getStagingRepositoryIds() );
+        stagingWorkflow.finishStagingRepositories( getDescription(), getStagingRepositoryId() );
     }
 }

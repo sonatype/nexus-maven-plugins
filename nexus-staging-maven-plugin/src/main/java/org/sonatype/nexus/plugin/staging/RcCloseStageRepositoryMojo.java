@@ -14,22 +14,21 @@ package org.sonatype.nexus.plugin.staging;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.sonatype.nexus.client.srv.staging.StagingWorkflowService;
+import org.sonatype.nexus.client.srv.staging.StagingWorkflowV2Service;
 
 /**
  * Closes a Nexus staging repository.
  * 
  * @goal rc-close
  * @requiresProject false
- * @aggregator
  */
 public class RcCloseStageRepositoryMojo
-    extends AbstractAggregatorStagingMojo
+    extends AbstractStagingRcActionMojo
 {
     @Override
-    public void doExecute( final StagingWorkflowService stagingWorkflow )
+    public void doExecute( final StagingWorkflowV2Service stagingWorkflow )
         throws MojoExecutionException, MojoFailureException
     {
-        stagingWorkflow.finishStagingRepositories( getDescription(), getStagingRepositoryId() );
+        stagingWorkflow.finishStagingRepositories( getDescription(), getStagingRepositoryIds() );
     }
 }

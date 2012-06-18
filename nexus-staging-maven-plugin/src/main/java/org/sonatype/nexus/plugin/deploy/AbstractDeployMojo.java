@@ -36,7 +36,7 @@ import org.sonatype.maven.mojo.logback.LogbackUtils;
 import org.sonatype.nexus.client.NexusStatus;
 import org.sonatype.nexus.client.srv.staging.Profile;
 import org.sonatype.nexus.client.srv.staging.ProfileMatchingParameters;
-import org.sonatype.nexus.client.srv.staging.StagingWorkflowService;
+import org.sonatype.nexus.client.srv.staging.StagingWorkflowV2Service;
 import org.sonatype.nexus.plugin.AbstractStagingMojo;
 
 import ch.qos.logback.classic.Level;
@@ -52,6 +52,16 @@ import com.sun.jersey.api.client.UniformInterfaceException;
 public abstract class AbstractDeployMojo
     extends AbstractStagingMojo
 {
+    public static final String STAGING_REPOSITORY_PROPERTY_FILE_NAME = "stagingRepository.properties";
+
+    public static final String STAGING_REPOSITORY_ID = "stagingRepository.id";
+
+    public static final String STAGING_REPOSITORY_PROFILE_ID = "stagingRepository.profileId";
+
+    public static final String STAGING_REPOSITORY_URL = "stagingRepository.url";
+
+    public static final String STAGING_REPOSITORY_MANAGED = "stagingRepository.managed";
+
     // Components
 
     /**
@@ -95,14 +105,6 @@ public abstract class AbstractDeployMojo
     private ArtifactRepository localRepository;
 
     // User configurable parameters
-
-    /**
-     * Specifies an alternative staging directory to which the project artifacts should be deployed. By default, staging
-     * will happen under {@code /target} folder of the top level module (from where Maven was invoked).
-     * 
-     * @parameter expression="${altStagingDirectory}"
-     */
-    private File altStagingDirectory;
 
     /**
      * Specifies the profile ID on remote Nexus against which staging should happen. If not given, Nexus will be asked
@@ -276,7 +278,7 @@ public abstract class AbstractDeployMojo
                 getLog().info(
                     String.format( " * Remote Nexus reported itself as version %s and edition \"%s\"",
                         nexusStatus.getVersion(), nexusStatus.getEditionLong() ) );
-                final StagingWorkflowService stagingService = getStagingWorkflowService();
+                final StagingWorkflowV2Service stagingService = getStagingWorkflowService();
 
                 final MavenProject currentProject = getMavenSession().getCurrentProject();
                 // if profile is not "targeted", perform a match and save the result
@@ -343,7 +345,7 @@ public abstract class AbstractDeployMojo
         // by having stagingRepositoryId string non-empty, it means we created it, hence, we are managing it too
         if ( managedStagingRepositoryId != null )
         {
-            final StagingWorkflowService stagingService = getStagingWorkflowService();
+            final StagingWorkflowV2Service stagingService = getStagingWorkflowService();
             try
             {
                 if ( !skipClose )
@@ -402,16 +404,16 @@ public abstract class AbstractDeployMojo
 
                 final Properties stagingProperties = new Properties();
                 // the staging repository ID where the staging went
-                stagingProperties.put( "stagingRepository.id", stagingRepositoryId );
+                stagingProperties.put( STAGING_REPOSITORY_ID, stagingRepositoryId );
                 // the staging repository's profile ID where the staging went
-                stagingProperties.put( "stagingRepository.profileId", stagingProfileId );
+                stagingProperties.put( STAGING_REPOSITORY_PROFILE_ID, stagingProfileId );
                 // the staging repository URL (if closed! see below)
-                stagingProperties.put( "stagingRepository.url", stagingRepositoryUrl );
+                stagingProperties.put( STAGING_REPOSITORY_URL, stagingRepositoryUrl );
                 // targeted repo mode or not (are we closing it or someone else? If false, the URL above might not yet
                 // exists if not yet closed....
-                stagingProperties.put( "stagingRepository.managed", String.valueOf( managedStagingRepositoryId != null ) );
+                stagingProperties.put( STAGING_REPOSITORY_MANAGED, String.valueOf( managedStagingRepositoryId != null ) );
 
-                final File stagingPropertiesFile = new File( getStagingDirectory(), "stagingRepository.properties" );
+                final File stagingPropertiesFile = new File( getStagingDirectory(), STAGING_REPOSITORY_PROPERTY_FILE_NAME );
                 FileOutputStream fout = null;
                 try
                 {
@@ -459,28 +461,6 @@ public abstract class AbstractDeployMojo
         }
 
         return result.toString();
-    }
-
-    protected File getStagingDirectory()
-    {
-        if ( altStagingDirectory != null )
-        {
-            return altStagingDirectory;
-        }
-        else
-        {
-            final MavenProject firstWithThisMojo = getFirstProjectWithThisPluginDefined();
-            if ( firstWithThisMojo != null )
-            {
-                // the target of 1st project having this mojo defined
-                return new File( firstWithThisMojo.getBasedir().getAbsolutePath(), "target/nexus-staging" );
-            }
-            else
-            {
-                // top level (invocation place)
-                return new File( getMavenSession().getExecutionRootDirectory() + "/target/nexus-staging" );
-            }
-        }
     }
 
     protected ArtifactRepository getStagingRepositoryFor( final File stagingDirectory )

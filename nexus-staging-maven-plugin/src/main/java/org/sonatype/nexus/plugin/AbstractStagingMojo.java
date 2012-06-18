@@ -1,5 +1,6 @@
 package org.sonatype.nexus.plugin;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,7 +23,7 @@ import org.sonatype.nexus.client.Protocol;
 import org.sonatype.nexus.client.ProxyInfo;
 import org.sonatype.nexus.client.UsernamePasswordAuthenticationInfo;
 import org.sonatype.nexus.client.internal.JerseyNexusClientFactory;
-import org.sonatype.nexus.client.srv.staging.StagingWorkflowService;
+import org.sonatype.nexus.client.srv.staging.StagingWorkflowV2Service;
 import org.sonatype.nexus.client.srv.staging.internal.StagingFeatures;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
@@ -73,6 +74,14 @@ public abstract class AbstractStagingMojo
     private boolean offline;
 
     // user supplied parameters (staging related)
+
+    /**
+     * Specifies an alternative staging directory to which the project artifacts should be deployed. By default, staging
+     * will happen under {@code /target} folder of the top level module (from where Maven was invoked).
+     * 
+     * @parameter expression="${altStagingDirectory}"
+     */
+    private File altStagingDirectory;
 
     /**
      * The base URL for a Nexus Professional instance that includes the nexus-staging-plugin.
@@ -168,6 +177,28 @@ public abstract class AbstractStagingMojo
     protected boolean isThisLastProject()
     {
         return MojoExecution.isCurrentTheLastProjectInExecution( mavenSession );
+    }
+
+    protected File getStagingDirectory()
+    {
+        if ( altStagingDirectory != null )
+        {
+            return altStagingDirectory;
+        }
+        else
+        {
+            final MavenProject firstWithThisMojo = getFirstProjectWithThisPluginDefined();
+            if ( firstWithThisMojo != null )
+            {
+                // the target of 1st project having this mojo defined
+                return new File( firstWithThisMojo.getBasedir().getAbsolutePath(), "target/nexus-staging" );
+            }
+            else
+            {
+                // top level (invocation place)
+                return new File( getMavenSession().getExecutionRootDirectory() + "/target/nexus-staging" );
+            }
+        }
     }
 
     // == TRANSPORT
@@ -323,16 +354,18 @@ public abstract class AbstractStagingMojo
         return nexusClient;
     }
 
-    protected StagingWorkflowService getStagingWorkflowService()
+    protected StagingWorkflowV2Service getStagingWorkflowService()
         throws MojoExecutionException
     {
-        final StagingWorkflowService stagingService = getNexusClient().getSubsystem( StagingWorkflowService.class );
+        final StagingWorkflowV2Service stagingService = getNexusClient().getSubsystem( StagingWorkflowV2Service.class );
 
         if ( stagingService == null )
         {
-            throw new MojoExecutionException( "The Nexus instance at base URL "
-                + getNexusClient().getConnectionInfo().getBaseUrl().toString()
-                + " does not support Staging (wrong edition, wrong version or nexus-staging-plugin is not installed)!" );
+            throw new MojoExecutionException(
+                "Nexus instance at base URL "
+                    + getNexusClient().getConnectionInfo().getBaseUrl().toString()
+                    + " does not support Staging V2 (wrong edition, wrong version or nexus-staging-plugin is not installed)! Reported status: "
+                    + getNexusClient().getConnectionStatus() );
         }
 
         return stagingService;
