@@ -36,6 +36,6 @@ public abstract class AbstractStagingRcActionMojo
                 "The staging repository to operate against is not defined! (use \"-DstagingRepositoryId=foo1,foo2\" on CLI)" );
         }
 
-        return null;
+        return result;
     }
 }
