@@ -7,9 +7,12 @@ import java.util.Properties;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.sonatype.nexus.plugin.deploy.AbstractDeployMojo;
+import org.sonatype.nexus.plugin.deploy.DeployMojo;
 
 /**
- * Super class for "RC" mojos, that are always configured from CLI, as none of them requires project.
+ * Super class for "non RC" mojos, that are usable from within the build (if you want more than default V2 actions to
+ * happen, ie. to release at the end of the build). These goals will happen within the "context" of {@link DeployMojo},
+ * as it will use the properties file saved in root of local staging repository.
  * 
  * @author cstamas
  */
@@ -17,8 +20,8 @@ public abstract class AbstractStagingBuildActionMojo
     extends AbstractStagingActionMojo
 {
     /**
-     * Specifies the (opened) staging repository ID (or multiple ones comma separated) on remote Nexus against which
-     * staging action should happen. If not given, mojo will fail.
+     * Specifies the staging repository ID on remote Nexus against which staging action should happen. If not given,
+     * mojo will fail. If not given, the properties file from local staging repository will be consulted.
      * 
      * @parameter expression="${stagingRepositoryId}"
      */
