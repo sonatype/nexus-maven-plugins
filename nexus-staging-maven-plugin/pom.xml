@@ -29,56 +29,6 @@
 
   <description>Maven plugin side of Nexus Staging Suite.</description>
 
-  <distributionManagement>
-    <site>
-      <id>sonatype.org-sites</id>
-      <url>${pluginsSiteBaseUrl}/${project.artifactId}</url>
-    </site>
-  </distributionManagement>
-
-  <properties>
-    <forgeSiteUrl>dav:https://sites.sonatype.com/plugins/nexus-maven-plugin</forgeSiteUrl>
-  </properties>
-
-  <mailingLists>
-    <mailingList>
-      <name>Nexus Users</name>
-      <subscribe>nexus-user-subscribe@sonatype.org</subscribe>
-      <unsubscribe>nexus-user-unsubscribe@sonatype.org</unsubscribe>
-      <post>nexus-user@sonatype.org</post>
-      <archive>http://nexus.sonatype.org/mailing-list-user-archives.html</archive>
-    </mailingList>
-    <mailingList>
-      <name>Nexus Professional Users</name>
-      <subscribe>nexus-pro-users-subscribe@sonatype.org</subscribe>
-      <unsubscribe>nexus-pro-users-unsubscribe@sonatype.org</unsubscribe>
-      <post>nexus-pro-users@sonatype.org</post>
-      <archive>http://nexus.sonatype.org/mailing-list-pro-user-archives.html</archive>
-    </mailingList>
-    <mailingList>
-      <name>Nexus Developers</name>
-      <subscribe>nexus-dev-subscribe@sonatype.org</subscribe>
-      <unsubscribe>nexus-dev-unsubscribe@sonatype.org</unsubscribe>
-      <post>nexus-dev@sonatype.org</post>
-      <archive>http://nexus.sonatype.org/mailing-list-dev-archives.html</archive>
-    </mailingList>
-    <mailingList>
-      <name>Nexus SCM</name>
-      <subscribe>nexus-scm-subscribe@sonatype.org</subscribe>
-      <unsubscribe>nexus-scm-unsubscribe@sonatype.org</unsubscribe>
-    </mailingList>
-    <mailingList>
-      <name>Nexus Issues</name>
-      <subscribe>nexus-issues-subscribe@sonatype.org</subscribe>
-      <unsubscribe>nexus-issues-unsubscribe@sonatype.org</unsubscribe>
-    </mailingList>
-    <mailingList>
-      <name>Nexus CI</name>
-      <subscribe>nexus-ci-subscribe@sonatype.org</subscribe>
-      <unsubscribe>nexus-ci-unsubscribe@sonatype.org</unsubscribe>
-    </mailingList>
-  </mailingLists>
-
   <dependencies>
     <!-- mojo-commons shall be used by this (and any other Sonatype) Maven plugin -->
     <dependency>
@@ -275,6 +225,7 @@
     </dependency>
 
   </dependencies>
+
   <build>
     <plugins>
       <plugin>
@@ -470,12 +421,4 @@
       </plugin>
     </plugins>
   </reporting>
-  <ciManagement>
-    <system>Hudson</system>
-    <url>https://builds.sonatype.org/job/nexus-maven-plugin/</url>
-  </ciManagement>
-  <issueManagement>
-    <system>JIRA</system>
-    <url>https://issues.sonatype.org/browse/NEXUS</url>
-  </issueManagement>
 </project>

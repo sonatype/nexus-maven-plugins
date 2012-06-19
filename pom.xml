@@ -33,6 +33,62 @@
   <name>Nexus Maven Plugins : Parent</name>
   <description>Sonatype Nexus Maven Plugins Parent</description>
 
+  <mailingLists>
+    <mailingList>
+      <name>Nexus Users</name>
+      <subscribe>nexus-user-subscribe@sonatype.org</subscribe>
+      <unsubscribe>nexus-user-unsubscribe@sonatype.org</unsubscribe>
+      <post>nexus-user@sonatype.org</post>
+      <archive>http://nexus.sonatype.org/mailing-list-user-archives.html</archive>
+    </mailingList>
+    <mailingList>
+      <name>Nexus Professional Users</name>
+      <subscribe>nexus-pro-users-subscribe@sonatype.org</subscribe>
+      <unsubscribe>nexus-pro-users-unsubscribe@sonatype.org</unsubscribe>
+      <post>nexus-pro-users@sonatype.org</post>
+      <archive>http://nexus.sonatype.org/mailing-list-pro-user-archives.html</archive>
+    </mailingList>
+    <mailingList>
+      <name>Nexus Developers</name>
+      <subscribe>nexus-dev-subscribe@sonatype.org</subscribe>
+      <unsubscribe>nexus-dev-unsubscribe@sonatype.org</unsubscribe>
+      <post>nexus-dev@sonatype.org</post>
+      <archive>http://nexus.sonatype.org/mailing-list-dev-archives.html</archive>
+    </mailingList>
+    <mailingList>
+      <name>Nexus SCM</name>
+      <subscribe>nexus-scm-subscribe@sonatype.org</subscribe>
+      <unsubscribe>nexus-scm-unsubscribe@sonatype.org</unsubscribe>
+    </mailingList>
+    <mailingList>
+      <name>Nexus Issues</name>
+      <subscribe>nexus-issues-subscribe@sonatype.org</subscribe>
+      <unsubscribe>nexus-issues-unsubscribe@sonatype.org</unsubscribe>
+    </mailingList>
+    <mailingList>
+      <name>Nexus CI</name>
+      <subscribe>nexus-ci-subscribe@sonatype.org</subscribe>
+      <unsubscribe>nexus-ci-unsubscribe@sonatype.org</unsubscribe>
+    </mailingList>
+  </mailingLists>
+
+  <ciManagement>
+    <system>Hudson</system>
+    <url>https://builds.sonatype.org/job/nexus-maven-plugins/</url>
+  </ciManagement>
+
+  <issueManagement>
+    <system>JIRA</system>
+    <url>https://issues.sonatype.org/browse/NEXUS</url>
+  </issueManagement>
+  
+  <distributionManagement>
+    <site>
+      <id>sonatype.org-sites</id>
+      <url>${pluginsSiteBaseUrl}/${project.artifactId}</url>
+    </site>
+  </distributionManagement>
+
   <scm>
     <url>https://github.com/sonatype/nexus-maven-plugins</url>
     <connection>scm:git:git://github.com/sonatype/nexus-maven-plugins.git</connection>
@@ -40,11 +96,13 @@
   </scm>
 
   <properties>
+    <forgeSiteUrl>dav:https://sites.sonatype.com/plugins/nexus-maven-plugins</forgeSiteUrl>
+
     <sisu-inject.version>2.3.0</sisu-inject.version>
     <slf4j.version>1.6.4</slf4j.version>
     <logback.version>1.0.5</logback.version>
     <maven.version>3.0.4</maven.version>
-    <nexus.version>${project.version}</nexus.version>
+    <nexus.version>2.1-SNAPSHOT</nexus.version>
   </properties>
 
   <modules>
@@ -433,47 +491,6 @@
             </plugin>
           </plugins>
         </pluginManagement>
-      </build>
-    </profile>
-    <profile>
-      <id>site</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-site-plugin</artifactId>
-            <version>3.0-beta-1-FLEXMOJOS-r937912</version>
-            <executions>
-              <execution>
-                <phase>deploy</phase>
-                <goals>
-                  <goal>site</goal>
-                  <goal>jar</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>org.sonatype.plugins</groupId>
-            <artifactId>maven-upload-plugin</artifactId>
-            <version>0.0.1</version>
-            <executions>
-              <execution>
-                <id>publish-site</id>
-                <phase>deploy</phase>
-                <goals>
-                  <goal>upload-file</goal>
-                </goals>
-                <configuration>
-                  <serverId>forge-snapshots</serverId>
-                  <repositoryUrl>https://repository.sonatype.org/service/local/repositories/maven-sites/content-compressed/</repositoryUrl>
-                  <file>target/${project.artifactId}-${project.version}-site.jar</file>
-                  <repositoryPath>${project.artifactId}</repositoryPath>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
       </build>
     </profile>
   </profiles>
