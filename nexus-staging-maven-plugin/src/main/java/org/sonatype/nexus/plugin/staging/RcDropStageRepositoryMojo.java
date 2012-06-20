@@ -29,6 +29,7 @@ public class RcDropStageRepositoryMojo
     public void doExecute( final StagingWorkflowV2Service stagingWorkflow )
         throws MojoExecutionException, MojoFailureException
     {
+        getLog().info( "RC-Dropping staging repository with IDs=" + getStagingRepositoryIds() );
         stagingWorkflow.dropStagingRepositories( getDescription(), getStagingRepositoryIds() );
     }
 }

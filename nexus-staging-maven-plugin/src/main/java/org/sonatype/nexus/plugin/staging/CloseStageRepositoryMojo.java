@@ -30,6 +30,7 @@ public class CloseStageRepositoryMojo
     public void doExecute( final StagingWorkflowV2Service stagingWorkflow )
         throws MojoExecutionException, MojoFailureException
     {
+        getLog().info( "Closing staging repository with ID=\"" + getStagingRepositoryId() + "\"" );
         stagingWorkflow.finishStagingRepositories( getDescription(), getStagingRepositoryId() );
     }
 }

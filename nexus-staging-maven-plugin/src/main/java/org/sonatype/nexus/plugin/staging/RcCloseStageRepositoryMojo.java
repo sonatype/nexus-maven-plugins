@@ -29,6 +29,7 @@ public class RcCloseStageRepositoryMojo
     public void doExecute( final StagingWorkflowV2Service stagingWorkflow )
         throws MojoExecutionException, MojoFailureException
     {
+        getLog().info( "RC-Closing staging repository with IDs=" + getStagingRepositoryIds() );
         stagingWorkflow.finishStagingRepositories( getDescription(), getStagingRepositoryIds() );
     }
 }

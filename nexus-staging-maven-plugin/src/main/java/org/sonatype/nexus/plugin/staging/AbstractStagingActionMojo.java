@@ -21,23 +21,35 @@ public abstract class AbstractStagingActionMojo
     public final void execute()
         throws MojoExecutionException, MojoFailureException
     {
-        createTransport( getNexusUrl() );
-        createNexusClient();
-
-        final StagingWorkflowV2Service stagingWorkflow = getStagingWorkflowService();
-
-        try
+        if ( shouldExecute() )
         {
-            doExecute( stagingWorkflow );
+            createTransport( getNexusUrl() );
+            createNexusClient();
+
+            final StagingWorkflowV2Service stagingWorkflow = getStagingWorkflowService();
+
+            try
+            {
+                doExecute( stagingWorkflow );
+            }
+            catch ( UniformInterfaceException e )
+            {
+                // dump the response until no smarter error handling
+                getLog().error( e.getResponse().getEntity( String.class ) );
+                // fail the build
+                throw new MojoExecutionException( "Could not perform action: "
+                    + e.getResponse().getClientResponseStatus().getReasonPhrase(), e );
+            }
         }
-        catch ( UniformInterfaceException e )
+        else
         {
-            // dump the response until no smarter error handling
-            getLog().error( e.getResponse().getEntity( String.class ) );
-            // fail the build
-            throw new MojoExecutionException( "Could not perform action: "
-                + e.getResponse().getClientResponseStatus().getReasonPhrase(), e );
+            getLog().info( "Execution skipped..." );
         }
+    }
+
+    protected boolean shouldExecute()
+    {
+        return true;
     }
 
     protected abstract void doExecute( final StagingWorkflowV2Service stagingWorkflow )
