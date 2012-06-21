@@ -21,6 +21,7 @@ import org.sonatype.nexus.client.srv.staging.StagingWorkflowV2Service;
  * 
  * @goal rc-release
  * @requiresProject false
+ * @requiresDirectInvocation true
  */
 public class RcReleaseStageRepositoryMojo
     extends AbstractStagingRcActionMojo
@@ -29,6 +30,7 @@ public class RcReleaseStageRepositoryMojo
     public void doExecute( final StagingWorkflowV2Service stagingWorkflow )
         throws MojoExecutionException, MojoFailureException
     {
+        getLog().info( "RC-Releasing staging repository with IDs=" + getStagingRepositoryIds() );
         stagingWorkflow.releaseStagingRepositories( getDescription(), getStagingRepositoryIds() );
     }
 }

@@ -435,11 +435,6 @@ public abstract class AbstractDeployMojo
         else
         {
             getLog().error( "Remote staging was unsuccesful!" );
-            // maybe a switch "upload error fail the build?"
-            if ( true )
-            {
-                throw new ArtifactDeploymentException( "Remote staging was unsuccesful!" );
-            }
         }
     }
 
