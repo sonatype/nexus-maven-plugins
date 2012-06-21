@@ -21,6 +21,7 @@ import org.sonatype.nexus.client.srv.staging.StagingWorkflowV2Service;
  * 
  * @goal rc-release
  * @requiresProject false
+ * @requiresDirectInvocation true
  */
 public class RcReleaseStageRepositoryMojo
     extends AbstractStagingRcActionMojo

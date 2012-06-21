@@ -21,6 +21,7 @@ import org.sonatype.nexus.client.srv.staging.StagingWorkflowV2Service;
  * 
  * @goal rc-promote
  * @requiresProject false
+ * @requiresDirectInvocation true
  */
 public class RcPromoteToStageProfileMojo
     extends AbstractStagingRcActionMojo

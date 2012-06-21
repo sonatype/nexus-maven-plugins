@@ -21,6 +21,7 @@ import org.sonatype.nexus.client.srv.staging.StagingWorkflowV2Service;
  * 
  * @goal rc-drop
  * @requiresProject false
+ * @requiresDirectInvocation true
  */
 public class RcDropStageRepositoryMojo
     extends AbstractStagingRcActionMojo
