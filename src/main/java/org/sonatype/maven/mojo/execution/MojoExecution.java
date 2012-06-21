@@ -7,8 +7,14 @@ import java.util.Collections;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginContainer;
+import org.apache.maven.model.PluginExecution;
 import org.apache.maven.project.MavenProject;
 
+/**
+ * This class in meant to operate on MavenSession, that contains already loaded and interpolated model.
+ * 
+ * @author cstamas
+ */
 public class MojoExecution
 {
     /**
@@ -56,14 +62,15 @@ public class MojoExecution
      * @param mavenSession the MavenSession.
      * @param pluginGroupId the plugin's groupId.
      * @param pluginArtifactId the plugin's artifactId.
+     * @param goal the goal to search for and have execution or {@code null} if just interested in plugin presence.
      * @return true if last project with given plugin is being built.
      */
     public static boolean isCurrentTheFirstProjectWithMojoInExecution( final MavenSession mavenSession,
                                                                        final String pluginGroupId,
-                                                                       final String pluginArtifactId )
+                                                                       final String pluginArtifactId, final String goal )
     {
         return mavenSession.getCurrentProject() == getFirstProjectWithMojoInExecution( mavenSession, pluginGroupId,
-            pluginArtifactId );
+            pluginArtifactId, goal );
     }
 
     /**
@@ -72,14 +79,15 @@ public class MojoExecution
      * @param mavenSession the MavenSession.
      * @param pluginGroupId the plugin's groupId.
      * @param pluginArtifactId the plugin's artifactId.
+     * @param goal the goal to search for and have execution or {@code null} if just interested in plugin presence.
      * @return true if last project with given plugin is being built.
      */
     public static boolean isCurrentTheLastProjectWithMojoInExecution( final MavenSession mavenSession,
                                                                       final String pluginGroupId,
-                                                                      final String pluginArtifactId )
+                                                                      final String pluginArtifactId, final String goal )
     {
         return mavenSession.getCurrentProject() == getLastProjectWithMojoInExecution( mavenSession, pluginGroupId,
-            pluginArtifactId );
+            pluginArtifactId, goal );
     }
 
     /**
@@ -88,17 +96,18 @@ public class MojoExecution
      * @param mavenSession the MavenSession.
      * @param pluginGroupId the plugin's groupId.
      * @param pluginArtifactId the plugin's artifactId.
+     * @param goal the goal to search for and have execution or {@code null} if just interested in plugin presence.
      * @return MavenProject of first project with given plugin is being built or null.
      */
     public static MavenProject getFirstProjectWithMojoInExecution( final MavenSession mavenSession,
                                                                    final String pluginGroupId,
-                                                                   final String pluginArtifactId )
+                                                                   final String pluginArtifactId, final String goal )
     {
         final ArrayList<MavenProject> projects = new ArrayList<MavenProject>( mavenSession.getSortedProjects() );
         MavenProject firstWithThisMojo = null;
         for ( MavenProject project : projects )
         {
-            if ( null != findPlugin( project.getBuild(), pluginGroupId, pluginArtifactId ) )
+            if ( null != findPlugin( project.getBuild(), pluginGroupId, pluginArtifactId, goal ) )
             {
                 firstWithThisMojo = project;
                 break;
@@ -113,18 +122,19 @@ public class MojoExecution
      * @param mavenSession the MavenSession.
      * @param pluginGroupId the plugin's groupId.
      * @param pluginArtifactId the plugin's artifactId.
+     * @param goal the goal to search for and have execution or {@code null} if just interested in plugin presence.
      * @return MavenProject of last project with given plugin is being built or null.
      */
     public static MavenProject getLastProjectWithMojoInExecution( final MavenSession mavenSession,
                                                                   final String pluginGroupId,
-                                                                  final String pluginArtifactId )
+                                                                  final String pluginArtifactId, final String goal )
     {
         final ArrayList<MavenProject> projects = new ArrayList<MavenProject>( mavenSession.getSortedProjects() );
         Collections.reverse( projects );
         MavenProject lastWithThisMojo = null;
         for ( MavenProject project : projects )
         {
-            if ( null != findPlugin( project.getBuild(), pluginGroupId, pluginArtifactId ) )
+            if ( null != findPlugin( project.getBuild(), pluginGroupId, pluginArtifactId, goal ) )
             {
                 lastWithThisMojo = project;
                 break;
@@ -134,15 +144,18 @@ public class MojoExecution
     }
 
     /**
-     * Searches for plugin in passed in PluginContainer.
+     * Searches for plugin in passed in PluginContainer. If parameter "goal" is {@code null}, it performs GA search
+     * only. If parameter "goal" is given, it will search for GA and ensure passed in "goal" is having an execution
+     * scheduled.
      * 
      * @param container
      * @param pluginGroupId
      * @param pluginArtifactId
+     * @param goal
      * @return the plugin or null if not found.
      */
     public static Plugin findPlugin( final PluginContainer container, final String pluginGroupId,
-                                     final String pluginArtifactId )
+                                     final String pluginArtifactId, final String goal )
     {
         if ( container != null )
         {
@@ -150,7 +163,20 @@ public class MojoExecution
             {
                 if ( pluginGroupId.equals( plugin.getGroupId() ) && pluginArtifactId.equals( plugin.getArtifactId() ) )
                 {
-                    return plugin;
+                    if ( goal != null )
+                    {
+                        for ( PluginExecution execution : plugin.getExecutions() )
+                        {
+                            if ( execution.getGoals().contains( goal ) )
+                            {
+                                return plugin;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        return plugin;
+                    }
                 }
             }
         }
