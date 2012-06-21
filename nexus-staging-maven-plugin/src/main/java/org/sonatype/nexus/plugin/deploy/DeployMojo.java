@@ -103,7 +103,7 @@ public class DeployMojo
 
         final File stagingDirectory = getStagingDirectory();
 
-        getLog().info( "Using local staging directory " + stagingDirectory.getAbsolutePath() );
+        getLog().info( "Staging locally (stagingDirectory=\"" + stagingDirectory.getAbsolutePath() + "\")..." );
 
         final ArtifactRepository repo = getStagingRepositoryFor( stagingDirectory );
 
@@ -170,7 +170,7 @@ public class DeployMojo
             throw new MojoExecutionException( e.getMessage(), e );
         }
 
-        if ( isThisLastProjectWithThisPluginInExecution() )
+        if ( isThisLastProjectWithThisMojoInExecution() )
         {
             if ( !skipRemoteStaging )
             {
@@ -178,6 +178,7 @@ public class DeployMojo
 
                 try
                 {
+                    getLog().info( "Staging remotely..." );
                     stageRemotely();
                 }
                 catch ( ArtifactDeploymentException e )

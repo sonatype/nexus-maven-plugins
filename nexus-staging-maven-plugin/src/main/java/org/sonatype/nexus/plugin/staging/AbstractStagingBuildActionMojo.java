@@ -75,11 +75,17 @@ public abstract class AbstractStagingBuildActionMojo
 
     /**
      * Execute only in last module (to not drop/release same repo over and over, as many times as modules exist in
-     * project).
+     * project). This should cover both cases: "direct CLI invocation" will still work (see NXCM-4399) but also works in
+     * "bound to phase" case, as in that case, user has to ensure he bounds this goal to a leaf module's lifecycle.
      */
     @Override
     protected boolean shouldExecute()
     {
-        return isThisLastProjectWithThisPluginInExecution();
+        final boolean shouldExecute = isThisLastProjectWithThisMojoInExecution();
+        if ( !shouldExecute )
+        {
+            getLog().info( "Execution skipped to the last project having scheduled execution of this Mojo..." );
+        }
+        return shouldExecute;
     }
 }

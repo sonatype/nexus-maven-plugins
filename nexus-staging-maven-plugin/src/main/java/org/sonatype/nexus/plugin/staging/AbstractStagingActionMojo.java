@@ -23,6 +23,7 @@ public abstract class AbstractStagingActionMojo
     {
         if ( shouldExecute() )
         {
+            getLog().info( "Connecting to Nexus..." );
             createTransport( getNexusUrl() );
             createNexusClient();
 
@@ -40,10 +41,6 @@ public abstract class AbstractStagingActionMojo
                 throw new MojoExecutionException( "Could not perform action: "
                     + e.getResponse().getClientResponseStatus().getReasonPhrase(), e );
             }
-        }
-        else
-        {
-            getLog().info( "Execution skipped..." );
         }
     }
 
