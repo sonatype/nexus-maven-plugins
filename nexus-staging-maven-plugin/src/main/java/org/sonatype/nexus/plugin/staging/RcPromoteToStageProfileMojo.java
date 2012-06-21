@@ -21,6 +21,7 @@ import org.sonatype.nexus.client.srv.staging.StagingWorkflowV2Service;
  * 
  * @goal rc-promote
  * @requiresProject false
+ * @requiresDirectInvocation true
  */
 public class RcPromoteToStageProfileMojo
     extends AbstractStagingRcActionMojo
@@ -49,6 +50,9 @@ public class RcPromoteToStageProfileMojo
     public void doExecute( final StagingWorkflowV2Service stagingWorkflow )
         throws MojoExecutionException, MojoFailureException
     {
+        getLog().info(
+            "RC-Promoting staging repository with IDs=" + getStagingRepositoryIds() + " to build profile ID=\""
+                + getBuildPromotionProfileId() + "\"" );
         stagingWorkflow.promoteStagingRepositories( getDescription(), getBuildPromotionProfileId(),
             getStagingRepositoryIds() );
     }

@@ -21,6 +21,7 @@ import org.sonatype.nexus.client.srv.staging.StagingWorkflowV2Service;
  * 
  * @goal rc-close
  * @requiresProject false
+ * @requiresDirectInvocation true
  */
 public class RcCloseStageRepositoryMojo
     extends AbstractStagingRcActionMojo
@@ -29,6 +30,7 @@ public class RcCloseStageRepositoryMojo
     public void doExecute( final StagingWorkflowV2Service stagingWorkflow )
         throws MojoExecutionException, MojoFailureException
     {
+        getLog().info( "RC-Closing staging repository with IDs=" + getStagingRepositoryIds() );
         stagingWorkflow.finishStagingRepositories( getDescription(), getStagingRepositoryIds() );
     }
 }

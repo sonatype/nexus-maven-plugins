@@ -30,18 +30,23 @@ public class DeployStagedMojo
     public void execute()
         throws MojoExecutionException, MojoFailureException
     {
-        if ( isThisLastProject() )
+        if ( isThisLastProjectWithThisMojoInExecution() )
         {
             failIfOffline();
 
             try
             {
+                getLog().info( "Staging remotely..." );
                 stageRemotely();
             }
             catch ( ArtifactDeploymentException e )
             {
                 throw new MojoExecutionException( e.getMessage(), e );
             }
+        }
+        else
+        {
+            getLog().info( "Execution skipped to the last project..." );
         }
     }
 }

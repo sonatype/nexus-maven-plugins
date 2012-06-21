@@ -12,7 +12,9 @@ import org.sonatype.nexus.plugin.deploy.DeployMojo;
 /**
  * Super class for "non RC" mojos, that are usable from within the build (if you want more than default V2 actions to
  * happen, ie. to release at the end of the build). These goals will happen within the "context" of {@link DeployMojo},
- * as it will use the properties file saved in root of local staging repository.
+ * as it will use the properties file saved in root of local staging repository. When executed in multi module build,
+ * these mojos will be skipped until the very last module having the plugin defined (very same technique as
+ * {@link DeployMojo} uses.
  * 
  * @author cstamas
  */
@@ -69,5 +71,21 @@ public abstract class AbstractStagingBuildActionMojo
         }
 
         return result;
+    }
+
+    /**
+     * Execute only in last module (to not drop/release same repo over and over, as many times as modules exist in
+     * project). This should cover both cases: "direct CLI invocation" will still work (see NXCM-4399) but also works in
+     * "bound to phase" case, as in that case, user has to ensure he bounds this goal to a leaf module's lifecycle.
+     */
+    @Override
+    protected boolean shouldExecute()
+    {
+        final boolean shouldExecute = isThisLastProjectWithThisMojoInExecution();
+        if ( !shouldExecute )
+        {
+            getLog().info( "Execution skipped to the last project having scheduled execution of this Mojo..." );
+        }
+        return shouldExecute;
     }
 }

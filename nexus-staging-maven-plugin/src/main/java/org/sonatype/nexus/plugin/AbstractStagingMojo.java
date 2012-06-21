@@ -45,16 +45,13 @@ public abstract class AbstractStagingMojo
     private MavenSession mavenSession;
 
     /**
-     * @parameter default-value="${plugin.groupId}"
+     * Mojo execution.
+     * 
+     * @parameter default-value="${mojoExecution}"
+     * @required
      * @readonly
      */
-    private String pluginGroupId;
-
-    /**
-     * @parameter default-value="${plugin.artifactId}"
-     * @readonly
-     */
-    private String pluginArtifactId;
+    private org.apache.maven.plugin.MojoExecution mojoExecution;
 
     /**
      * Sec Dispatcher.
@@ -104,7 +101,7 @@ public abstract class AbstractStagingMojo
      * 
      * @parameter expression="${description}"
      */
-    private String description = "Closed by nexus-maven-plugin";
+    private String description = "Closed by nexus-staging-maven-plugin";
 
     // == getters for stuff above
 
@@ -156,27 +153,39 @@ public abstract class AbstractStagingMojo
      */
     protected MavenProject getFirstProjectWithThisPluginDefined()
     {
-        return MojoExecution.getFirstProjectWithMojoInExecution( mavenSession, pluginGroupId, pluginArtifactId );
+        return MojoExecution.getFirstProjectWithMojoInExecution( mavenSession, mojoExecution.getGroupId(),
+            mojoExecution.getArtifactId(), null );
     }
 
     /**
-     * Returns true if the current project is the last one being executed in this build that has this mojo defined.
+     * In case of ordinary build, it returns {@code true} if the current project is the last one being executed in this
+     * build that has this Mojo defined. In case of direct invocation of this Mojo over CLI, it returns {@code true} if
+     * the current project is the last one being executed in this build.
      * 
      * @return true if last project is being built.
      */
-    protected boolean isThisLastProjectWithThisPluginInExecution()
+    protected boolean isThisLastProjectWithThisMojoInExecution()
     {
-        return MojoExecution.isCurrentTheLastProjectWithMojoInExecution( mavenSession, pluginGroupId, pluginArtifactId );
+        if ( "default-cli".equals( mojoExecution.getExecutionId() ) )
+        {
+            return MojoExecution.isCurrentTheLastProjectInExecution( mavenSession );
+        }
+        else
+        {
+            return isThisLastProjectWithMojoInExecution( mojoExecution.getGoal() );
+        }
     }
 
     /**
-     * Returns true if the current project is the last one being executed in this build.
+     * Returns true if the current project is the last one being executed in this build that has passed in goal
+     * execution defined.
      * 
      * @return true if last project is being built.
      */
-    protected boolean isThisLastProject()
+    protected boolean isThisLastProjectWithMojoInExecution( final String goal )
     {
-        return MojoExecution.isCurrentTheLastProjectInExecution( mavenSession );
+        return MojoExecution.isCurrentTheLastProjectWithMojoInExecution( mavenSession, mojoExecution.getGroupId(),
+            mojoExecution.getArtifactId(), goal );
     }
 
     protected File getStagingDirectory()

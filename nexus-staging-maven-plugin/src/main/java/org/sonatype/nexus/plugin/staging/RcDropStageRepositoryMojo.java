@@ -21,6 +21,7 @@ import org.sonatype.nexus.client.srv.staging.StagingWorkflowV2Service;
  * 
  * @goal rc-drop
  * @requiresProject false
+ * @requiresDirectInvocation true
  */
 public class RcDropStageRepositoryMojo
     extends AbstractStagingRcActionMojo
@@ -29,6 +30,7 @@ public class RcDropStageRepositoryMojo
     public void doExecute( final StagingWorkflowV2Service stagingWorkflow )
         throws MojoExecutionException, MojoFailureException
     {
+        getLog().info( "RC-Dropping staging repository with IDs=" + getStagingRepositoryIds() );
         stagingWorkflow.dropStagingRepositories( getDescription(), getStagingRepositoryIds() );
     }
 }
