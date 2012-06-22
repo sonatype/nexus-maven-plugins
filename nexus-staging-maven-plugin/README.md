@@ -145,11 +145,13 @@ This table also presents the "order" how configuration is interpreted: last wins
 
 ### Plugin flags 
 
-|Flag (type) |CLI (`-D`)|plugin configuration|Default value|Meaning| 
-|------------|----------|--------------------|---------------------|
+These "flags" are usually passed in from CLI (`-D...`).
+
+|Flag type|CLI (`-D`)|plugin configuration|Default value|Meaning| 
+|---------|----------|--------------------|---------------------|
 | Alternate local staging directory (FS directory path) | `altStagingDirectory` | n/a | `null` | Possibility to _explicitly_ define a directory on local FS to use for local staging. Passing in this flag will prevent the "logic" of proper `target` folder selection | 
-| Description (plain text)| `description` | `<description>` | `null` | Free text, message or explanation to be added for staging operations like when staging repository is created or closed (as part of whole V2 process)| 
-| Keep staging repository in case of failure (boolean) | `keepStagingRepositoryOnFailure` | `< keepStagingRepositoryOnFailure >` | `false` | Nexus Maven Plugin always tries to "clean up" after itself, hence, in case of upload failure (and potentially having "partially uploaded" artifacts to staging repository) it always tries to drop that same repository. Will not, if this flag is set to `true`| 
+| Description (plain text)| `description` | `<description>` | `null` | Free text, message or explanation to be added for staging operations like when staging repository is created or closed (as part of whole V2 process) | 
+| Keep staging repository in case of failure (boolean) | `keepStagingRepositoryOnFailure` | `< keepStagingRepositoryOnFailure >` | `false` | Nexus Maven Plugin always tries to "clean up" after itself, hence, in case of upload failure (and potentially having "partially uploaded" artifacts to staging repository) it always tries to drop that same repository. Will not, if this flag is set to `true` | 
 | Skip whole plugin (boolean) | `skipStaging` | `<skipStaging>` | `false` | Completely skips the `deploy` Mojo (similar as `maven.deploy.skip`) | 
 | Skip the upload step (boolean) | `skipRemoteStaging` | `<skipRemoteStaging>` | `false` | Performs "local staging" only, skips the upload. Hence, no stage repository created, nor deployed to Nexus (if `deployUrl` specified).| 
 
