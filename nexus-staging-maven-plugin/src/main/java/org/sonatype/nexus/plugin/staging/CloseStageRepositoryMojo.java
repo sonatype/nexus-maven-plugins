@@ -14,7 +14,7 @@ package org.sonatype.nexus.plugin.staging;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.sonatype.nexus.client.srv.staging.StagingWorkflowV2Service;
+import org.sonatype.nexus.client.staging.StagingWorkflowV2Service;
 
 /**
  * Closes a Nexus staging repository.

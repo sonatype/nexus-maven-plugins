@@ -34,9 +34,9 @@ import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.maven.mojo.logback.LogbackUtils;
 import org.sonatype.nexus.client.NexusStatus;
-import org.sonatype.nexus.client.srv.staging.Profile;
-import org.sonatype.nexus.client.srv.staging.ProfileMatchingParameters;
-import org.sonatype.nexus.client.srv.staging.StagingWorkflowV2Service;
+import org.sonatype.nexus.client.staging.Profile;
+import org.sonatype.nexus.client.staging.ProfileMatchingParameters;
+import org.sonatype.nexus.client.staging.StagingWorkflowV2Service;
 import org.sonatype.nexus.plugin.AbstractStagingMojo;
 
 import ch.qos.logback.classic.Level;
@@ -274,7 +274,7 @@ public abstract class AbstractDeployMojo
                 createNexusClient( getServer(), getProxy() );
 
                 getLog().info( "Performing staging against Nexus on URL " + getNexusUrl() );
-                final NexusStatus nexusStatus = getNexusClient().getConnectionStatus();
+                final NexusStatus nexusStatus = getNexusClient().getNexusStatus();
                 getLog().info(
                     String.format( " * Remote Nexus reported itself as version %s and edition \"%s\"",
                         nexusStatus.getVersion(), nexusStatus.getEditionLong() ) );
