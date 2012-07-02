@@ -33,7 +33,7 @@ import org.apache.maven.settings.Server;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.maven.mojo.logback.LogbackUtils;
-import org.sonatype.nexus.client.NexusStatus;
+import org.sonatype.nexus.client.core.NexusStatus;
 import org.sonatype.nexus.client.staging.Profile;
 import org.sonatype.nexus.client.staging.ProfileMatchingParameters;
 import org.sonatype.nexus.client.staging.StagingWorkflowV2Service;

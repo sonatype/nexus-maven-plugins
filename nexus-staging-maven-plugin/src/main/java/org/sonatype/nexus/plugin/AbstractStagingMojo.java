@@ -1,3 +1,15 @@
+/**
+ * Sonatype Nexus (TM) Open Source Version
+ * Copyright (c) 2007-2012 Sonatype, Inc.
+ * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
+ *
+ * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
+ * which accompanies this distribution and is available at http://www.eclipse.org/legal/epl-v10.html.
+ *
+ * Sonatype Nexus (TM) Professional Version is available from Sonatype, Inc. "Sonatype" and "Sonatype Nexus" are trademarks
+ * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
+ * Eclipse Foundation. All other trademarks are the property of their respective owners.
+ */
 package org.sonatype.nexus.plugin;
 
 import java.io.File;
@@ -16,15 +28,15 @@ import org.apache.maven.settings.Server;
 import org.sonatype.maven.mojo.execution.MojoExecution;
 import org.sonatype.maven.mojo.logback.LogbackUtils;
 import org.sonatype.maven.mojo.settings.MavenSettings;
-import org.sonatype.nexus.client.BaseUrl;
-import org.sonatype.nexus.client.ConnectionInfo;
-import org.sonatype.nexus.client.NexusClient;
-import org.sonatype.nexus.client.Protocol;
-import org.sonatype.nexus.client.ProxyInfo;
-import org.sonatype.nexus.client.UsernamePasswordAuthenticationInfo;
-import org.sonatype.nexus.client.internal.JerseyNexusClientFactory;
+import org.sonatype.nexus.client.core.NexusClient;
+import org.sonatype.nexus.client.rest.BaseUrl;
+import org.sonatype.nexus.client.rest.ConnectionInfo;
+import org.sonatype.nexus.client.rest.Protocol;
+import org.sonatype.nexus.client.rest.ProxyInfo;
+import org.sonatype.nexus.client.rest.UsernamePasswordAuthenticationInfo;
+import org.sonatype.nexus.client.rest.internal.JerseyNexusClientFactory;
+import org.sonatype.nexus.client.rest.internal.staging.JerseyStagingWorkflowV2SubsystemFactory;
 import org.sonatype.nexus.client.staging.StagingWorkflowV2Service;
-import org.sonatype.nexus.client.staging.internal.JerseyStagingWorkflowV2SubsystemFactory;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
 
@@ -300,7 +312,7 @@ public abstract class AbstractStagingMojo
     {
         try
         {
-            final BaseUrl baseUrl = BaseUrl.create( getNexusUrl() );
+            final BaseUrl baseUrl = BaseUrl.baseUrlFrom( getNexusUrl() );
             final UsernamePasswordAuthenticationInfo authenticationInfo;
             final Map<Protocol, ProxyInfo> proxyInfos = new HashMap<Protocol, ProxyInfo>( 1 );
 
