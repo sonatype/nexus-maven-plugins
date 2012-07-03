@@ -34,9 +34,9 @@ import org.sonatype.nexus.client.rest.ConnectionInfo;
 import org.sonatype.nexus.client.rest.Protocol;
 import org.sonatype.nexus.client.rest.ProxyInfo;
 import org.sonatype.nexus.client.rest.UsernamePasswordAuthenticationInfo;
-import org.sonatype.nexus.client.rest.internal.JerseyNexusClientFactory;
-import org.sonatype.nexus.client.rest.internal.staging.JerseyStagingWorkflowV2SubsystemFactory;
+import org.sonatype.nexus.client.rest.jersey.JerseyNexusClientFactory;
 import org.sonatype.nexus.client.staging.StagingWorkflowV2Service;
+import org.sonatype.nexus.client.staging.rest.JerseyStagingWorkflowV2SubsystemFactory;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
 
