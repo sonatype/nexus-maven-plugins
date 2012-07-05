@@ -123,14 +123,15 @@ public abstract class AbstractStagingMojo
      * The base URL for a Nexus Professional instance that includes the nexus-staging-plugin.
      * 
      * @parameter expression="${nexusUrl}"
+     * @required
      */
     private String nexusUrl;
 
     /**
-     * The ID of the server entry in the Maven settings.xml from which to pick credentials to contact the Insight
-     * service.
+     * The ID of the server entry in the Maven settings.xml from which to pick credentials to contact remote Nexus.
      * 
      * @parameter expression="${serverId}"
+     * @required
      */
     private String serverId = "nexus";
 
@@ -259,11 +260,24 @@ public abstract class AbstractStagingMojo
             if ( firstWithThisMojo != null )
             {
                 // the target of 1st project having this mojo defined
-                return new File( firstWithThisMojo.getBasedir().getAbsolutePath(), "target/nexus-staging" );
+                final File firstWithThisMojoBasedir = firstWithThisMojo.getBasedir().getAbsoluteFile();
+
+                final File firstWithThisMojoBuildDir;
+                if ( firstWithThisMojo.getBuild() != null && firstWithThisMojo.getBuild().getDirectory() != null )
+                {
+                    firstWithThisMojoBuildDir =
+                        new File( firstWithThisMojoBasedir, firstWithThisMojo.getBuild().getDirectory() ).getAbsoluteFile();
+                }
+                else
+                {
+                    firstWithThisMojoBuildDir = new File( firstWithThisMojoBasedir, "target" );
+                }
+                return new File( firstWithThisMojoBuildDir, "nexus-staging" );
             }
             else
             {
-                // top level (invocation place)
+                // top level (invocation place with some sensible defaults)
+                // TODO: what can we do here? Do we have MavenProject at all?
                 return new File( getMavenSession().getExecutionRootDirectory() + "/target/nexus-staging" );
             }
         }
