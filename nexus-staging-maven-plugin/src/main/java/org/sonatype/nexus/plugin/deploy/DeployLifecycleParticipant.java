@@ -41,15 +41,37 @@ public class DeployLifecycleParticipant
     extends AbstractMavenLifecycleParticipant
     implements LogEnabled
 {
-    public static String THIS_GROUP_ID = "org.sonatype.plugins";
+    /**
+     * We have to have some access to GAV of the plugin, but lifecycle participant is loaded up very early, so we cannot
+     * use MojoExecutions (actually, we do not even have one in scope) and other Maven Core stuff to get them. Any way
+     * to discover these?
+     */
+    public static String _THIS_GROUP_ID = "org.sonatype.plugins";
 
-    public static String THIS_ARTIFACT_ID = "nexus-staging-maven-plugin";
+    /**
+     * We have to have some access to GAV of the plugin, but lifecycle participant is loaded up very early, so we cannot
+     * use MojoExecutions (actually, we do not even have one in scope) and other Maven Core stuff to get them. Any way
+     * to discover these?
+     */
+    public static String _THIS_ARTIFACT_ID = "nexus-staging-maven-plugin";
 
     public static String MAVEN_DEPLOY_PLUGIN_GROUP_ID = "org.apache.maven.plugins";
 
     public static String MAVEN_DEPLOY_PLUGIN_ARTIFACT_ID = "maven-deploy-plugin";
 
     private Logger logger;
+
+    protected String getPluginGroupId()
+    {
+        // TODO: GA is wired in, should be discovered!
+        return _THIS_GROUP_ID;
+    }
+
+    protected String getPluginArtifactId()
+    {
+        // TODO: GA is wired in, should be discovered!
+        return _THIS_ARTIFACT_ID;
+    }
 
     @Override
     public void enableLogging( final Logger logger )
@@ -63,7 +85,7 @@ public class DeployLifecycleParticipant
         try
         {
             // check do we need to do anything at all?
-            // should not find any nexus-maven-plugin deploy goal executions in any project
+            // should not find any nexus-staging-maven-plugin deploy goal executions in any project
             // otherwise, assume it's "manually done"
             for ( MavenProject project : session.getProjects() )
             {
@@ -104,7 +126,7 @@ public class DeployLifecycleParticipant
                         // But this mojo has only 3 goals, but only one of them is usable in builds ("deploy")
                         mavenDeployPlugin.getExecutions().clear();
 
-                        // add executions to nexus-maven-plugin
+                        // add executions to nexus-staging-maven-plugin
                         final PluginExecution execution = new PluginExecution();
                         execution.setId( "injected-nexus-deploy" );
                         execution.getGoals().add( "deploy" );
@@ -120,7 +142,7 @@ public class DeployLifecycleParticipant
             if ( skipped > 0 )
             {
                 logger.info( "  ... total of " + skipped + " executions of maven-deploy-plugin replaced with "
-                    + THIS_ARTIFACT_ID );
+                    + getPluginArtifactId() );
             }
         }
         catch ( IllegalStateException e )
@@ -131,7 +153,7 @@ public class DeployLifecycleParticipant
     }
 
     /**
-     * Returns the nexus-maven-plugin from build/plugins section of model or {@code null} if not present.
+     * Returns the nexus-staging-maven-plugin from build/plugins section of model or {@code null} if not present.
      * 
      * @param model
      * @return
@@ -161,15 +183,14 @@ public class DeployLifecycleParticipant
     }
 
     /**
-     * Returns the nexus-maven-plugin from pluginContainer or {@code null} if not present.
+     * Returns the nexus-staging-maven-plugin from pluginContainer or {@code null} if not present.
      * 
      * @param pluginContainer
      * @return
      */
     protected Plugin getNexusMavenPluginFromContainer( final PluginContainer pluginContainer )
     {
-        // TODO: GA is wired in, should be discovered!
-        return getPluginByGAFromContainer( THIS_GROUP_ID, THIS_ARTIFACT_ID, pluginContainer );
+        return getPluginByGAFromContainer( getPluginGroupId(), getPluginArtifactId(), pluginContainer );
     }
 
     /**

@@ -57,6 +57,33 @@ public abstract class AbstractStagingMojo
     private MavenSession mavenSession;
 
     /**
+     * Plugin groupId. While these are accessible from {@link #mojoExecution}, the methods are present only in Maven 3+.
+     * Requirement is to work in Maven2 also, hence, we use a "compatible way" to obtain these values instead.
+     * 
+     * @parameter default-value="${plugin.groupId}"
+     * @readonly
+     */
+    private String pluginGroupId;
+
+    /**
+     * Plugin artifactId. While these are accessible from {@link #mojoExecution}, the methods are present only in Maven
+     * 3+. Requirement is to work in Maven2 also, hence, we use a "compatible way" to obtain these values instead.
+     * 
+     * @parameter default-value="${plugin.artifactId}"
+     * @readonly
+     */
+    private String pluginArtifactId;
+
+    /**
+     * Plugin version. While these are accessible from {@link #mojoExecution}, the methods are present only in Maven 3+.
+     * Requirement is to work in Maven2 also, hence, we use a "compatible way" to obtain these values instead.
+     * 
+     * @parameter default-value="${plugin.version}"
+     * @readonly
+     */
+    private String pluginVersion;
+
+    /**
      * Mojo execution.
      * 
      * @parameter default-value="${mojoExecution}"
@@ -142,6 +169,26 @@ public abstract class AbstractStagingMojo
         return secDispatcher;
     }
 
+    protected String getPluginGroupId()
+    {
+        return pluginGroupId;
+    }
+
+    protected String getPluginArtifactId()
+    {
+        return pluginArtifactId;
+    }
+
+    protected String getPluginVersion()
+    {
+        return pluginVersion;
+    }
+
+    protected String getPluginGav()
+    {
+        return getPluginGroupId() + ":" + getPluginArtifactId() + ":" + getPluginVersion();
+    }
+
     // == common methods
 
     /**
@@ -165,8 +212,7 @@ public abstract class AbstractStagingMojo
      */
     protected MavenProject getFirstProjectWithThisPluginDefined()
     {
-        return MojoExecution.getFirstProjectWithMojoInExecution( mavenSession, mojoExecution.getGroupId(),
-            mojoExecution.getArtifactId(), null );
+        return MojoExecution.getFirstProjectWithMojoInExecution( mavenSession, pluginGroupId, pluginArtifactId, null );
     }
 
     /**
@@ -184,7 +230,8 @@ public abstract class AbstractStagingMojo
         }
         else
         {
-            return isThisLastProjectWithMojoInExecution( mojoExecution.getGoal() );
+            // method mojoExecution.getGoal() is added in maven3!
+            return isThisLastProjectWithMojoInExecution( mojoExecution.getMojoDescriptor().getGoal() );
         }
     }
 
@@ -196,8 +243,8 @@ public abstract class AbstractStagingMojo
      */
     protected boolean isThisLastProjectWithMojoInExecution( final String goal )
     {
-        return MojoExecution.isCurrentTheLastProjectWithMojoInExecution( mavenSession, mojoExecution.getGroupId(),
-            mojoExecution.getArtifactId(), goal );
+        return MojoExecution.isCurrentTheLastProjectWithMojoInExecution( mavenSession, pluginGroupId, pluginArtifactId,
+            goal );
     }
 
     protected File getStagingDirectory()
@@ -385,11 +432,10 @@ public abstract class AbstractStagingMojo
         }
         catch ( IllegalArgumentException e )
         {
-            throw new MojoExecutionException(
-                "Nexus instance at base URL "
-                    + getNexusClient().getConnectionInfo().getBaseUrl().toString()
-                    + " does not support Staging V2 (wrong edition, wrong version or nexus-staging-plugin is not installed)! Reported status: "
-                    + getNexusClient().getNexusStatus(), e );
+            throw new MojoExecutionException( "Nexus instance at base URL "
+                + getNexusClient().getConnectionInfo().getBaseUrl().toString()
+                + " does not support Staging V2 Reported status: " + getNexusClient().getNexusStatus() + ", reason:"
+                + e.getMessage(), e );
         }
     }
 }

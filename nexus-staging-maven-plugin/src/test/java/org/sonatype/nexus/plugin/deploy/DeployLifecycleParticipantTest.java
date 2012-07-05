@@ -116,7 +116,7 @@ public class DeployLifecycleParticipantTest
                 DeployLifecycleParticipant.MAVEN_DEPLOY_PLUGIN_ARTIFACT_ID, "deploy" ) );
         // out plugin just declared as extension, nothing more. no goals
         model.getBuild().getPlugins().add(
-            createPlugin( DeployLifecycleParticipant.THIS_GROUP_ID, DeployLifecycleParticipant.THIS_ARTIFACT_ID ) );
+            createPlugin( DeployLifecycleParticipant._THIS_GROUP_ID, DeployLifecycleParticipant._THIS_ARTIFACT_ID ) );
 
         final MavenSession mockSession = createSessionWithProjectsForModels( model );
 
@@ -130,9 +130,9 @@ public class DeployLifecycleParticipantTest
                 Assert.assertTrue( "No executions for plugin "
                     + DeployLifecycleParticipant.MAVEN_DEPLOY_PLUGIN_ARTIFACT_ID, plugin.getExecutions().isEmpty() );
             }
-            else if ( DeployLifecycleParticipant.THIS_ARTIFACT_ID.equals( plugin.getArtifactId() ) )
+            else if ( DeployLifecycleParticipant._THIS_ARTIFACT_ID.equals( plugin.getArtifactId() ) )
             {
-                Assert.assertEquals( "One execution for plugin " + DeployLifecycleParticipant.THIS_ARTIFACT_ID, 1,
+                Assert.assertEquals( "One execution for plugin " + DeployLifecycleParticipant._THIS_ARTIFACT_ID, 1,
                     plugin.getExecutions().size() );
             }
             else
@@ -157,7 +157,7 @@ public class DeployLifecycleParticipantTest
                 DeployLifecycleParticipant.MAVEN_DEPLOY_PLUGIN_ARTIFACT_ID, "deploy" ) );
         // out plugin declared as extension with manually set execution
         model.getBuild().getPlugins().add(
-            createPlugin( DeployLifecycleParticipant.THIS_GROUP_ID, DeployLifecycleParticipant.THIS_ARTIFACT_ID,
+            createPlugin( DeployLifecycleParticipant._THIS_GROUP_ID, DeployLifecycleParticipant._THIS_ARTIFACT_ID,
                 "deploy" ) );
 
         final MavenSession mockSession = createSessionWithProjectsForModels( model );
@@ -172,9 +172,9 @@ public class DeployLifecycleParticipantTest
                 Assert.assertEquals( "One execution for plugin "
                     + DeployLifecycleParticipant.MAVEN_DEPLOY_PLUGIN_ARTIFACT_ID, 1, plugin.getExecutions().size() );
             }
-            else if ( DeployLifecycleParticipant.THIS_ARTIFACT_ID.equals( plugin.getArtifactId() ) )
+            else if ( DeployLifecycleParticipant._THIS_ARTIFACT_ID.equals( plugin.getArtifactId() ) )
             {
-                Assert.assertEquals( "One execution for plugin " + DeployLifecycleParticipant.THIS_ARTIFACT_ID, 1,
+                Assert.assertEquals( "One execution for plugin " + DeployLifecycleParticipant._THIS_ARTIFACT_ID, 1,
                     plugin.getExecutions().size() );
             }
             else
@@ -212,8 +212,8 @@ public class DeployLifecycleParticipantTest
                 DeployLifecycleParticipant.MAVEN_DEPLOY_PLUGIN_ARTIFACT_ID, "deploy" ) );
         // our plugin declared as extension, no execution and A specific param
         parentA.getBuild().getPlugins().add(
-            createPluginAndSetConfig( DeployLifecycleParticipant.THIS_GROUP_ID,
-                DeployLifecycleParticipant.THIS_ARTIFACT_ID, null, "profile-a" ) );
+            createPluginAndSetConfig( DeployLifecycleParticipant._THIS_GROUP_ID,
+                DeployLifecycleParticipant._THIS_ARTIFACT_ID, null, "profile-a" ) );
 
         // module-A:
         final Model moduleA = createModel( "org.foo", "module-a" );
@@ -223,8 +223,8 @@ public class DeployLifecycleParticipantTest
                 DeployLifecycleParticipant.MAVEN_DEPLOY_PLUGIN_ARTIFACT_ID, "deploy" ) );
         // our plugin declared as extension, no execution and A specific param
         moduleA.getBuild().getPlugins().add(
-            createPluginAndSetConfig( DeployLifecycleParticipant.THIS_GROUP_ID,
-                DeployLifecycleParticipant.THIS_ARTIFACT_ID, null, "profile-a" ) );
+            createPluginAndSetConfig( DeployLifecycleParticipant._THIS_GROUP_ID,
+                DeployLifecycleParticipant._THIS_ARTIFACT_ID, null, "profile-a" ) );
 
         // parent-B:
         final Model parentB = createModel( "org.foo", "parent-b" );
@@ -234,8 +234,8 @@ public class DeployLifecycleParticipantTest
                 DeployLifecycleParticipant.MAVEN_DEPLOY_PLUGIN_ARTIFACT_ID, "deploy" ) );
         // our plugin declared as extension, no execution and A specific param
         parentB.getBuild().getPlugins().add(
-            createPluginAndSetConfig( DeployLifecycleParticipant.THIS_GROUP_ID,
-                DeployLifecycleParticipant.THIS_ARTIFACT_ID, null, "profile-b" ) );
+            createPluginAndSetConfig( DeployLifecycleParticipant._THIS_GROUP_ID,
+                DeployLifecycleParticipant._THIS_ARTIFACT_ID, null, "profile-b" ) );
 
         // module-B:
         final Model moduleB = createModel( "org.foo", "module-b" );
@@ -245,8 +245,8 @@ public class DeployLifecycleParticipantTest
                 DeployLifecycleParticipant.MAVEN_DEPLOY_PLUGIN_ARTIFACT_ID, "deploy" ) );
         // our plugin declared as extension, no execution and A specific param
         moduleB.getBuild().getPlugins().add(
-            createPluginAndSetConfig( DeployLifecycleParticipant.THIS_GROUP_ID,
-                DeployLifecycleParticipant.THIS_ARTIFACT_ID, null, "profile-b" ) );
+            createPluginAndSetConfig( DeployLifecycleParticipant._THIS_GROUP_ID,
+                DeployLifecycleParticipant._THIS_ARTIFACT_ID, null, "profile-b" ) );
 
         final MavenSession mockSession =
             createSessionWithProjectsForModels( aggregatorPom, parentA, moduleA, parentB, moduleB );
@@ -261,9 +261,9 @@ public class DeployLifecycleParticipantTest
                 Assert.assertTrue( "No executions for plugin "
                     + DeployLifecycleParticipant.MAVEN_DEPLOY_PLUGIN_ARTIFACT_ID, plugin.getExecutions().isEmpty() );
             }
-            else if ( DeployLifecycleParticipant.THIS_ARTIFACT_ID.equals( plugin.getArtifactId() ) )
+            else if ( DeployLifecycleParticipant._THIS_ARTIFACT_ID.equals( plugin.getArtifactId() ) )
             {
-                Assert.assertEquals( "One execution for plugin " + DeployLifecycleParticipant.THIS_ARTIFACT_ID, 1,
+                Assert.assertEquals( "One execution for plugin " + DeployLifecycleParticipant._THIS_ARTIFACT_ID, 1,
                     plugin.getExecutions().size() );
                 if ( plugin.getArtifactId().endsWith( "-a" ) )
                 {
@@ -302,11 +302,11 @@ public class DeployLifecycleParticipantTest
                 DeployLifecycleParticipant.MAVEN_DEPLOY_PLUGIN_ARTIFACT_ID, "deploy" ) );
         // our plugin declared MULTIPLE TIMES
         model.getBuild().getPlugins().add(
-            createPluginAndSetConfig( DeployLifecycleParticipant.THIS_GROUP_ID,
-                DeployLifecycleParticipant.THIS_ARTIFACT_ID, null, "profile-a" ) );
+            createPluginAndSetConfig( DeployLifecycleParticipant._THIS_GROUP_ID,
+                DeployLifecycleParticipant._THIS_ARTIFACT_ID, null, "profile-a" ) );
         model.getBuild().getPlugins().add(
-            createPluginAndSetConfig( DeployLifecycleParticipant.THIS_GROUP_ID,
-                DeployLifecycleParticipant.THIS_ARTIFACT_ID, null, "profile-a" ) );
+            createPluginAndSetConfig( DeployLifecycleParticipant._THIS_GROUP_ID,
+                DeployLifecycleParticipant._THIS_ARTIFACT_ID, null, "profile-a" ) );
 
         final MavenSession mockSession = createSessionWithProjectsForModels( model );
 
@@ -319,7 +319,7 @@ public class DeployLifecycleParticipantTest
         {
             // good
             Assert.assertEquals( "The build contains multiple versions of plugin "
-                + DeployLifecycleParticipant.THIS_GROUP_ID + ":" + DeployLifecycleParticipant.THIS_ARTIFACT_ID,
+                + DeployLifecycleParticipant._THIS_GROUP_ID + ":" + DeployLifecycleParticipant._THIS_ARTIFACT_ID,
                 e.getMessage() );
         }
     }
