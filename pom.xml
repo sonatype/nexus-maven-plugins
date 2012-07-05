@@ -88,7 +88,7 @@
     <system>JIRA</system>
     <url>https://issues.sonatype.org/browse/NEXUS</url>
   </issueManagement>
-  
+
   <distributionManagement>
     <site>
       <id>sonatype.org-sites</id>
@@ -349,8 +349,9 @@
               <exclude>**/nb-configuration.xml</exclude>
               <!-- IntelliJ IDEA project directory -->
               <exclude>**/.idea/**</exclude>
-              <!-- The classes in guava package are copied over from com.google.common.eventbus in order to make then extensible (they 
-                are package protected) -->
+              <exclude>**/atlassian-ide-plugin.xml</exclude>
+              <!-- The classes in guava package are copied over from com.google.common.eventbus in order to make then extensible (they
+           are package protected) -->
               <exclude>**/org/sonatype/nexus/eventbus/internal/guava/**</exclude>
             </excludes>
             <mapping>
