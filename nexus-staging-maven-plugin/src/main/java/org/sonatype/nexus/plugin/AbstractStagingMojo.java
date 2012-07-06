@@ -25,6 +25,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Server;
+import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.maven.mojo.execution.MojoExecution;
 import org.sonatype.maven.mojo.logback.LogbackUtils;
 import org.sonatype.maven.mojo.settings.MavenSettings;
@@ -138,12 +139,12 @@ public abstract class AbstractStagingMojo
     private String serverId = "nexus";
 
     /**
-     * The repository "description" to pass to Nexus when repository staging workflow step is made. If none passed a
-     * server side defaults are applied.
+     * The repository "description" to pass to Nexus when repository staging workflow step is made. If none passed in,
+     * plugin defaults are applied.
      * 
      * @parameter expression="${description}"
      */
-    private String description = "Closed by nexus-staging-maven-plugin";
+    private String description;
 
     // == getters for stuff above
 
@@ -160,6 +161,21 @@ public abstract class AbstractStagingMojo
     protected String getDescription()
     {
         return description;
+    }
+
+    protected String getDefaultDescriptionForAction( final String action )
+    {
+        return action + " by " + getPluginGav();
+    }
+
+    protected String getDescriptionWithDefaultsForAction( final String action )
+    {
+        String result = getDescription();
+        if ( StringUtils.isBlank( result ) )
+        {
+            result = getDefaultDescriptionForAction( action );
+        }
+        return result;
     }
 
     protected MavenSession getMavenSession()

@@ -300,7 +300,8 @@ public abstract class AbstractDeployMojo
                 if ( StringUtils.isBlank( stagingRepositoryId ) )
                 {
                     stagingRepositoryId =
-                        stagingService.startStaging( stagingProfile, "Started by " + getPluginGav(), tags );
+                        stagingService.startStaging( stagingProfile, getDescriptionWithDefaultsForAction( "Started" ),
+                            tags );
                     // store the one just created for us, as it means we need to "babysit" it (close or drop, depending
                     // on outcome)
                     managedStagingRepositoryId = stagingRepositoryId;
@@ -353,7 +354,8 @@ public abstract class AbstractDeployMojo
                     if ( successful )
                     {
                         getLog().info( " * Closing staging repository with ID \"" + managedStagingRepositoryId + "\"." );
-                        stagingService.finishStaging( stagingProfile, managedStagingRepositoryId, getDescription() );
+                        stagingService.finishStaging( stagingProfile, managedStagingRepositoryId,
+                            getDescriptionWithDefaultsForAction( "Closed" ) );
                     }
                     else
                     {
@@ -362,7 +364,7 @@ public abstract class AbstractDeployMojo
                             getLog().warn(
                                 "Dropping failed staging repository with ID \"" + managedStagingRepositoryId
                                     + "\" (due to unsuccesful upload)." );
-                            stagingService.dropStagingRepositories( "Dropped by " + getPluginGav()
+                            stagingService.dropStagingRepositories( getDefaultDescriptionForAction( "Dropped" )
                                 + " (due to unsuccesful upload).", managedStagingRepositoryId );
                         }
                         else

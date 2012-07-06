@@ -53,7 +53,7 @@ public class RcPromoteToStageProfileMojo
         getLog().info(
             "RC-Promoting staging repository with IDs=" + getStagingRepositoryIds() + " to build profile ID=\""
                 + getBuildPromotionProfileId() + "\"" );
-        stagingWorkflow.promoteStagingRepositories( getDescription(), getBuildPromotionProfileId(),
-            getStagingRepositoryIds() );
+        stagingWorkflow.promoteStagingRepositories( getDescriptionWithDefaultsForAction( "RC-Promoted" ),
+            getBuildPromotionProfileId(), getStagingRepositoryIds() );
     }
 }

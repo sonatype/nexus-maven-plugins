@@ -31,6 +31,7 @@ public class RcDropStageRepositoryMojo
         throws MojoExecutionException, MojoFailureException
     {
         getLog().info( "RC-Dropping staging repository with IDs=" + getStagingRepositoryIds() );
-        stagingWorkflow.dropStagingRepositories( getDescription(), getStagingRepositoryIds() );
+        stagingWorkflow.dropStagingRepositories( getDescriptionWithDefaultsForAction( "RC-Dropped" ),
+            getStagingRepositoryIds() );
     }
 }

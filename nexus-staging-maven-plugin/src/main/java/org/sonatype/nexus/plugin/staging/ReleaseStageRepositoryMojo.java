@@ -31,6 +31,7 @@ public class ReleaseStageRepositoryMojo
         throws MojoExecutionException, MojoFailureException
     {
         getLog().info( "Releasing staging repository with ID=\"" + getStagingRepositoryId() + "\"" );
-        stagingWorkflow.releaseStagingRepositories( getDescription(), getStagingRepositoryId() );
+        stagingWorkflow.releaseStagingRepositories( getDescriptionWithDefaultsForAction( "Released" ),
+            getStagingRepositoryId() );
     }
 }
