@@ -30,8 +30,8 @@ public class DropStageRepositoryMojo
     public void doExecute( final StagingWorkflowV2Service stagingWorkflow )
         throws MojoExecutionException, MojoFailureException
     {
-        getLog().info( "Dropping staging repository with ID=\"" + getStagingRepositoryId() + "\"" );
+        getLog().info( "Dropping staging repository with IDs=" + getStagingRepositoryIds() );
         stagingWorkflow.dropStagingRepositories( getDescriptionWithDefaultsForAction( "Dropped" ),
-            getStagingRepositoryId() );
+            getStagingRepositoryIds() );
     }
 }

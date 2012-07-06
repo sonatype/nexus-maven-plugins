@@ -51,9 +51,9 @@ public class PromoteToStageProfileMojo
         throws MojoExecutionException, MojoFailureException
     {
         getLog().info(
-            "Promoting staging repository with ID=\"" + getStagingRepositoryId() + "\" to build profile ID=\""
+            "Promoting staging repository with IDs=" + getStagingRepositoryIds() + " to build profile ID=\""
                 + getBuildPromotionProfileId() + "\"" );
         stagingWorkflow.promoteStagingRepositories( getDescriptionWithDefaultsForAction( "Promoted" ),
-            getBuildPromotionProfileId(), getStagingRepositoryId() );
+            getBuildPromotionProfileId(), getStagingRepositoryIds() );
     }
 }

@@ -13,12 +13,10 @@
 package org.sonatype.nexus.plugin.staging;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Properties;
+import java.util.ArrayList;
 
 import org.apache.maven.plugin.MojoExecutionException;
-import org.sonatype.nexus.plugin.deploy.AbstractDeployMojo;
+import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.nexus.plugin.deploy.DeployMojo;
 
 /**
@@ -41,49 +39,49 @@ public abstract class AbstractStagingBuildActionMojo
      */
     private String stagingRepositoryId;
 
-    protected String getStagingRepositoryId()
+    protected String[] getStagingRepositoryIds()
         throws MojoExecutionException
     {
-        String result = null;
+        String[] result = null;
         if ( stagingRepositoryId != null )
         {
             // explicitly configured either via config or CLI, use that
-            result = stagingRepositoryId;
+            result = StringUtils.split( stagingRepositoryId, "," );
         }
         if ( result == null )
         {
-            // try the properties file from the staging folder
-            throw new MojoExecutionException( "BOOO" );
-            /*
-            final File stagingRepositoryPropertiesFile = ;
-                 new File( getStagingDirectory(), AbstractDeployMojo.STAGING_REPOSITORY_PROPERTY_FILE_NAME );
-            // it will exist only if remote staging happened!
-            if ( stagingRepositoryPropertiesFile.isFile() )
+            final ArrayList<String> resultNames = new ArrayList<String>();
+            final File stageRoot = getStagingDirectoryRoot();
+            final File[] localStageRepositories = stageRoot.listFiles();
+            if ( localStageRepositories == null )
             {
-                final Properties stagingRepositoryProperties = new Properties();
-                FileInputStream fis;
-                try
+                getLog().info( "We have nothing locally staged, bailing out." );
+                result = null; // this will fail the build later below
+            }
+            else
+            {
+                for ( File profileDirectory : localStageRepositories )
                 {
-                    fis = new FileInputStream( stagingRepositoryPropertiesFile );
-                    stagingRepositoryProperties.load( fis );
-                    result = stagingRepositoryProperties.getProperty( AbstractDeployMojo.STAGING_REPOSITORY_ID );
+                    if ( !profileDirectory.isDirectory() )
+                    {
+                        continue;
+                    }
+                    final String profileId = profileDirectory.getName();
+                    if ( !DIRECT_UPLOAD.equals( profileId ) )
+                    {
+                        resultNames.add( profileId );
+                    }
                 }
-                catch ( IOException e )
-                {
-                    throw new MojoExecutionException(
-                        "Unexpected IO exception while loading up staging properties from "
-                            + stagingRepositoryPropertiesFile.getAbsolutePath(), e );
-                }
-            }*/
+            }
+            result = resultNames.toArray( new String[resultNames.size()] );
         }
 
         // check did we get any result at all
-        if ( result == null || result.trim().length() == 0 )
+        if ( result == null || result.length == 0 )
         {
             throw new MojoExecutionException(
                 "The staging repository to operate against is not defined! (use \"-DstagingRepositoryId=foo1,foo2\" on CLI)" );
         }
-
         return result;
     }
 
