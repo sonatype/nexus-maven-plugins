@@ -12,6 +12,8 @@
  */
 package org.sonatype.nexus.plugin.staging;
 
+import java.util.Arrays;
+
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.sonatype.nexus.client.staging.StagingWorkflowV2Service;
@@ -51,8 +53,8 @@ public class PromoteToStageProfileMojo
         throws MojoExecutionException, MojoFailureException
     {
         getLog().info(
-            "Promoting staging repository with IDs=" + getStagingRepositoryIds() + " to build profile ID=\""
-                + getBuildPromotionProfileId() + "\"" );
+            "Promoting staging repository with IDs=" + Arrays.toString( getStagingRepositoryIds() )
+                + " to build profile ID=\"" + getBuildPromotionProfileId() + "\"" );
         stagingWorkflow.promoteStagingRepositories( getDescriptionWithDefaultsForAction( "Promoted" ),
             getBuildPromotionProfileId(), getStagingRepositoryIds() );
     }

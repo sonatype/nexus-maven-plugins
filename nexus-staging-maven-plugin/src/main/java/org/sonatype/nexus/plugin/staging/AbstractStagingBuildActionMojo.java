@@ -13,10 +13,14 @@
 package org.sonatype.nexus.plugin.staging;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Properties;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.util.StringUtils;
+import org.sonatype.nexus.plugin.deploy.AbstractDeployMojo;
 import org.sonatype.nexus.plugin.deploy.DeployMojo;
 
 /**
@@ -50,6 +54,7 @@ public abstract class AbstractStagingBuildActionMojo
         }
         if ( result == null )
         {
+            // collect all the repositories we created
             final ArrayList<String> resultNames = new ArrayList<String>();
             final File stageRoot = getStagingDirectoryRoot();
             final File[] localStageRepositories = stageRoot.listFiles();
@@ -62,14 +67,16 @@ public abstract class AbstractStagingBuildActionMojo
             {
                 for ( File profileDirectory : localStageRepositories )
                 {
-                    if ( !profileDirectory.isDirectory() )
+                    if ( !( profileDirectory.isFile() && profileDirectory.getName().endsWith(
+                        AbstractDeployMojo.STAGING_REPOSITORY_PROPERTY_FILE_NAME_SUFFIX ) ) )
                     {
                         continue;
                     }
-                    final String profileId = profileDirectory.getName();
-                    if ( !DIRECT_UPLOAD.equals( profileId ) )
+                    final String managedStagingRepositoryId =
+                        readStagingRepositoryIdFromPropertiesFile( profileDirectory );
+                    if ( managedStagingRepositoryId != null )
                     {
-                        resultNames.add( profileId );
+                        resultNames.add( managedStagingRepositoryId );
                     }
                 }
             }
@@ -83,6 +90,42 @@ public abstract class AbstractStagingBuildActionMojo
                 "The staging repository to operate against is not defined! (use \"-DstagingRepositoryId=foo1,foo2\" on CLI)" );
         }
         return result;
+    }
+
+    protected String readStagingRepositoryIdFromPropertiesFile( final File stagingRepositoryPropertiesFile )
+        throws MojoExecutionException
+    {
+        // it will exist only if remote staging happened!
+        if ( stagingRepositoryPropertiesFile.isFile() )
+        {
+            final Properties stagingRepositoryProperties = new Properties();
+            FileInputStream fis;
+            try
+            {
+                fis = new FileInputStream( stagingRepositoryPropertiesFile );
+                stagingRepositoryProperties.load( fis );
+                final boolean managed =
+                    Boolean.valueOf( stagingRepositoryProperties.getProperty( AbstractDeployMojo.STAGING_REPOSITORY_MANAGED ) );
+                if ( managed )
+                {
+                    return stagingRepositoryProperties.getProperty( AbstractDeployMojo.STAGING_REPOSITORY_ID );
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch ( IOException e )
+            {
+                throw new MojoExecutionException( "Unexpected IO exception while loading up staging properties from "
+                    + stagingRepositoryPropertiesFile.getAbsolutePath(), e );
+            }
+        }
+        else
+        {
+            throw new MojoExecutionException( "Unexpected input: this is not a properties file: "
+                + stagingRepositoryPropertiesFile.getAbsolutePath() );
+        }
     }
 
     /**
