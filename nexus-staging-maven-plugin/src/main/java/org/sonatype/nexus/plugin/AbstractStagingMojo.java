@@ -112,8 +112,10 @@ public abstract class AbstractStagingMojo
     // user supplied parameters (staging related)
 
     /**
-     * Specifies an alternative staging directory to which the project artifacts should be deployed. By default, staging
-     * will happen under {@code /target} folder of the top level module (from where Maven was invoked).
+     * Specifies an alternative staging directory to which the project artifacts should be "locally staged". By default,
+     * staging directory will be looked for under {@code $}{{@code project.build.directory} {@code /nexus-staging}
+     * folder of the first encountered module that has this Mojo defined for execution (Warning: this means, if top
+     * level POM is an aggregator, it will be NOT in top level!).
      * 
      * @parameter expression="${altStagingDirectory}"
      */
