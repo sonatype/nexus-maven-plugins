@@ -266,7 +266,7 @@ public abstract class AbstractStagingMojo
             goal );
     }
 
-    protected File getStagingDirectory()
+    protected File getStagingDirectoryRoot()
     {
         if ( altStagingDirectory != null )
         {
@@ -277,18 +277,15 @@ public abstract class AbstractStagingMojo
             final MavenProject firstWithThisMojo = getFirstProjectWithThisPluginDefined();
             if ( firstWithThisMojo != null )
             {
-                // the target of 1st project having this mojo defined
-                final File firstWithThisMojoBasedir = firstWithThisMojo.getBasedir().getAbsoluteFile();
-
                 final File firstWithThisMojoBuildDir;
                 if ( firstWithThisMojo.getBuild() != null && firstWithThisMojo.getBuild().getDirectory() != null )
                 {
                     firstWithThisMojoBuildDir =
-                        new File( firstWithThisMojoBasedir, firstWithThisMojo.getBuild().getDirectory() ).getAbsoluteFile();
+                        new File( firstWithThisMojo.getBuild().getDirectory() ).getAbsoluteFile();
                 }
                 else
                 {
-                    firstWithThisMojoBuildDir = new File( firstWithThisMojoBasedir, "target" );
+                    firstWithThisMojoBuildDir = new File( firstWithThisMojo.getBasedir().getAbsoluteFile(), "target" );
                 }
                 return new File( firstWithThisMojoBuildDir, "nexus-staging" );
             }
@@ -299,6 +296,20 @@ public abstract class AbstractStagingMojo
                 return new File( getMavenSession().getExecutionRootDirectory() + "/target/nexus-staging" );
             }
         }
+    }
+
+    protected static final String DIRECT_UPLOAD = "NONE";
+
+    protected File getStagingDirectory( final String profileId )
+        throws MojoExecutionException
+    {
+        final File root = getStagingDirectoryRoot();
+        if ( StringUtils.isBlank( profileId ) )
+        {
+            throw new MojoExecutionException(
+                "Internal bug: passed in profileId must be non-null and non-empty string!" );
+        }
+        return new File( root, profileId );
     }
 
     // == TRANSPORT
