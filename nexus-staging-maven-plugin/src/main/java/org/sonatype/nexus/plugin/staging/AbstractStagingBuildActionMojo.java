@@ -53,8 +53,10 @@ public abstract class AbstractStagingBuildActionMojo
         if ( result == null )
         {
             // try the properties file from the staging folder
-            final File stagingRepositoryPropertiesFile =
-                new File( getStagingDirectory(), AbstractDeployMojo.STAGING_REPOSITORY_PROPERTY_FILE_NAME );
+            throw new MojoExecutionException( "BOOO" );
+            /*
+            final File stagingRepositoryPropertiesFile = ;
+                 new File( getStagingDirectory(), AbstractDeployMojo.STAGING_REPOSITORY_PROPERTY_FILE_NAME );
             // it will exist only if remote staging happened!
             if ( stagingRepositoryPropertiesFile.isFile() )
             {
@@ -72,7 +74,7 @@ public abstract class AbstractStagingBuildActionMojo
                         "Unexpected IO exception while loading up staging properties from "
                             + stagingRepositoryPropertiesFile.getAbsolutePath(), e );
                 }
-            }
+            }*/
         }
 
         // check did we get any result at all
