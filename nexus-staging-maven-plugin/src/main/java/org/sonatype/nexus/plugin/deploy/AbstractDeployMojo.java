@@ -15,6 +15,7 @@ package org.sonatype.nexus.plugin.deploy;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -52,7 +53,7 @@ import com.sun.jersey.api.client.UniformInterfaceException;
 public abstract class AbstractDeployMojo
     extends AbstractStagingMojo
 {
-    public static final String STAGING_REPOSITORY_PROPERTY_FILE_NAME = "stagingRepository.properties";
+    public static final String STAGING_REPOSITORY_PROPERTY_FILE_NAME_SUFFIX = ".properties";
 
     public static final String STAGING_REPOSITORY_ID = "stagingRepository.id";
 
@@ -177,11 +178,11 @@ public abstract class AbstractDeployMojo
      * @param localRepository the local repository to install into
      * @throws ArtifactDeploymentException if an error occurred deploying the artifact
      */
-    protected void stageLocally( File source, Artifact artifact, ArtifactRepository stagingRepository,
-                                 ArtifactRepository localRepository )
-        throws ArtifactDeploymentException
+    protected void stageLocally( File source, Artifact artifact, ArtifactRepository localRepository,
+                                 final File stagingDirectory )
+        throws ArtifactDeploymentException, MojoExecutionException
     {
-        deployer.deploy( source, artifact, stagingRepository, localRepository );
+        deployer.deploy( source, artifact, getStagingRepositoryFor( stagingDirectory ), localRepository );
     }
 
     /**
@@ -196,75 +197,113 @@ public abstract class AbstractDeployMojo
     protected void stageRemotely()
         throws ArtifactDeploymentException, MojoExecutionException
     {
-        boolean successful = false;
-        try
+        final File stageRoot = getStagingDirectoryRoot();
+        final File[] localStageRepositories = stageRoot.listFiles();
+        if ( localStageRepositories == null )
         {
-            final String deployUrl = beforeUpload();
-            final ZapperRequest request = new ZapperRequest( getStagingDirectory(), deployUrl );
-
-            final Server server = getServer();
-            if ( server != null )
+            getLog().info( "We have nothing locally staged, bailing out." );
+            return;
+        }
+        for ( File profileDirectory : localStageRepositories )
+        {
+            if ( !profileDirectory.isDirectory() )
             {
-                request.setRemoteUsername( server.getUsername() );
-                request.setRemotePassword( server.getPassword() );
+                continue;
             }
 
-            final Proxy proxy = getProxy();
-            if ( proxy != null )
-            {
-                request.setProxyProtocol( proxy.getProtocol() );
-                request.setProxyHost( proxy.getHost() );
-                request.setProxyPort( proxy.getPort() );
-                request.setProxyUsername( proxy.getUsername() );
-                request.setProxyPassword( proxy.getPassword() );
-            }
+            final String profileId = profileDirectory.getName();
 
-            getLog().info( " * Uploading locally staged artifacts to: " + deployUrl );
-            // Zapper is a bit "chatty", if no Maven debug session is ongoing, then up logback to WARN
-            if ( getLog().isDebugEnabled() )
+            getLog().info( "Uploading locally staged directory: " + profileId );
+
+            if ( DIRECT_UPLOAD.equals( profileId ) )
             {
-                LogbackUtils.syncLogLevelWithMaven( getLog() );
+                try
+                {
+                    // we have normal deploy
+                    zapUp( getStagingDirectory( profileId ), deployUrl );
+                }
+                catch ( IOException e )
+                {
+                    throw new ArtifactDeploymentException( "Cannot deploy!", e );
+                }
             }
             else
             {
-                LogbackUtils.syncLogLevelWithLevel( Level.WARN );
+                // we do staging
+                getLog().info( "Performing staging against Nexus on URL " + getNexusUrl() );
+                final NexusStatus nexusStatus = getNexusClient().getNexusStatus();
+                getLog().info(
+                    String.format( " * Remote Nexus reported itself as version %s and edition \"%s\"",
+                        nexusStatus.getVersion(), nexusStatus.getEditionLong() ) );
+
+                boolean successful = false;
+                final Profile stagingProfile = selectStagingProfileById( profileId );
+                final StagingRepository stagingRepository = beforeUpload( stagingProfile );
+                try
+                {
+                    final String deployUrl = calculateUploadUrl( stagingRepository );
+                    zapUp( getStagingDirectory( profileId ), deployUrl );
+                    successful = true;
+                }
+                catch ( IOException e )
+                {
+                    throw new ArtifactDeploymentException( "Cannot deploy!", e );
+                }
+                finally
+                {
+                    afterUpload( stagingRepository, skipStagingRepositoryClose, successful );
+                }
             }
-            zapper.deployDirectory( request );
+        }
+    }
+
+    protected void zapUp( final File sourceDirectory, final String deployUrl )
+        throws IOException
+    {
+        final ZapperRequest request = new ZapperRequest( sourceDirectory, deployUrl );
+
+        final Server server = getServer();
+        if ( server != null )
+        {
+            request.setRemoteUsername( server.getUsername() );
+            request.setRemotePassword( server.getPassword() );
+        }
+
+        final Proxy proxy = getProxy();
+        if ( proxy != null )
+        {
+            request.setProxyProtocol( proxy.getProtocol() );
+            request.setProxyHost( proxy.getHost() );
+            request.setProxyPort( proxy.getPort() );
+            request.setProxyUsername( proxy.getUsername() );
+            request.setProxyPassword( proxy.getPassword() );
+        }
+
+        getLog().info( " * Uploading locally staged artifacts to: " + deployUrl );
+        // Zapper is a bit "chatty", if no Maven debug session is ongoing, then up logback to WARN
+        if ( getLog().isDebugEnabled() )
+        {
             LogbackUtils.syncLogLevelWithMaven( getLog() );
-            getLog().info( " * Upload of locally staged artifacts done." );
-            successful = true;
         }
-        catch ( IOException e )
+        else
         {
-            throw new ArtifactDeploymentException( "Cannot deploy!", e );
+            LogbackUtils.syncLogLevelWithLevel( Level.WARN );
         }
-        finally
-        {
-            afterUpload( skipStagingRepositoryClose, successful );
-        }
+        zapper.deployDirectory( request );
+        LogbackUtils.syncLogLevelWithMaven( getLog() );
+        getLog().info( " * Upload of locally staged artifacts done." );
     }
 
     // ==
 
-    /**
-     * This is the profile that was either "auto selected" (matched) or selection by ID happened if user provided
-     * {@link #stagingProfileId} parameter.
-     */
-    private Profile stagingProfile;
-
-    /**
-     * This field being non-null means WE manage a staging repository, hence WE must to handle it too (close).
-     */
-    private String managedStagingRepositoryId;
-
-    protected String beforeUpload()
-        throws ArtifactDeploymentException, MojoExecutionException
+    protected String selectStagingProfile()
+        throws MojoExecutionException
     {
         if ( deployUrl != null )
         {
-            getLog().info( "Performing normal upload against URL: " + deployUrl );
+            getLog().info( "Preparing normal deploy against URL: " + deployUrl );
             createTransport( deployUrl );
-            return deployUrl;
+            return DIRECT_UPLOAD;
         }
         else if ( getNexusUrl() != null )
         {
@@ -273,7 +312,7 @@ public abstract class AbstractDeployMojo
                 createTransport( getNexusUrl() );
                 createNexusClient( getServer(), getProxy() );
 
-                getLog().info( "Performing staging against Nexus on URL " + getNexusUrl() );
+                getLog().info( "Preparing staging against Nexus on URL " + getNexusUrl() );
                 final NexusStatus nexusStatus = getNexusClient().getNexusStatus();
                 getLog().info(
                     String.format( " * Remote Nexus reported itself as version %s and edition \"%s\"",
@@ -281,6 +320,7 @@ public abstract class AbstractDeployMojo
                 final StagingWorkflowV2Service stagingService = getStagingWorkflowService();
 
                 final MavenProject currentProject = getMavenSession().getCurrentProject();
+                Profile stagingProfile;
                 // if profile is not "targeted", perform a match and save the result
                 if ( StringUtils.isBlank( stagingProfileId ) )
                 {
@@ -296,55 +336,106 @@ public abstract class AbstractDeployMojo
                     stagingProfile = stagingService.selectProfile( stagingProfileId );
                     getLog().info( " * Using staging profile ID \"" + stagingProfileId + "\" (configured by user)." );
                 }
-
-                if ( StringUtils.isBlank( stagingRepositoryId ) )
-                {
-                    stagingRepositoryId =
-                        stagingService.startStaging( stagingProfile, getDescriptionWithDefaultsForAction( "Started" ),
-                            tags );
-                    // store the one just created for us, as it means we need to "babysit" it (close or drop, depending
-                    // on outcome)
-                    managedStagingRepositoryId = stagingRepositoryId;
-                    if ( tags != null && !tags.isEmpty() )
-                    {
-                        getLog().info(
-                            " * Created staging repository with ID \"" + stagingRepositoryId + "\", applied tags: "
-                                + tags );
-                    }
-                    else
-                    {
-                        getLog().info( " * Created staging repository with ID \"" + stagingRepositoryId + "\"." );
-                    }
-
-                }
-                else
-                {
-                    managedStagingRepositoryId = null;
-                    getLog().info(
-                        " * Using non-managed staging repository with ID \"" + stagingRepositoryId
-                            + "\" (we are NOT managing it)." ); // we will not close it! This might be created by some
-                                                                // other automated component
-                }
-
-                return stagingService.startedRepositoryBaseUrl( stagingProfile, stagingRepositoryId );
+                return stagingProfileId;
             }
             catch ( UniformInterfaceException e )
             {
-                throw new ArtifactDeploymentException( "Staging workflow failure!", e );
+                throw new MojoExecutionException( "Staging workflow failure!", e );
             }
         }
         else
         {
-            throw new ArtifactDeploymentException( "No deploy URL set, nor Nexus BaseURL given!" );
+            throw new MojoExecutionException( "No deploy URL set, nor Nexus BaseURL given!" );
         }
     }
 
-    protected void afterUpload( final boolean skipClose, final boolean successful )
+    /**
+     * Returns the Profile instance selected by ID on remote Nexus.
+     * 
+     * @param stagingProfileId
+     * @return
+     * @throws MojoExecutionException
+     */
+    protected Profile selectStagingProfileById( final String stagingProfileId )
+        throws MojoExecutionException
+    {
+        final StagingWorkflowV2Service stagingService = getStagingWorkflowService();
+        return stagingService.selectProfile( stagingProfileId );
+    }
+
+    protected StagingRepository beforeUpload( final Profile stagingProfile )
+        throws MojoExecutionException
+    {
+        try
+        {
+            final StagingWorkflowV2Service stagingService = getStagingWorkflowService();
+            if ( StringUtils.isBlank( stagingRepositoryId ) )
+            {
+                String createdStagingRepositoryId =
+                    stagingService.startStaging( stagingProfile, getDescriptionWithDefaultsForAction( "Started" ), tags );
+                // store the one just created for us, as it means we need to "babysit" it (close or drop, depending
+                // on outcome)
+                if ( tags != null && !tags.isEmpty() )
+                {
+                    getLog().info(
+                        " * Created staging repository with ID \"" + createdStagingRepositoryId + "\", applied tags: "
+                            + tags );
+                }
+                else
+                {
+                    getLog().info( " * Created staging repository with ID \"" + createdStagingRepositoryId + "\"." );
+                }
+                return new StagingRepository( stagingProfile, createdStagingRepositoryId, true );
+            }
+            else
+            {
+                getLog().info(
+                    " * Using non-managed staging repository with ID \"" + stagingRepositoryId
+                        + "\" (we are NOT managing it)." ); // we will not close it! This might be created by some
+                                                            // other automated component
+                return new StagingRepository( stagingProfile, stagingRepositoryId, false );
+            }
+        }
+        catch ( UniformInterfaceException e )
+        {
+            throw new MojoExecutionException( "Staging workflow failure!", e );
+        }
+    }
+
+    /**
+     * Returns the URL where upload should happen to stage into given profile-repositoryID combination.
+     * 
+     * @param stagingProfile
+     * @param stagingRepositoryId
+     * @return
+     * @throws MojoExecutionException
+     */
+    protected String calculateUploadUrl( final StagingRepository stagingRepository )
+        throws MojoExecutionException
+    {
+        final StagingWorkflowV2Service stagingService = getStagingWorkflowService();
+        return stagingService.startedRepositoryBaseUrl( stagingRepository.getProfile(),
+            stagingRepository.getRepositoryId() );
+    }
+
+    /**
+     * Performs various cleanup after one staging repository is uploaded. Is not called when "normal deploy" is done.
+     * 
+     * @param stagingProfile
+     * @param stagingRepositoryId
+     * @param managed
+     * @param skipClose
+     * @param successful
+     * @throws ArtifactDeploymentException
+     * @throws MojoExecutionException
+     */
+    protected void afterUpload( final StagingRepository stagingRepository, final boolean skipClose,
+                                final boolean successful )
         throws ArtifactDeploymentException, MojoExecutionException
     {
         // in any other case nothing happens
         // by having stagingRepositoryId string non-empty, it means we created it, hence, we are managing it too
-        if ( managedStagingRepositoryId != null )
+        if ( stagingRepository.isManaged() )
         {
             final StagingWorkflowV2Service stagingService = getStagingWorkflowService();
             try
@@ -353,85 +444,81 @@ public abstract class AbstractDeployMojo
                 {
                     if ( successful )
                     {
-                        getLog().info( " * Closing staging repository with ID \"" + managedStagingRepositoryId + "\"." );
-                        stagingService.finishStaging( stagingProfile, managedStagingRepositoryId,
-                            getDescriptionWithDefaultsForAction( "Closed" ) );
+                        getLog().info(
+                            " * Closing staging repository with ID \"" + stagingRepository.getRepositoryId() + "\"." );
+                        stagingService.finishStaging( stagingRepository.getProfile(),
+                            stagingRepository.getRepositoryId(), getDescriptionWithDefaultsForAction( "Closed" ) );
                     }
                     else
                     {
                         if ( !keepStagingRepositoryOnFailure )
                         {
                             getLog().warn(
-                                "Dropping failed staging repository with ID \"" + managedStagingRepositoryId
+                                "Dropping failed staging repository with ID \"" + stagingRepository.getRepositoryId()
                                     + "\" (due to unsuccesful upload)." );
                             stagingService.dropStagingRepositories( getDefaultDescriptionForAction( "Dropped" )
-                                + " (due to unsuccesful upload).", managedStagingRepositoryId );
+                                + " (due to unsuccesful upload).", stagingRepository.getRepositoryId() );
                         }
                         else
                         {
                             getLog().warn(
-                                "Not dropping failed staging repository with ID \"" + managedStagingRepositoryId
-                                    + "\" (due to unsuccesful upload)." );
+                                "Not dropping failed staging repository with ID \""
+                                    + stagingRepository.getRepositoryId() + "\" (due to unsuccesful upload)." );
                         }
                     }
                 }
                 else
                 {
-                    getLog().info( " * Not closing staging repository with ID \"" + managedStagingRepositoryId + "\"." );
+                    getLog().info(
+                        " * Not closing staging repository with ID \"" + stagingRepository.getRepositoryId() + "\"." );
                 }
                 getLog().info( "Finished staging against Nexus " + ( successful ? "with success." : "with failure." ) );
             }
             catch ( UniformInterfaceException e )
             {
                 getLog().error(
-                    "Error while trying to close staging repository with ID \"" + managedStagingRepositoryId + "\"." );
+                    "Error while trying to close staging repository with ID \"" + stagingRepository.getRepositoryId()
+                        + "\"." );
                 throw new ArtifactDeploymentException(
                     "Error after upload while managing staging repository! Staging repository in question is "
-                        + managedStagingRepositoryId, e );
+                        + stagingRepository.getRepositoryId(), e );
             }
         }
 
         if ( successful )
         {
-            // this variable will be filled in only if we really staged: is it targeted repo (someone else created or
-            // not)
-            // does not matter, see managed flag
-            // deployUrl perform "plain deploy", hence this will be no written out, it will be written out in any other
-            // case
-            if ( stagingRepositoryId != null )
+            final String stagingRepositoryUrl =
+                concat( getNexusUrl(), "/content/repositories", stagingRepository.getRepositoryId() );
+
+            final Properties stagingProperties = new Properties();
+            // the staging repository ID where the staging went
+            stagingProperties.put( STAGING_REPOSITORY_ID, stagingRepository.getRepositoryId() );
+            // the staging repository's profile ID where the staging went
+            stagingProperties.put( STAGING_REPOSITORY_PROFILE_ID, stagingRepository.getProfile().getId() );
+            // the staging repository URL (if closed! see below)
+            stagingProperties.put( STAGING_REPOSITORY_URL, stagingRepositoryUrl );
+            // targeted repo mode or not (are we closing it or someone else? If false, the URL above might not yet
+            // exists if not yet closed....
+            stagingProperties.put( STAGING_REPOSITORY_MANAGED, String.valueOf( stagingRepository.isManaged() ) );
+
+            final File stagingPropertiesFile =
+                new File( getStagingDirectoryRoot(), stagingRepository.getProfile().getId()
+                    + STAGING_REPOSITORY_PROPERTY_FILE_NAME_SUFFIX );
+            FileOutputStream fout = null;
+            try
             {
-                final String stagingRepositoryUrl =
-                    concat( getNexusUrl(), "/content/repositories", stagingRepositoryId );
-
-                final Properties stagingProperties = new Properties();
-                // the staging repository ID where the staging went
-                stagingProperties.put( STAGING_REPOSITORY_ID, stagingRepositoryId );
-                // the staging repository's profile ID where the staging went
-                stagingProperties.put( STAGING_REPOSITORY_PROFILE_ID, stagingProfileId );
-                // the staging repository URL (if closed! see below)
-                stagingProperties.put( STAGING_REPOSITORY_URL, stagingRepositoryUrl );
-                // targeted repo mode or not (are we closing it or someone else? If false, the URL above might not yet
-                // exists if not yet closed....
-                stagingProperties.put( STAGING_REPOSITORY_MANAGED, String.valueOf( managedStagingRepositoryId != null ) );
-
-                final File stagingPropertiesFile =
-                    new File( getStagingDirectory(), STAGING_REPOSITORY_PROPERTY_FILE_NAME );
-                FileOutputStream fout = null;
-                try
-                {
-                    fout = new FileOutputStream( stagingPropertiesFile );
-                    stagingProperties.store( fout, "Generated by " + getPluginGav() );
-                    fout.flush();
-                }
-                catch ( IOException e )
-                {
-                    throw new ArtifactDeploymentException( "Error saving staging repository properties to file "
-                        + stagingPropertiesFile, e );
-                }
-                finally
-                {
-                    IOUtil.close( fout );
-                }
+                fout = new FileOutputStream( stagingPropertiesFile );
+                stagingProperties.store( fout, "Generated by " + getPluginGav() );
+                fout.flush();
+            }
+            catch ( IOException e )
+            {
+                throw new ArtifactDeploymentException( "Error saving staging repository properties to file "
+                    + stagingPropertiesFile, e );
+            }
+            finally
+            {
+                IOUtil.close( fout );
             }
         }
         else
@@ -439,6 +526,8 @@ public abstract class AbstractDeployMojo
             getLog().error( "Remote staging was unsuccesful!" );
         }
     }
+
+    // ==
 
     protected String concat( String... paths )
     {
@@ -461,14 +550,14 @@ public abstract class AbstractDeployMojo
     }
 
     protected ArtifactRepository getStagingRepositoryFor( final File stagingDirectory )
-        throws MojoFailureException
+        throws MojoExecutionException
     {
         if ( stagingDirectory != null )
         {
             if ( stagingDirectory.exists() && ( !stagingDirectory.canWrite() || !stagingDirectory.isDirectory() ) )
             {
                 // it exists but is not writable or is not a directory
-                throw new MojoFailureException(
+                throw new MojoExecutionException(
                     "Staging failed: staging directory points to an existing file but is not a directory or is not writable!" );
             }
             else if ( !stagingDirectory.exists() )
@@ -487,13 +576,13 @@ public abstract class AbstractDeployMojo
             }
             catch ( IOException e )
             {
-                throw new MojoFailureException(
+                throw new MojoExecutionException(
                     "Staging failed: staging directory path cannot be converted to canonical one!", e );
             }
         }
         else
         {
-            throw new MojoFailureException( "Staging failed: staging directory is null!" );
+            throw new MojoExecutionException( "Staging failed: staging directory is null!" );
         }
     }
 }

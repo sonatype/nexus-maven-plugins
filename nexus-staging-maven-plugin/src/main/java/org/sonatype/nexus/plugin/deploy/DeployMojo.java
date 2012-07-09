@@ -19,7 +19,6 @@ import java.util.List;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
 import org.apache.maven.artifact.metadata.ArtifactMetadata;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.artifact.ProjectArtifactMetadata;
@@ -101,11 +100,10 @@ public class DeployMojo
             return;
         }
 
-        final File stagingDirectory = getStagingDirectory();
+        final String profileId = selectStagingProfile();
+        final File stagingDirectory = getStagingDirectory( profileId );
 
         getLog().info( "Staging locally (stagingDirectory=\"" + stagingDirectory.getAbsolutePath() + "\")..." );
-
-        final ArtifactRepository repo = getStagingRepositoryFor( stagingDirectory );
 
         // Deploy the POM
         boolean isPomArtifact = "pom".equals( packaging );
@@ -124,7 +122,7 @@ public class DeployMojo
         {
             if ( isPomArtifact )
             {
-                stageLocally( pomFile, artifact, repo, getLocalRepository() );
+                stageLocally( pomFile, artifact, getLocalRepository(), stagingDirectory );
             }
             else
             {
@@ -132,7 +130,7 @@ public class DeployMojo
 
                 if ( file != null && file.isFile() )
                 {
-                    stageLocally( file, artifact, repo, getLocalRepository() );
+                    stageLocally( file, artifact, getLocalRepository(), stagingDirectory );
                 }
                 else if ( !attachedArtifacts.isEmpty() )
                 {
@@ -147,7 +145,7 @@ public class DeployMojo
                         pomArtifact.setRelease( true );
                     }
 
-                    stageLocally( pomFile, pomArtifact, repo, getLocalRepository() );
+                    stageLocally( pomFile, pomArtifact, getLocalRepository(), stagingDirectory );
 
                     // propagate the timestamped version to the main artifact for the attached artifacts to pick it up
                     artifact.setResolvedVersion( pomArtifact.getVersion() );
@@ -162,7 +160,7 @@ public class DeployMojo
             for ( Iterator<Artifact> i = attachedArtifacts.iterator(); i.hasNext(); )
             {
                 Artifact attached = i.next();
-                stageLocally( attached.getFile(), attached, repo, getLocalRepository() );
+                stageLocally( attached.getFile(), attached, getLocalRepository(), stagingDirectory );
             }
         }
         catch ( ArtifactDeploymentException e )

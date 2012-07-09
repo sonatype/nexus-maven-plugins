@@ -12,6 +12,8 @@
  */
 package org.sonatype.nexus.plugin.staging;
 
+import java.util.Arrays;
+
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.sonatype.nexus.client.staging.StagingWorkflowV2Service;
@@ -30,8 +32,8 @@ public class ReleaseStageRepositoryMojo
     public void doExecute( final StagingWorkflowV2Service stagingWorkflow )
         throws MojoExecutionException, MojoFailureException
     {
-        getLog().info( "Releasing staging repository with ID=\"" + getStagingRepositoryId() + "\"" );
+        getLog().info( "Releasing staging repository with IDs=" + Arrays.toString( getStagingRepositoryIds() ) );
         stagingWorkflow.releaseStagingRepositories( getDescriptionWithDefaultsForAction( "Released" ),
-            getStagingRepositoryId() );
+            getStagingRepositoryIds() );
     }
 }
