@@ -36,11 +36,11 @@ import org.sonatype.nexus.client.rest.Protocol;
 import org.sonatype.nexus.client.rest.ProxyInfo;
 import org.sonatype.nexus.client.rest.UsernamePasswordAuthenticationInfo;
 import org.sonatype.nexus.client.rest.jersey.JerseyNexusClientFactory;
-import org.sonatype.nexus.client.staging.StagingWorkflowV2Service;
-import org.sonatype.nexus.client.staging.rest.JerseyStagingWorkflowV2SubsystemFactory;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
 
+import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
+import com.sonatype.nexus.staging.client.rest.JerseyStagingWorkflowV2SubsystemFactory;
 import com.sun.jersey.api.client.UniformInterfaceException;
 
 public abstract class AbstractStagingMojo

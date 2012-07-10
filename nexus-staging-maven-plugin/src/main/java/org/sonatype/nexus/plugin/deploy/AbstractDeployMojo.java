@@ -33,13 +33,13 @@ import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.maven.mojo.logback.LogbackUtils;
 import org.sonatype.nexus.client.core.NexusStatus;
-import org.sonatype.nexus.client.staging.Profile;
-import org.sonatype.nexus.client.staging.ProfileMatchingParameters;
-import org.sonatype.nexus.client.staging.StagingWorkflowV2Service;
 import org.sonatype.nexus.plugin.AbstractStagingMojo;
 
 import ch.qos.logback.classic.Level;
 
+import com.sonatype.nexus.staging.client.Profile;
+import com.sonatype.nexus.staging.client.ProfileMatchingParameters;
+import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 import com.sun.jersey.api.client.UniformInterfaceException;
 
 /**

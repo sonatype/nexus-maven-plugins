@@ -14,9 +14,9 @@ package org.sonatype.nexus.plugin.staging;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.sonatype.nexus.client.staging.StagingWorkflowV2Service;
 import org.sonatype.nexus.plugin.AbstractStagingMojo;
 
+import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 import com.sun.jersey.api.client.UniformInterfaceException;
 
 /**

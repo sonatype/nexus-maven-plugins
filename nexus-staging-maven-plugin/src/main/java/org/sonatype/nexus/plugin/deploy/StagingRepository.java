@@ -1,6 +1,6 @@
 package org.sonatype.nexus.plugin.deploy;
 
-import org.sonatype.nexus.client.staging.Profile;
+import com.sonatype.nexus.staging.client.Profile;
 
 public class StagingRepository
 {
