@@ -34,7 +34,7 @@
     <dependency>
       <groupId>org.sonatype.maven</groupId>
       <artifactId>mojo-commons</artifactId>
-      <version>1.1-SNAPSHOT</version>
+      <version>1.1</version>
     </dependency>
 
     <!-- Nexus Client Core. Has to be specified as transitive dependencies of Nexus Staging Client will not be
@@ -78,7 +78,7 @@
     <dependency>
       <groupId>org.sonatype.spice.zapper</groupId>
       <artifactId>spice-zapper</artifactId>
-      <version>1.1-SNAPSHOT</version>
+      <version>1.1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
