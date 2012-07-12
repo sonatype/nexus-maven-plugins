@@ -42,6 +42,7 @@
       <groupId>com.sonatype.nexus.staging</groupId>
       <artifactId>nexus-staging-client</artifactId>
       <version>2.1-SNAPSHOT</version>
+      <optional>true</optional>
     </dependency>
     
     <!-- Logging -->
@@ -262,6 +263,8 @@
                 <includes>
                   <include>org.sonatype.plexus:plexus-sec-dispatcher</include>
                   <include>org.sonatype.plexus:plexus-cipher</include>
+                  <include>com.sonatype.nexus.staging:nexus-staging-model</include>
+                  <include>com.sonatype.nexus.staging:nexus-staging-client</include>
                 </includes>
               </artifactSet>
               <relocations>
