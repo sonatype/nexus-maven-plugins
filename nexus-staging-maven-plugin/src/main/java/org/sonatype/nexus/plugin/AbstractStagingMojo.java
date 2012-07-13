@@ -114,7 +114,7 @@ public abstract class AbstractStagingMojo
 
     /**
      * Specifies an alternative staging directory to which the project artifacts should be "locally staged". By default,
-     * staging directory will be looked for under {@code $}{{@code project.build.directory}}{@code /nexus-staging}
+     * staging directory will be looked for under {@code $}{{@code project.build.directory} {@code /nexus-staging}
      * folder of the first encountered module that has this Mojo defined for execution (Warning: this means, if top
      * level POM is an aggregator, it will be NOT in top level!).
      * 
@@ -346,7 +346,7 @@ public abstract class AbstractStagingMojo
                 if ( server != null )
                 {
                     this.server = MavenSettings.decrypt( getSecDispatcher(), server );
-                    getLog().debug( "Using server credentials with ID \"" + getServerId() + "\"." );
+                    getLog().info( "Using server credentials with ID=\"" + getServerId() + "\" from Maven settings." );
                 }
                 else
                 {
@@ -363,7 +363,9 @@ public abstract class AbstractStagingMojo
             if ( proxy != null )
             {
                 this.proxy = MavenSettings.decrypt( getSecDispatcher(), proxy );
-                getLog().info( "Using configured Proxy from Maven settings." );
+                getLog().info(
+                    "Using " + proxy.getProtocol().toUpperCase() + " Proxy with ID=\"" + proxy.getId()
+                        + "\" from Maven settings." );
             }
         }
         catch ( SecDispatcherException e )
