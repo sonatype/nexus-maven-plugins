@@ -429,7 +429,7 @@ public abstract class AbstractStagingMojo
                     proxyAuthentication = null;
                 }
                 final ProxyInfo zProxy =
-                    new ProxyInfo( Protocol.valueOf( proxy.getProtocol().toLowerCase() ), proxy.getHost(),
+                    new ProxyInfo( Protocol.valueOf( proxy.getProtocol().toUpperCase() ), proxy.getHost(),
                         proxy.getPort(), proxyAuthentication );
                 proxyInfos.put( zProxy.getProxyProtocol(), zProxy );
             }
