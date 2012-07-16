@@ -12,12 +12,15 @@
  */
 package org.sonatype.nexus.plugin.staging;
 
+import java.io.PrintWriter;
+
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.sonatype.nexus.client.core.NexusErrorMessageException;
 import org.sonatype.nexus.plugin.AbstractStagingMojo;
 
+import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
-import com.sun.jersey.api.client.UniformInterfaceException;
 
 /**
  * Super class of non-RC Actions. These mojos are "plain" non-aggregator ones, and will use the property file from
@@ -45,13 +48,17 @@ public abstract class AbstractStagingActionMojo
             {
                 doExecute( stagingWorkflow );
             }
-            catch ( UniformInterfaceException e )
+            catch ( NexusErrorMessageException e )
             {
-                // dump the response until no smarter error handling
-                getLog().error( e.getResponse().getEntity( String.class ) );
+                NexusErrorMessageException.dumpErrors( new PrintWriter( System.out, true ), e );
                 // fail the build
-                throw new MojoExecutionException( "Could not perform action: "
-                    + e.getResponse().getClientResponseStatus().getReasonPhrase(), e );
+                throw new MojoExecutionException( "Could not perform action: Nexus ErrorResponse received!", e );
+            }
+            catch ( StagingRuleFailuresException e )
+            {
+                StagingRuleFailuresException.dumpErrors( new PrintWriter( System.out, true ), e );
+                // fail the build
+                throw new MojoExecutionException( "Could not perform action: there are failing staging rules!", e );
             }
         }
     }
