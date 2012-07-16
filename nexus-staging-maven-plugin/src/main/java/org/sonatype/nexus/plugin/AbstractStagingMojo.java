@@ -41,6 +41,7 @@ import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
 
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 import com.sonatype.nexus.staging.client.rest.JerseyStagingWorkflowV2SubsystemFactory;
+import com.sun.jersey.api.client.UniformInterfaceException;
 
 public abstract class AbstractStagingMojo
     extends AbstractMojo
@@ -444,6 +445,10 @@ public abstract class AbstractStagingMojo
         catch ( MalformedURLException e )
         {
             throw new MojoExecutionException( "Malformed Nexus base URL!", e );
+        }
+        catch ( UniformInterfaceException e )
+        {
+            throw new MojoExecutionException( "Nexus base URL does not point to a valid Nexus location: " + e.getMessage(), e );
         }
         catch ( Exception e )
         {
