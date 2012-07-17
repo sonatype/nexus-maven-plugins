@@ -12,12 +12,11 @@
  */
 package org.sonatype.nexus.plugin.staging;
 
-import java.io.PrintWriter;
-
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.sonatype.nexus.client.core.NexusErrorMessageException;
 import org.sonatype.nexus.plugin.AbstractStagingMojo;
+import org.sonatype.nexus.plugin.ErrorDumper;
 
 import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
@@ -50,13 +49,13 @@ public abstract class AbstractStagingActionMojo
             }
             catch ( NexusErrorMessageException e )
             {
-                NexusErrorMessageException.dumpErrors( new PrintWriter( System.out, true ), e );
+                ErrorDumper.dumpErrors( getLog(), e );
                 // fail the build
                 throw new MojoExecutionException( "Could not perform action: Nexus ErrorResponse received!", e );
             }
             catch ( StagingRuleFailuresException e )
             {
-                StagingRuleFailuresException.dumpErrors( new PrintWriter( System.out, true ), e );
+                ErrorDumper.dumpErrors( getLog(), e );
                 // fail the build
                 throw new MojoExecutionException( "Could not perform action: there are failing staging rules!", e );
             }

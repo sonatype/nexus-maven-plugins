@@ -15,7 +15,6 @@ package org.sonatype.nexus.plugin.deploy;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Map;
 import java.util.Properties;
 
@@ -36,6 +35,7 @@ import org.sonatype.maven.mojo.logback.LogbackUtils;
 import org.sonatype.nexus.client.core.NexusErrorMessageException;
 import org.sonatype.nexus.client.core.NexusStatus;
 import org.sonatype.nexus.plugin.AbstractStagingMojo;
+import org.sonatype.nexus.plugin.ErrorDumper;
 
 import ch.qos.logback.classic.Level;
 
@@ -342,7 +342,7 @@ public abstract class AbstractDeployMojo
             }
             catch ( NexusErrorMessageException e )
             {
-                NexusErrorMessageException.dumpErrors( new PrintWriter( System.out, true ), e );
+                ErrorDumper.dumpErrors( getLog(), e );
                 // fail the build
                 throw new MojoExecutionException( "Could not perform action: Nexus ErrorResponse received!", e );
             }
@@ -402,7 +402,7 @@ public abstract class AbstractDeployMojo
         }
         catch ( NexusErrorMessageException e )
         {
-            NexusErrorMessageException.dumpErrors( new PrintWriter( System.out, true ), e );
+            ErrorDumper.dumpErrors( getLog(), e );
             // fail the build
             throw new MojoExecutionException( "Could not perform action: Nexus ErrorResponse received!", e );
         }
@@ -485,7 +485,7 @@ public abstract class AbstractDeployMojo
                 getLog().error(
                     "Error while trying to close staging repository with ID \"" + stagingRepository.getRepositoryId()
                         + "\"." );
-                NexusErrorMessageException.dumpErrors( new PrintWriter( System.out, true ), e );
+                ErrorDumper.dumpErrors( getLog(), e );
                 // fail the build
                 throw new MojoExecutionException( "Could not perform action against repository \""
                     + stagingRepository.getRepositoryId() + "\": Nexus ErrorResponse received!", e );
@@ -495,7 +495,7 @@ public abstract class AbstractDeployMojo
                 getLog().error(
                     "Error while trying to close staging repository with ID \"" + stagingRepository.getRepositoryId()
                         + "\"." );
-                StagingRuleFailuresException.dumpErrors( new PrintWriter( System.out, true ), e );
+                ErrorDumper.dumpErrors( getLog(), e );
                 // fail the build
                 throw new MojoExecutionException( "Could not perform action against repository \""
                     + stagingRepository.getRepositoryId() + "\": there are failing staging rules!", e );
