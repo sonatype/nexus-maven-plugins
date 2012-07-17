@@ -32,15 +32,19 @@ import org.apache.maven.settings.Server;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.maven.mojo.logback.LogbackUtils;
+import org.sonatype.nexus.client.core.NexusErrorMessageException;
 import org.sonatype.nexus.client.core.NexusStatus;
 import org.sonatype.nexus.plugin.AbstractStagingMojo;
+import org.sonatype.nexus.plugin.ErrorDumper;
 
 import ch.qos.logback.classic.Level;
 
 import com.sonatype.nexus.staging.client.Profile;
 import com.sonatype.nexus.staging.client.ProfileMatchingParameters;
+import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
-import com.sun.jersey.api.client.UniformInterfaceException;
+
+//import com.sun.jersey.api.client.UniformInterfaceException;
 
 /**
  * Abstract class for deploy related mojos.
@@ -336,9 +340,11 @@ public abstract class AbstractDeployMojo
                 }
                 return stagingProfileId;
             }
-            catch ( UniformInterfaceException e )
+            catch ( NexusErrorMessageException e )
             {
-                throw new MojoExecutionException( "Staging workflow failure!", e );
+                ErrorDumper.dumpErrors( getLog(), e );
+                // fail the build
+                throw new MojoExecutionException( "Could not perform action: Nexus ErrorResponse received!", e );
             }
         }
         else
@@ -394,9 +400,11 @@ public abstract class AbstractDeployMojo
                 return new StagingRepository( stagingProfile, stagingRepositoryId, false );
             }
         }
-        catch ( UniformInterfaceException e )
+        catch ( NexusErrorMessageException e )
         {
-            throw new MojoExecutionException( "Staging workflow failure!", e );
+            ErrorDumper.dumpErrors( getLog(), e );
+            // fail the build
+            throw new MojoExecutionException( "Could not perform action: Nexus ErrorResponse received!", e );
         }
     }
 
@@ -509,14 +517,25 @@ public abstract class AbstractDeployMojo
                 }
                 getLog().info( "Finished staging against Nexus " + ( successful ? "with success." : "with failure." ) );
             }
-            catch ( UniformInterfaceException e )
+            catch ( NexusErrorMessageException e )
             {
                 getLog().error(
                     "Error while trying to close staging repository with ID \"" + stagingRepository.getRepositoryId()
                         + "\"." );
-                throw new ArtifactDeploymentException(
-                    "Error after upload while managing staging repository! Staging repository in question is "
-                        + stagingRepository.getRepositoryId(), e );
+                ErrorDumper.dumpErrors( getLog(), e );
+                // fail the build
+                throw new MojoExecutionException( "Could not perform action against repository \""
+                    + stagingRepository.getRepositoryId() + "\": Nexus ErrorResponse received!", e );
+            }
+            catch ( StagingRuleFailuresException e )
+            {
+                getLog().error(
+                    "Error while trying to close staging repository with ID \"" + stagingRepository.getRepositoryId()
+                        + "\"." );
+                ErrorDumper.dumpErrors( getLog(), e );
+                // fail the build
+                throw new MojoExecutionException( "Could not perform action against repository \""
+                    + stagingRepository.getRepositoryId() + "\": there are failing staging rules!", e );
             }
         }
 
