@@ -487,7 +487,7 @@ public abstract class AbstractDeployMojo
                         + "\"." );
                 NexusErrorMessageException.dumpErrors( new PrintWriter( System.out, true ), e );
                 // fail the build
-                throw new MojoExecutionException( "Could not perform action agains repository \""
+                throw new MojoExecutionException( "Could not perform action against repository \""
                     + stagingRepository.getRepositoryId() + "\": Nexus ErrorResponse received!", e );
             }
             catch ( StagingRuleFailuresException e )
@@ -497,7 +497,7 @@ public abstract class AbstractDeployMojo
                         + "\"." );
                 StagingRuleFailuresException.dumpErrors( new PrintWriter( System.out, true ), e );
                 // fail the build
-                throw new MojoExecutionException( "Could not perform  action agains repository \""
+                throw new MojoExecutionException( "Could not perform  action against repository \""
                     + stagingRepository.getRepositoryId() + "\": there are failing staging rules!", e );
             }
         }
