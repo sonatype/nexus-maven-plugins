@@ -448,8 +448,11 @@ public abstract class AbstractStagingMojo
         }
         catch ( UniformInterfaceException e )
         {
-            throw new MojoExecutionException(
-                "Malformed Nexus base URL or it does not points to a valid Nexus location !", e );
+            throw new MojoExecutionException( "Nexus base URL does not point to a valid Nexus location: " + e.getMessage(), e );
+        }
+        catch ( Exception e )
+        {
+            throw new MojoExecutionException( "Nexus connection problem: " + e.getMessage(), e );
         }
     }
 
