@@ -38,7 +38,7 @@ Add the following to any parent pom ( not aggregator ) of your project to be bui
           <plugin>
             <groupId>org.sonatype.plugins</groupId>
             <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>2.1-SNAPSHOT</version>
+            <version>1.0-SNAPSHOT</version>
             <executions>
               <execution>
                 <id>default-deploy</id>
@@ -78,7 +78,7 @@ Add the following to any parent pom ( not aggregator ) of your project to be bui
           <plugin>
             <groupId>org.sonatype.plugins</groupId>
             <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>2.1-SNAPSHOT</version>
+            <version>1.0-SNAPSHOT</version>
             <extensions>true</extensions>
             <configuration>
               <serverId>local-nexus</serverId>
@@ -124,7 +124,7 @@ Example snippet of having the plugin in a Profile:
 					<plugin>
 						<groupId>org.sonatype.plugins</groupId>
 						<artifactId>nexus-staging-maven-plugin</artifactId>
-						<version>2.1-SNAPSHOT</version>
+						<version>1.0-SNAPSHOT</version>
 						<extensions>true</extensions>
 						<configuration>
 							<nexusUrl>http://localhost:8081/nexus/</nexusUrl>
@@ -191,7 +191,7 @@ Example snippet of having the plugin in a Profile:
 					<plugin>
 						<groupId>org.sonatype.plugins</groupId>
 						<artifactId>nexus-staging-maven-plugin</artifactId>
-						<version>2.1-SNAPSHOT</version>
+						<version>1.0-SNAPSHOT</version>
 						<executions>
 							<execution>
 								<id>default-deploy</id>
