@@ -10,7 +10,7 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.nexus.plugin.staging;
+package org.sonatype.nexus.maven.staging.staging;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,8 +20,8 @@ import java.util.Properties;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.util.StringUtils;
-import org.sonatype.nexus.plugin.deploy.AbstractDeployMojo;
-import org.sonatype.nexus.plugin.deploy.DeployMojo;
+import org.sonatype.nexus.maven.staging.deploy.AbstractDeployMojo;
+import org.sonatype.nexus.maven.staging.deploy.DeployMojo;
 
 /**
  * Super class for "non RC" mojos, that are usable from within the build (if you want more than default V2 actions to

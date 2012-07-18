@@ -1,4 +1,4 @@
-package org.sonatype.nexus.plugin.deploy;
+package org.sonatype.nexus.maven.staging.deploy;
 
 import com.sonatype.nexus.staging.client.Profile;
 

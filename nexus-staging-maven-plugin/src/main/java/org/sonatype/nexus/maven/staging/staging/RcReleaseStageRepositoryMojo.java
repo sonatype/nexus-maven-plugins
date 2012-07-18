@@ -10,43 +10,30 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.nexus.plugin.deploy;
+package org.sonatype.nexus.maven.staging.staging;
 
-import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
+import java.util.Arrays;
+
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
 /**
- * Deploys the (previously) locally staged artifacts.
+ * Releases a single closed Nexus staging repository into a permanent Nexus repository for general consumption.
  * 
- * @author cstamas
- * @since 2.1
- * @goal deploy-staged
+ * @goal rc-release
+ * @requiresProject false
+ * @requiresDirectInvocation true
  */
-public class DeployStagedMojo
-    extends AbstractDeployMojo
+public class RcReleaseStageRepositoryMojo
+    extends AbstractStagingRcActionMojo
 {
     @Override
-    public void execute()
+    public void doExecute( final StagingWorkflowV2Service stagingWorkflow )
         throws MojoExecutionException, MojoFailureException
     {
-        if ( isThisLastProjectWithThisMojoInExecution() )
-        {
-            failIfOffline();
-
-            try
-            {
-                getLog().info( "Staging remotely..." );
-                stageRemotely();
-            }
-            catch ( ArtifactDeploymentException e )
-            {
-                throw new MojoExecutionException( e.getMessage(), e );
-            }
-        }
-        else
-        {
-            getLog().info( "Execution skipped to the last project..." );
-        }
+        getLog().info( "RC-Releasing staging repository with IDs=" + Arrays.toString( getStagingRepositoryIds() ) );
+        stagingWorkflow.releaseStagingRepositories( getDescriptionWithDefaultsForAction( "RC-Released" ),
+            getStagingRepositoryIds() );
     }
 }

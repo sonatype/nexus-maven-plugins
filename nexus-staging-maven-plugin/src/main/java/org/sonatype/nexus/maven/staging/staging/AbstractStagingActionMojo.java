@@ -10,13 +10,13 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.nexus.plugin.staging;
+package org.sonatype.nexus.maven.staging.staging;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.sonatype.nexus.client.core.NexusErrorMessageException;
-import org.sonatype.nexus.plugin.AbstractStagingMojo;
-import org.sonatype.nexus.plugin.ErrorDumper;
+import org.sonatype.nexus.maven.staging.AbstractStagingMojo;
+import org.sonatype.nexus.maven.staging.ErrorDumper;
 
 import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;

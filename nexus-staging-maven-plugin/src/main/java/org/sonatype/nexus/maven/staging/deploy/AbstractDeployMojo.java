@@ -10,7 +10,7 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.nexus.plugin.deploy;
+package org.sonatype.nexus.maven.staging.deploy;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -34,8 +34,8 @@ import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.maven.mojo.logback.LogbackUtils;
 import org.sonatype.nexus.client.core.NexusErrorMessageException;
 import org.sonatype.nexus.client.core.NexusStatus;
-import org.sonatype.nexus.plugin.AbstractStagingMojo;
-import org.sonatype.nexus.plugin.ErrorDumper;
+import org.sonatype.nexus.maven.staging.AbstractStagingMojo;
+import org.sonatype.nexus.maven.staging.ErrorDumper;
 
 import ch.qos.logback.classic.Level;
 
@@ -96,7 +96,7 @@ public abstract class AbstractDeployMojo
     /**
      * Map that contains the layouts.
      * 
-     * @component role="org.sonatype.nexus.plugin.deploy.Zapper" hint="default"
+     * @component role="org.sonatype.nexus.maven.staging.deploy.Zapper" hint="default"
      */
     private Zapper zapper;
 

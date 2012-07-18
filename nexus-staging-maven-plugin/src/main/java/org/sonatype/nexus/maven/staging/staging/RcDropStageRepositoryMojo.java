@@ -10,7 +10,7 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.nexus.plugin.staging;
+package org.sonatype.nexus.maven.staging.staging;
 
 import java.util.Arrays;
 
@@ -19,43 +19,21 @@ import org.apache.maven.plugin.MojoFailureException;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
 /**
- * Promotes a closed Nexus staging repository into a Nexus Build Promotion Profile.
+ * Drops a Nexus staging repository that is either open or closed.
  * 
- * @goal rc-promote
+ * @goal rc-drop
  * @requiresProject false
  * @requiresDirectInvocation true
  */
-public class RcPromoteToStageProfileMojo
+public class RcDropStageRepositoryMojo
     extends AbstractStagingRcActionMojo
 {
-    /**
-     * Specifies the staging build promotion profile ID on remote Nexus where to promotion happens. If not specified,
-     * goal will fail.
-     * 
-     * @parameter expression="${buildPromotionProfileId}"
-     */
-    private String buildPromotionProfileId;
-
-    protected String getBuildPromotionProfileId()
-        throws MojoExecutionException
-    {
-        if ( buildPromotionProfileId == null )
-        {
-            throw new MojoExecutionException(
-                "The staging staging build promotion profile ID to promote to is not defined! (use \"-DbuildPromotionProfileId=foo\" on CLI)" );
-        }
-
-        return buildPromotionProfileId;
-    }
-
     @Override
     public void doExecute( final StagingWorkflowV2Service stagingWorkflow )
         throws MojoExecutionException, MojoFailureException
     {
-        getLog().info(
-            "RC-Promoting staging repository with IDs=" + Arrays.toString( getStagingRepositoryIds() ) + " to build profile ID=\""
-                + getBuildPromotionProfileId() + "\"" );
-        stagingWorkflow.promoteStagingRepositories( getDescriptionWithDefaultsForAction( "RC-Promoted" ),
-            getBuildPromotionProfileId(), getStagingRepositoryIds() );
+        getLog().info( "RC-Dropping staging repository with IDs=" + Arrays.toString( getStagingRepositoryIds() ) );
+        stagingWorkflow.dropStagingRepositories( getDescriptionWithDefaultsForAction( "RC-Dropped" ),
+            getStagingRepositoryIds() );
     }
 }

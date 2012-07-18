@@ -10,7 +10,7 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.nexus.plugin.deploy;
+package org.sonatype.nexus.maven.staging.deploy;
 
 import java.util.List;
 
@@ -36,7 +36,7 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
  * 
  * @author cstamas
  */
-@Component( role = AbstractMavenLifecycleParticipant.class, hint = "org.sonatype.nexus.plugin.deploy.DeployLifecycleParticipant" )
+@Component( role = AbstractMavenLifecycleParticipant.class, hint = "org.sonatype.nexus.maven.staging.deploy.DeployLifecycleParticipant" )
 public class DeployLifecycleParticipant
     extends AbstractMavenLifecycleParticipant
     implements LogEnabled

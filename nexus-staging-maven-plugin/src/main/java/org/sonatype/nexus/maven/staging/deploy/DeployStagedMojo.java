@@ -10,30 +10,43 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.nexus.plugin.staging;
+package org.sonatype.nexus.maven.staging.deploy;
 
-import java.util.Arrays;
-
+import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
 /**
- * Closes a Nexus staging repository.
+ * Deploys the (previously) locally staged artifacts.
  * 
- * @goal rc-close
- * @requiresProject false
- * @requiresDirectInvocation true
+ * @author cstamas
+ * @since 2.1
+ * @goal deploy-staged
  */
-public class RcCloseStageRepositoryMojo
-    extends AbstractStagingRcActionMojo
+public class DeployStagedMojo
+    extends AbstractDeployMojo
 {
     @Override
-    public void doExecute( final StagingWorkflowV2Service stagingWorkflow )
+    public void execute()
         throws MojoExecutionException, MojoFailureException
     {
-        getLog().info( "RC-Closing staging repository with IDs=" + Arrays.toString( getStagingRepositoryIds() ) );
-        stagingWorkflow.finishStagingRepositories( getDescriptionWithDefaultsForAction( "RC-Closed" ),
-            getStagingRepositoryIds() );
+        if ( isThisLastProjectWithThisMojoInExecution() )
+        {
+            failIfOffline();
+
+            try
+            {
+                getLog().info( "Staging remotely..." );
+                stageRemotely();
+            }
+            catch ( ArtifactDeploymentException e )
+            {
+                throw new MojoExecutionException( e.getMessage(), e );
+            }
+        }
+        else
+        {
+            getLog().info( "Execution skipped to the last project..." );
+        }
     }
 }

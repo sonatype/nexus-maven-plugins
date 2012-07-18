@@ -10,30 +10,18 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.nexus.plugin.staging;
+package org.sonatype.nexus.maven.staging.deploy;
 
-import java.util.Arrays;
-
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
+import java.io.IOException;
 
 /**
- * Closes a Nexus staging repository.
+ * Zapper encapsulating component.
  * 
  * @author cstamas
  * @since 2.1
- * @goal close
  */
-public class CloseStageRepositoryMojo
-    extends AbstractStagingBuildActionMojo
+public interface Zapper
 {
-    @Override
-    public void doExecute( final StagingWorkflowV2Service stagingWorkflow )
-        throws MojoExecutionException, MojoFailureException
-    {
-        getLog().info( "Closing staging repository with IDs=" + Arrays.toString( getStagingRepositoryIds() ) );
-        stagingWorkflow.finishStagingRepositories( getDescriptionWithDefaultsForAction( "Closed" ),
-            getStagingRepositoryIds() );
-    }
+    void deployDirectory( ZapperRequest zapperRequest )
+        throws IOException;
 }
