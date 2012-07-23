@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (c) 2008-2012 Sonatype, Inc.
+
+    All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/pro/attributions
+    Sonatype and Sonatype Nexus are trademarks of Sonatype, Inc. Apache Maven is a trademark of the Apache Foundation.
+    M2Eclipse is a trademark of the Eclipse Foundation. All other trademarks are the property of their respective owners.
+
+-->
+<configuration debug="false">
+
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <target>System.out</target>
+    <encoder>
+      <pattern>%level [%thread%X{DC}] %logger - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <logger name="com.sonatype.nexus.usertoken" level="DEBUG"/>
+
+  <logger name="org.apache.commons.httpclient" level="WARN"/>
+  <logger name="org.apache.http" level="INFO"/>
+
+  <root level="${test.log.level:-INFO}">
+    <appender-ref ref="CONSOLE"/>
+  </root>
+
+</configuration>

@@ -105,6 +105,7 @@
 
   <modules>
     <module>nexus-staging-maven-plugin</module>
+    <module>nexus-staging-maven-plugin-its</module>
     <!--module>nexus-settings-maven-plugin</module -->
   </modules>
 

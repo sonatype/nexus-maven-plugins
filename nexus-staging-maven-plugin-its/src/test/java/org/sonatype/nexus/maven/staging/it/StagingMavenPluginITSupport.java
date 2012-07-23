@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.inject.Inject;
 
@@ -37,6 +38,11 @@ import com.google.inject.Binder;
 import com.google.inject.name.Names;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
+/**
+ * A base class that gets and prepares given version of Maven. Also, it creates Verifier for it.
+ * 
+ * @author cstamas
+ */
 @NexusStartAndStopStrategy( Strategy.EACH_TEST )
 public abstract class StagingMavenPluginITSupport
     extends NexusRunningITSupport
@@ -82,6 +88,10 @@ public abstract class StagingMavenPluginITSupport
 
     private final Map<String, File> mavenHomes = new LinkedHashMap<String, File>();
 
+    public static final String M2_VERSION = "2.2.1";
+
+    public static final String M3_VERSION = "3.0.4";
+
     /**
      * Override this method to have other than default versions involved.
      * 
@@ -89,7 +99,7 @@ public abstract class StagingMavenPluginITSupport
      */
     protected List<String> getMavenVersions()
     {
-        return Arrays.asList( "2.2.1", "3.0.4" );
+        return Arrays.asList( M2_VERSION, M3_VERSION );
     }
 
     // {@code <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>} formatted string.
@@ -138,19 +148,30 @@ public abstract class StagingMavenPluginITSupport
             throw new IllegalArgumentException( "Maven version " + mavenVersion + " was not prepared!" );
         }
 
-        final String logname = "logs/maven-execution/" + testId + "/" + baseDir.getName() + "-maven2.log";
-        final String localRepoName =
-            "target/maven-execution/" + testId + "/" + baseDir.getName() + "-local-repository/";
-        final File logFile = new File( getBasedir(), logname );
+        final String logname = "maven-" + mavenVersion + ".log";
+        final String localRepoName = "target/maven-local-repository/";
         final File localRepoFile = new File( getBasedir(), localRepoName );
-        logFile.getParentFile().mkdirs();
         final File filteredSettings = new File( getBasedir(), "target/settings.xml" );
         fileTaskBuilder.copy().file( file( mavenSettings ) ).filterUsing( "nexus.port",
             String.valueOf( nexus().getPort() ) ).to().file( file( filteredSettings ) ).run();
 
+        // filter the POM if needed
+        final File rawPom = new File( baseDir, "raw-pom.xml" );
+        if ( rawPom.isFile() )
+        {
+            final Properties context = new Properties();
+            context.setProperty( "nexus.port", String.valueOf( nexus().getPort() ) );
+            context.setProperty( "itproject.groupId", "org.nexusit" );
+            context.setProperty( "itproject.artifactId", baseDir.getName() + "-" + mavenVersion );
+            context.setProperty( "itproject.version", "1.0" );
+            final File pom = new File( baseDir, "pom.xml" );
+            fileTaskBuilder.copy().file( file( rawPom ) ).filterUsing( context ).to().file( file( pom ) ).run();
+        }
+
         System.setProperty( "maven.home", mavenHome.getAbsolutePath() );
         Verifier verifier = new Verifier( baseDir.getAbsolutePath(), false );
-        verifier.setLogFileName( "log.txt" );
+        verifier.setAutoclean( false ); // no autoclean to be able to simulate multiple invocations
+        verifier.setLogFileName( logname );
         verifier.setLocalRepo( localRepoFile.getAbsolutePath() );
         verifier.resetStreams();
         List<String> options = new ArrayList<String>();
