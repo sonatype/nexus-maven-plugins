@@ -487,10 +487,33 @@ public abstract class AbstractDeployMojo
                 {
                     if ( successful )
                     {
-                        getLog().info(
-                            " * Closing staging repository with ID \"" + stagingRepository.getRepositoryId() + "\"." );
-                        stagingService.finishStaging( stagingRepository.getProfile(),
-                            stagingRepository.getRepositoryId(), getDescriptionWithDefaultsForAction( "Closed" ) );
+                        try
+                        {
+                            getLog().info(
+                                " * Closing staging repository with ID \"" + stagingRepository.getRepositoryId()
+                                    + "\"." );
+                            stagingService.finishStaging( stagingRepository.getProfile(),
+                                stagingRepository.getRepositoryId(), getDescriptionWithDefaultsForAction( "Closed" ) );
+                        }
+                        catch ( StagingRuleFailuresException e )
+                        {
+                            getLog().error(
+                                "Rule failure while trying to close staging repository with ID \""
+                                    + stagingRepository.getRepositoryId() + "\"." );
+                            // report staging repository failures
+                            ErrorDumper.dumpErrors( getLog(), e );
+                            // drop the repository (this will break exception chain if there's new failure, like
+                            // network)
+                            if ( !isKeepStagingRepositoryOnCloseRuleFailure() )
+                            {
+                                stagingService.dropStagingRepositories(
+                                    "Staging rules failed on closing staging repository: "
+                                        + stagingRepository.getRepositoryId(), stagingRepository.getRepositoryId() );
+                            }
+                            // fail the build
+                            throw new MojoExecutionException( "Could not perform action against repository \""
+                                + stagingRepository.getRepositoryId() + "\": there are failing staging rules!", e );
+                        }
                     }
                     else
                     {
@@ -526,16 +549,6 @@ public abstract class AbstractDeployMojo
                 // fail the build
                 throw new MojoExecutionException( "Could not perform action against repository \""
                     + stagingRepository.getRepositoryId() + "\": Nexus ErrorResponse received!", e );
-            }
-            catch ( StagingRuleFailuresException e )
-            {
-                getLog().error(
-                    "Error while trying to close staging repository with ID \"" + stagingRepository.getRepositoryId()
-                        + "\"." );
-                ErrorDumper.dumpErrors( getLog(), e );
-                // fail the build
-                throw new MojoExecutionException( "Could not perform action against repository \""
-                    + stagingRepository.getRepositoryId() + "\": there are failing staging rules!", e );
             }
         }
 
