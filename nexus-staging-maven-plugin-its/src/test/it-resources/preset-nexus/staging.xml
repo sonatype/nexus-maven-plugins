@@ -11,6 +11,9 @@
       <targetGroups>
         <targetGroup>public</targetGroup>
       </targetGroups>
+      <closeRuleSets>
+        <closeRuleSet>12a3be672a21b49d</closeRuleSet>
+      </closeRuleSets>
       <promoteTargetRepository>releases</promoteTargetRepository>
       <mode>BOTH</mode>
     </profile>
@@ -18,4 +21,28 @@
   <profileOrder>
     <profileOrder>12a2439c79f79c6f</profileOrder>
   </profileOrder>
+  <ruleSets>
+    <ruleSet>
+      <id>12a3be672a21b49d</id>
+      <name>Common Rule</name>
+      <description>Enforces presence of Javadoc and Sources and Checksums</description>
+      <rules>
+        <rule>
+          <name>Staging Checksum Validation</name>
+          <type>checksum-staging</type>
+          <enabled>true</enabled>
+        </rule>
+        <rule>
+          <name>Staging Javadoc Validation</name>
+          <type>javadoc-staging</type>
+          <enabled>true</enabled>
+        </rule>
+        <rule>
+          <name>Staging Sources Validation</name>
+          <type>sources-staging</type>
+          <enabled>true</enabled>
+        </rule>
+      </rules>
+    </ruleSet>
+  </ruleSets>
 </stagingConfiguration>

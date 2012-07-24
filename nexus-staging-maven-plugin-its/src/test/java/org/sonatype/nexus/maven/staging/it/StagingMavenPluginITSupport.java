@@ -28,6 +28,8 @@ import javax.inject.Inject;
 
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.DefaultModelReader;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.Timeout;
@@ -35,8 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.nexus.bundle.launcher.NexusBundleConfiguration;
 import org.sonatype.nexus.bundle.launcher.NexusRunningITSupport;
-import org.sonatype.nexus.bundle.launcher.NexusStartAndStopStrategy;
-import org.sonatype.nexus.bundle.launcher.NexusStartAndStopStrategy.Strategy;
 import org.sonatype.nexus.bundle.launcher.support.NexusBundleResolver;
 import org.sonatype.nexus.client.core.NexusClient;
 import org.sonatype.nexus.client.rest.NexusClientFactory;
@@ -55,7 +55,6 @@ import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
  * 
  * @author cstamas
  */
-@NexusStartAndStopStrategy( Strategy.EACH_TEST )
 public abstract class StagingMavenPluginITSupport
     extends NexusRunningITSupport
 {
@@ -143,6 +142,7 @@ public abstract class StagingMavenPluginITSupport
     @Before
     public void createClient()
     {
+        logger.info( "Creating NexusClient..." );
         nexusDeploymentClient =
             nexusClientFactory.createFor( baseUrlFrom( nexus().getUrl() ), new UsernamePasswordAuthenticationInfo(
                 "deployment", "deployment123" ) );
@@ -158,8 +158,8 @@ public abstract class StagingMavenPluginITSupport
         return nexusDeploymentClient.getSubsystem( StagingWorkflowV2Service.class );
     }
 
-    public Verifier createMavenVerifier( final String testId, final String mavenVersion, final File mavenSettings,
-                                         final File baseDir )
+    public PreparedVerifier createMavenVerifier( final String testId, final String mavenVersion,
+                                                 final File mavenSettings, final File baseDir )
         throws VerificationException, IOException
     {
         final File mavenHome = mavenHomes.get( mavenVersion );
@@ -175,17 +175,32 @@ public abstract class StagingMavenPluginITSupport
         fileTaskBuilder.copy().file( file( mavenSettings ) ).filterUsing( "nexus.port",
             String.valueOf( nexus().getPort() ) ).to().file( file( filteredSettings ) ).run();
 
+        final String projectGroupId;
+        final String projectArtifactId;
+        final String projectVersion;
         // filter the POM if needed
+        final File pom = new File( baseDir, "pom.xml" );
         final File rawPom = new File( baseDir, "raw-pom.xml" );
         if ( rawPom.isFile() )
         {
+            projectGroupId = getClass().getPackage().getName();
+            projectArtifactId = baseDir.getName() + "-" + mavenVersion;
+            projectVersion = "1.0";
             final Properties context = new Properties();
             context.setProperty( "nexus.port", String.valueOf( nexus().getPort() ) );
-            context.setProperty( "itproject.groupId", "org.nexusit" );
-            context.setProperty( "itproject.artifactId", baseDir.getName() + "-" + mavenVersion );
-            context.setProperty( "itproject.version", "1.0" );
-            final File pom = new File( baseDir, "pom.xml" );
+            context.setProperty( "itproject.groupId", projectGroupId );
+            context.setProperty( "itproject.artifactId", projectArtifactId );
+            context.setProperty( "itproject.version", projectVersion );
             fileTaskBuilder.copy().file( file( rawPom ) ).filterUsing( context ).to().file( file( pom ) ).run();
+        }
+        else
+        {
+            // TODO: improve this, as this below is not quite true,
+            // but this will do it for now and we do not use non-interpolated POMs for now anyway
+            final Model model = new DefaultModelReader().read( pom, null );
+            projectGroupId = model.getGroupId();
+            projectArtifactId = model.getArtifactId();
+            projectVersion = model.getVersion();
         }
 
         System.setProperty( "maven.home", mavenHome.getAbsolutePath() );
@@ -199,6 +214,6 @@ public abstract class StagingMavenPluginITSupport
         options.add( "-Dmaven.repo.local=" + localRepoFile.getAbsolutePath() );
         options.add( "-s " + filteredSettings.getAbsolutePath() );
         verifier.setCliOptions( options );
-        return verifier;
+        return new PreparedVerifier( verifier, baseDir, projectGroupId, projectArtifactId, projectVersion );
     }
 }

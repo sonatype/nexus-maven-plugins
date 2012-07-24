@@ -10,7 +10,7 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.nexus.maven.staging.it.simplev2roundtrip;
+package org.sonatype.nexus.maven.staging.it.nxcm4527;
 
 import java.util.Arrays;
 import java.util.List;
@@ -28,18 +28,19 @@ import com.sonatype.nexus.staging.client.StagingRepository;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
 /**
- * IT that "implements" the Staging V2 testing guide's "One Shot" scenario followed by the "release" Post Staging Steps
- * section. It also "verifies" that a "matrix" of projects (set up in m2 or m3 way) and maven runtimes (m2 and m3) all
- * work as expected.
+ * See NXCM-4527, this IT implements it's verification part for Nexus Staging Maven Plugin side. Here, we build and
+ * stage a "malformed" project (will lack the javadoc JAR, achieved by passing in "-Dmaven.javadoc.skip=true" during
+ * deploy). The project uses default settings for nexus-staging-maven-plugin, so such malformed staged project should
+ * have the staging repository dropped upon rule failure. Hence, {@link #postNexusAssertions(PreparedVerifier)} contains
+ * checks that there are no staging repositories but also that the artifact built is not released either.
  * 
  * @author cstamas
- * @see https://docs.sonatype.com/display/Nexus/Staging+V2+Testing
  */
-public class SimpleV2RoundtripIT
+public class NXCM4527DropOnCloseRuleFailureIT
     extends SimpleRountripMatrixSupport
 {
     /**
-     * Nothing to validate before hand.
+     * no pre-invocation assertions
      */
     @Override
     protected void preNexusAssertions( final PreparedVerifier verifier )
@@ -52,7 +53,7 @@ public class SimpleV2RoundtripIT
     @Override
     protected void postNexusAssertions( final PreparedVerifier verifier )
     {
-        // there are no staging repositories
+        // there are no staging repositories as we dropped them
         final StagingWorkflowV2Service stagingWorkflow = getStagingWorkflowV2Service();
         for ( Profile profile : stagingWorkflow.listProfiles() )
         {
@@ -62,53 +63,45 @@ public class SimpleV2RoundtripIT
                 Assert.fail( "Nexus should not have staging repositories, but it has: " + stagingRepositories );
             }
         }
-        // stuff we staged are released
+        // stuff we staged should not be released
         for ( int i = 0; i < 3; i++ )
         {
             final SearchResponse response =
                 getMavenIndexer().searchByGAV( verifier.getProjectGroupId(), verifier.getProjectArtifactId(),
                     verifier.getProjectVersion(), null, null, "releases" );
-            if ( response.getHits().isEmpty() )
+            if ( !response.getHits().isEmpty() )
             {
-                // to warm up indexes, as initial hit is not reliable, so we try the search 3 times before with yell
-                // "foul"
-                if ( i == 2 )
-                {
-                    Assert.fail( String.format(
-                        "Nexus should have staged artifact in releases repository with GAV=%s:%s:%s but those are not found on index!",
-                        verifier.getProjectGroupId(), verifier.getProjectArtifactId(), verifier.getProjectVersion() ) );
-                }
-                // sleep some before next retry
-                try
-                {
-                    // index commits happen every 1 second, so ensure we will have one at least
-                    Thread.sleep( 1000 );
-                }
-                catch ( InterruptedException e )
-                {
-                    Throwables.propagate( e );
-                }
+                Assert.fail( "Nexus should NOT have staged artifact in releases repository but it has!" );
+            }
+            try
+            {
+                Thread.sleep( 200 );
+            }
+            catch ( InterruptedException e )
+            {
+                Throwables.propagate( e );
             }
         }
     }
 
-    /**
-     * Simulates separate invocation of commands. Deploy then release.
-     * 
-     * @param verifier
-     * @throws VerificationException
-     */
     @Override
     protected void invokeMaven( final PreparedVerifier verifier )
         throws VerificationException
     {
-        // v2 workflow
-        verifier.getVerifier().executeGoals( Arrays.asList( "clean", "deploy" ) );
-        // should not fail
-        verifier.getVerifier().verifyErrorFreeLog();
-        // v2 release
-        verifier.getVerifier().executeGoals( Arrays.asList( "nexus-staging:release" ) );
-        // should not fail
-        verifier.getVerifier().verifyErrorFreeLog();
+        try
+        {
+            // skip javadoc, we want failing rule
+            verifier.getVerifier().addCliOption( "-Dmaven.javadoc.skip=true" );
+            // v2 workflow
+            verifier.getVerifier().executeGoals( Arrays.asList( "clean", "deploy" ) );
+            // should fail
+            verifier.getVerifier().verifyErrorFreeLog();
+            // if no exception, fail the test
+            Assert.fail( "We should end up with failed remote staging!" );
+        }
+        catch ( VerificationException e )
+        {
+            // good
+        }
     }
 }
