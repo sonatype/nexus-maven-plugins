@@ -37,6 +37,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.nexus.bundle.launcher.NexusBundleConfiguration;
 import org.sonatype.nexus.bundle.launcher.NexusRunningITSupport;
+import org.sonatype.nexus.bundle.launcher.NexusStartAndStopStrategy;
+import org.sonatype.nexus.bundle.launcher.NexusStartAndStopStrategy.Strategy;
 import org.sonatype.nexus.bundle.launcher.support.NexusBundleResolver;
 import org.sonatype.nexus.client.core.NexusClient;
 import org.sonatype.nexus.client.rest.NexusClientFactory;
@@ -59,6 +61,7 @@ import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
  * 
  * @author cstamas
  */
+@NexusStartAndStopStrategy( Strategy.EACH_TEST )
 public abstract class StagingMavenPluginITSupport
     extends NexusRunningITSupport
 {
@@ -172,7 +175,7 @@ public abstract class StagingMavenPluginITSupport
             throw new IllegalArgumentException( "Maven version " + mavenVersion + " was not prepared!" );
         }
 
-        final String logname = "maven-" + mavenVersion + ".log";
+        final String logname = testId + "-maven-" + mavenVersion + ".log";
         final String localRepoName = "target/maven-local-repository/";
         final File localRepoFile = new File( getBasedir(), localRepoName );
         final File filteredSettings = new File( getBasedir(), "target/settings.xml" );
@@ -195,7 +198,7 @@ public abstract class StagingMavenPluginITSupport
             context.setProperty( "itproject.groupId", projectGroupId );
             context.setProperty( "itproject.artifactId", projectArtifactId );
             context.setProperty( "itproject.version", projectVersion );
-            fileTaskBuilder.copy().file( file( rawPom ) ).filterUsing( context ).to().file( file( pom ) ).run();
+            filterPomsIfNeeded( baseDir, context );
         }
         else
         {
@@ -219,6 +222,42 @@ public abstract class StagingMavenPluginITSupport
         options.add( "-s " + filteredSettings.getAbsolutePath() );
         verifier.setCliOptions( options );
         return new PreparedVerifier( verifier, baseDir, projectGroupId, projectArtifactId, projectVersion );
+    }
+
+    /**
+     * Recurses the baseDir searching for POMs and filters them.
+     * 
+     * @param baseDir
+     * @param properties
+     * @throws IOException
+     */
+    protected void filterPomsIfNeeded( final File baseDir, final Properties properties )
+        throws IOException
+    {
+        final File pom = new File( baseDir, "pom.xml" );
+        final File rawPom = new File( baseDir, "raw-pom.xml" );
+        if ( rawPom.isFile() )
+        {
+            fileTaskBuilder.copy().file( file( rawPom ) ).filterUsing( properties ).to().file( file( pom ) ).run();
+        }
+        else if ( !pom.isFile() )
+        {
+            // error
+            throw new IOException( "No raw-POM nor proper POM found!" );
+        }
+
+        final File[] fileList = baseDir.listFiles();
+        if ( fileList != null )
+        {
+            for ( File file : fileList )
+            {
+                // recurse only non src and target folders (sanity check)
+                if ( file.isDirectory() && !"src".equals( file.getName() ) && !"target".equals( file.getName() ) )
+                {
+                    filterPomsIfNeeded( file, properties );
+                }
+            }
+        }
     }
 
     // ==

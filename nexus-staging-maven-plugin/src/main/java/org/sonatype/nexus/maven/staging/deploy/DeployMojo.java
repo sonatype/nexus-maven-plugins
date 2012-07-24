@@ -176,7 +176,6 @@ public class DeployMojo
 
                 try
                 {
-                    getLog().info( "Staging remotely..." );
                     stageRemotely();
                 }
                 catch ( ArtifactDeploymentException e )

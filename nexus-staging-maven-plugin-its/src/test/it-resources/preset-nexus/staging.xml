@@ -17,9 +17,25 @@
       <promoteTargetRepository>releases</promoteTargetRepository>
       <mode>BOTH</mode>
     </profile>
+    <profile>
+      <id>23b3440d80080d70</id>
+      <name>Test2</name>
+      <repositoryTargetId>1</repositoryTargetId>
+      <repositoryTemplateId>default_hosted_release</repositoryTemplateId>
+      <repositoryType>maven2</repositoryType>
+      <targetGroups>
+        <targetGroup>public</targetGroup>
+      </targetGroups>
+      <closeRuleSets>
+        <closeRuleSet>12a3be672a21b49d</closeRuleSet>
+      </closeRuleSets>
+      <promoteTargetRepository>releases</promoteTargetRepository>
+      <mode>BOTH</mode>
+    </profile>
   </profiles>
   <profileOrder>
     <profileOrder>12a2439c79f79c6f</profileOrder>
+    <profileOrder>23b3440d80080d70</profileOrder>
   </profileOrder>
   <ruleSets>
     <ruleSet>

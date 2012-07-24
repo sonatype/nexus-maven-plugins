@@ -23,8 +23,6 @@ import javax.inject.Inject;
 import org.apache.maven.it.VerificationException;
 import org.junit.Test;
 import org.sonatype.nexus.bundle.launcher.NexusBundleConfiguration;
-import org.sonatype.nexus.bundle.launcher.NexusStartAndStopStrategy;
-import org.sonatype.nexus.bundle.launcher.NexusStartAndStopStrategy.Strategy;
 import org.sonatype.sisu.filetasks.FileTaskBuilder;
 
 /**
@@ -34,7 +32,6 @@ import org.sonatype.sisu.filetasks.FileTaskBuilder;
  * @author cstamas
  * @see https://docs.sonatype.com/display/Nexus/Staging+V2+Testing
  */
-@NexusStartAndStopStrategy( Strategy.EACH_TEST )
 public abstract class SimpleRountripMatrixSupport
     extends StagingMavenPluginITSupport
 {

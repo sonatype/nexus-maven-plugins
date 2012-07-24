@@ -12,12 +12,15 @@
  */
 package org.sonatype.nexus.maven.staging.workflow;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.sonatype.nexus.maven.staging.ErrorDumper;
 
+import com.sonatype.nexus.staging.client.StagingRuleFailures;
 import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
@@ -46,11 +49,20 @@ public class CloseStageRepositoryMojo
         {
             // report staging repository failures
             ErrorDumper.dumpErrors( getLog(), e );
+
             // drop the repository (this will break exception chain if there's new failure, like network)
             if ( !isKeepStagingRepositoryOnCloseRuleFailure() )
             {
-                stagingWorkflow.dropStagingRepositories( "Staging rules failed on closing staging repositories: "
-                    + Arrays.toString( stagingRepositoryIds ), stagingRepositoryIds );
+                final List<String> failedRepositories = new ArrayList<String>();
+                for ( StagingRuleFailures failures : e.getFailures() )
+                {
+                    failedRepositories.add( failures.getRepositoryName() + "(id=" + failures.getRepositoryId() + ")" );
+                }
+                final String msg = "Rule failure during close of staging repositories: " + failedRepositories;
+
+                getLog().error( "Cleaning up remote stage repositories after a " + msg );
+                stagingWorkflow.dropStagingRepositories( getDefaultDescriptionForAction( "Dropped" ) + " ("
+                                + msg + ").", stagingRepositoryIds );
             }
             // fail the build
             throw new MojoExecutionException( "Could not perform action: there are failing staging rules!", e );
