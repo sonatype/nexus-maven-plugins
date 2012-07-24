@@ -58,7 +58,7 @@
     <!-- Plexus container -->
     <dependency>
       <groupId>org.sonatype.sisu</groupId>
-      <artifactId>sisu-inject-plexus</artifactId>
+      <artifactId>sisu-inject-bean</artifactId>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -68,18 +68,8 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>javax.inject</groupId>
-      <artifactId>javax.inject</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-component-annotations</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
