@@ -33,18 +33,6 @@
     <nexus-core.version>2.1-SNAPSHOT</nexus-core.version>
   </properties>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>com.sonatype.nexus</groupId>
-        <artifactId>nexus-professional</artifactId>
-        <type>zip</type>
-        <classifier>bundle</classifier>
-        <version>2.1-SNAPSHOT</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
   <dependencies>
     <!-- mojo-commons shall be used by this (and any other Sonatype) Maven plugin -->
     <dependency>
@@ -54,6 +42,7 @@
     </dependency>
 
     <!-- Nexus Client Core. Has to be specified as transitive dependencies of Nexus Staging Client will not be available -->
+    <!-- NexusStagingClient and it's DTOs are shaded in as they are not available from Central -->
     <dependency>
       <groupId>org.sonatype.nexus.client</groupId>
       <artifactId>nexus-client-core</artifactId>
