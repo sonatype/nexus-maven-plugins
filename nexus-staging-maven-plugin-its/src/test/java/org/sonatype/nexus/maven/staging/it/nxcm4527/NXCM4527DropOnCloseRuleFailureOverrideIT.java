@@ -12,14 +12,12 @@
  */
 package org.sonatype.nexus.maven.staging.it.nxcm4527;
 
-import java.util.Arrays;
 import java.util.List;
 
 import junit.framework.Assert;
 
 import org.apache.maven.it.VerificationException;
 import org.sonatype.nexus.maven.staging.it.PreparedVerifier;
-import org.sonatype.nexus.maven.staging.it.SimpleRountripMatrixSupport;
 import org.sonatype.nexus.mindexer.client.SearchResponse;
 
 import com.google.common.base.Throwables;
@@ -28,23 +26,31 @@ import com.sonatype.nexus.staging.client.StagingRepository;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
 /**
- * See NXCM-4527, this IT implements it's verification part for Nexus Staging Maven Plugin side. Here, we build and
- * stage a "malformed" project (will lack the javadoc JAR, achieved by passing in "-Dmaven.javadoc.skip=true" during
- * deploy). The project uses default settings for nexus-staging-maven-plugin, so such malformed staged project should
- * have the staging repository dropped upon rule failure. Hence, {@link #postNexusAssertions(PreparedVerifier)} contains
- * checks that there are no staging repositories but also that the artifact built is not released either.
+ * See NXCM-4527, this IT implements it's verification part for Nexus Staging Maven Plugin side when the defaults are
+ * overridden. Similar to {@link NXCM4527DropOnCloseRuleFailureIT} IT, but here we assert that staging repository is NOT
+ * dropped, it should still exists.
  * 
  * @author cstamas
  */
-public class NXCM4527DropOnCloseRuleFailureIT
-    extends SimpleRountripMatrixSupport
+public class NXCM4527DropOnCloseRuleFailureOverrideIT
+    extends NXCM4527DropOnCloseRuleFailureIT
 {
     /**
-     * no pre-invocation assertions
+     * Drop left-behind staging repositories to interfere with subsequent assertions (we share nexus instance, it is
+     * "rebooted" per class).
      */
     @Override
-    protected void preNexusAssertions( final PreparedVerifier verifier )
+    protected void cleanupNexus( final PreparedVerifier verifier )
     {
+        final StagingWorkflowV2Service stagingWorkflow = getStagingWorkflowV2Service();
+        for ( Profile profile : stagingWorkflow.listProfiles() )
+        {
+            List<StagingRepository> stagingRepositories = stagingWorkflow.listStagingRepositories( profile.getId() );
+            for ( StagingRepository stagingRepository : stagingRepositories )
+            {
+                stagingWorkflow.dropStagingRepositories( "cleanupNexus()", stagingRepository.getId() );
+            }
+        }
     }
 
     /**
@@ -58,10 +64,12 @@ public class NXCM4527DropOnCloseRuleFailureIT
         for ( Profile profile : stagingWorkflow.listProfiles() )
         {
             List<StagingRepository> stagingRepositories = stagingWorkflow.listStagingRepositories( profile.getId() );
-            if ( !stagingRepositories.isEmpty() )
+            if ( stagingRepositories.isEmpty() )
             {
-                Assert.fail( "Nexus should not have staging repositories, but it has: " + stagingRepositories );
+                Assert.fail( "Nexus should have staging repositories, but it has none!" );
             }
+            Assert.assertEquals( "Nexus should have 1 staging repository, the one of the current build", 1,
+                stagingRepositories.size() );
         }
         // stuff we staged should not be released
         for ( int i = 0; i < 3; i++ )
@@ -88,20 +96,7 @@ public class NXCM4527DropOnCloseRuleFailureIT
     protected void invokeMaven( final PreparedVerifier verifier )
         throws VerificationException
     {
-        try
-        {
-            // skip javadoc, we want failing build
-            verifier.getVerifier().addCliOption( "-Dmaven.javadoc.skip=true" );
-            // v2 workflow
-            verifier.getVerifier().executeGoals( Arrays.asList( "clean", "deploy" ) );
-            // should fail
-            verifier.getVerifier().verifyErrorFreeLog();
-            // if no exception, fail the test
-            Assert.fail( "We should end up with failed remote staging!" );
-        }
-        catch ( VerificationException e )
-        {
-            // good
-        }
+        verifier.getVerifier().addCliOption( "-DkeepStagingRepositoryOnCloseRuleFailure=true" );
+        super.invokeMaven( verifier );
     }
 }
