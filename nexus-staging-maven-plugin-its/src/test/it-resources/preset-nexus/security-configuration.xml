@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<security-configuration>
+  <version>2.0.3</version>
+  <enabled>true</enabled>
+  <anonymousAccessEnabled>true</anonymousAccessEnabled>
+  <anonymousUsername>anonymous</anonymousUsername>
+  <anonymousPassword>{hT1o9Jl84rkHyX/l1KbhFlogB5aYFGpmeuy8dG+inRo=}</anonymousPassword>
+  <realms>
+    <realm>XmlAuthenticatingRealm</realm>
+    <realm>XmlAuthorizingRealm</realm>
+  </realms>
+  <securityManager>default</securityManager>
+</security-configuration>

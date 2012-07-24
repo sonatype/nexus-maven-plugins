@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<settings>
+  <servers>
+    <server>
+      <id>local-nexus</id>
+      <username>deployment</username>
+      <password>deployment123</password>
+    </server>
+  </servers>
+  <mirrors>
+    <mirror>
+      <id>local-nexus</id>
+      <mirrorOf>external:*</mirrorOf>
+      <url>http://localhost:${nexus.port}/nexus/content/groups/public</url>
+    </mirror>
+  </mirrors>
+</settings>

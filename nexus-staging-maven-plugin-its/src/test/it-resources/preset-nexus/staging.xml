@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stagingConfiguration>
+  <version>1.0.8</version>
+  <profiles>
+    <profile>
+      <id>12a2439c79f79c6f</id>
+      <name>Test1</name>
+      <repositoryTargetId>1</repositoryTargetId>
+      <repositoryTemplateId>default_hosted_release</repositoryTemplateId>
+      <repositoryType>maven2</repositoryType>
+      <targetGroups>
+        <targetGroup>public</targetGroup>
+      </targetGroups>
+      <promoteTargetRepository>releases</promoteTargetRepository>
+      <mode>BOTH</mode>
+    </profile>
+  </profiles>
+  <profileOrder>
+    <profileOrder>12a2439c79f79c6f</profileOrder>
+  </profileOrder>
+</stagingConfiguration>
