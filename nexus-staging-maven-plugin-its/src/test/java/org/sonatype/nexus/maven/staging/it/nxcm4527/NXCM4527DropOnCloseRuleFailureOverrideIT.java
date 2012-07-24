@@ -20,8 +20,6 @@ import org.apache.maven.it.VerificationException;
 import org.sonatype.nexus.maven.staging.it.PreparedVerifier;
 import org.sonatype.nexus.mindexer.client.SearchResponse;
 
-import com.google.common.base.Throwables;
-import com.sonatype.nexus.staging.client.Profile;
 import com.sonatype.nexus.staging.client.StagingRepository;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
@@ -43,13 +41,10 @@ public class NXCM4527DropOnCloseRuleFailureOverrideIT
     protected void cleanupNexus( final PreparedVerifier verifier )
     {
         final StagingWorkflowV2Service stagingWorkflow = getStagingWorkflowV2Service();
-        for ( Profile profile : stagingWorkflow.listProfiles() )
+        List<StagingRepository> stagingRepositories = getAllStagingRepositories();
+        for ( StagingRepository stagingRepository : stagingRepositories )
         {
-            List<StagingRepository> stagingRepositories = stagingWorkflow.listStagingRepositories( profile.getId() );
-            for ( StagingRepository stagingRepository : stagingRepositories )
-            {
-                stagingWorkflow.dropStagingRepositories( "cleanupNexus()", stagingRepository.getId() );
-            }
+            stagingWorkflow.dropStagingRepositories( "cleanupNexus()", stagingRepository.getId() );
         }
     }
 
@@ -59,36 +54,24 @@ public class NXCM4527DropOnCloseRuleFailureOverrideIT
     @Override
     protected void postNexusAssertions( final PreparedVerifier verifier )
     {
-        // there are no staging repositories as we dropped them
-        final StagingWorkflowV2Service stagingWorkflow = getStagingWorkflowV2Service();
-        for ( Profile profile : stagingWorkflow.listProfiles() )
+        // there are staging repositories as we did not drop them (on rule failure), we override defaults
+        final List<StagingRepository> stagingRepositories = getAllStagingRepositories();
+        if ( stagingRepositories.isEmpty() )
         {
-            List<StagingRepository> stagingRepositories = stagingWorkflow.listStagingRepositories( profile.getId() );
-            if ( stagingRepositories.isEmpty() )
-            {
-                Assert.fail( "Nexus should have staging repositories, but it has none!" );
-            }
-            Assert.assertEquals( "Nexus should have 1 staging repository, the one of the current build", 1,
-                stagingRepositories.size() );
+            Assert.fail( "Nexus should have staging repositories, but it has none!" );
         }
-        // stuff we staged should not be released
-        for ( int i = 0; i < 3; i++ )
+        Assert.assertEquals( "Nexus should have 1 staging repository, the one of the current build", 1,
+            stagingRepositories.size() );
+
+        // stuff we staged should not be released and not found by indexer
+        final SearchResponse searchResponse =
+            searchThreeTimesForGAV( verifier.getProjectGroupId(), verifier.getProjectArtifactId(),
+                verifier.getProjectVersion(), null, null, "releases" );
+        if ( !searchResponse.getHits().isEmpty() )
         {
-            final SearchResponse response =
-                getMavenIndexer().searchByGAV( verifier.getProjectGroupId(), verifier.getProjectArtifactId(),
-                    verifier.getProjectVersion(), null, null, "releases" );
-            if ( !response.getHits().isEmpty() )
-            {
-                Assert.fail( "Nexus should NOT have staged artifact in releases repository but it has!" );
-            }
-            try
-            {
-                Thread.sleep( 1000 );
-            }
-            catch ( InterruptedException e )
-            {
-                Throwables.propagate( e );
-            }
+            Assert.fail( String.format(
+                "Nexus should NOT have staged artifact in releases repository with GAV=%s:%s:%s but those are not found on index!",
+                verifier.getProjectGroupId(), verifier.getProjectArtifactId(), verifier.getProjectVersion() ) );
         }
     }
 

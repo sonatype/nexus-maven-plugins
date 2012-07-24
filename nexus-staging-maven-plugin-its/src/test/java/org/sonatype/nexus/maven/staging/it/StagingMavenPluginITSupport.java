@@ -42,12 +42,16 @@ import org.sonatype.nexus.client.core.NexusClient;
 import org.sonatype.nexus.client.rest.NexusClientFactory;
 import org.sonatype.nexus.client.rest.UsernamePasswordAuthenticationInfo;
 import org.sonatype.nexus.mindexer.client.MavenIndexer;
+import org.sonatype.nexus.mindexer.client.SearchResponse;
 import org.sonatype.sisu.bl.support.resolver.BundleResolver;
 import org.sonatype.sisu.filetasks.FileTaskBuilder;
 import org.sonatype.sisu.goodies.common.Time;
 
+import com.google.common.base.Throwables;
 import com.google.inject.Binder;
 import com.google.inject.name.Names;
+import com.sonatype.nexus.staging.client.Profile;
+import com.sonatype.nexus.staging.client.StagingRepository;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
 /**
@@ -58,7 +62,7 @@ import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 public abstract class StagingMavenPluginITSupport
     extends NexusRunningITSupport
 {
-    private final Logger logger = LoggerFactory.getLogger( StagingMavenPluginITSupport.class );
+    protected final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Rule
     public final Timeout defaultTimeout = new Timeout( Time.minutes( 5 ).toMillisI() );
@@ -215,5 +219,70 @@ public abstract class StagingMavenPluginITSupport
         options.add( "-s " + filteredSettings.getAbsolutePath() );
         verifier.setCliOptions( options );
         return new PreparedVerifier( verifier, baseDir, projectGroupId, projectArtifactId, projectVersion );
+    }
+
+    // ==
+
+    /**
+     * Returns the list of all staging repositories - whether open or closed - found in all profiles (all staging
+     * repositories present instance-wide).
+     * 
+     * @return
+     */
+    protected List<StagingRepository> getAllStagingRepositories()
+    {
+        final ArrayList<StagingRepository> result = new ArrayList<StagingRepository>();
+        final StagingWorkflowV2Service stagingWorkflow = getStagingWorkflowV2Service();
+        final List<Profile> profiles = stagingWorkflow.listProfiles();
+        for ( Profile profile : profiles )
+        {
+            final List<StagingRepository> stagingRepositories =
+                stagingWorkflow.listStagingRepositories( profile.getId() );
+            result.addAll( stagingRepositories );
+        }
+        return result;
+    }
+
+    /**
+     * Returns the list of all staging repositories - whether open or closed - found in passed in profile.
+     * 
+     * @return
+     */
+    protected List<StagingRepository> getProfileStagingRepositories( final Profile profile )
+    {
+        List<StagingRepository> stagingRepositories =
+            getStagingWorkflowV2Service().listStagingRepositories( profile.getId() );
+        return stagingRepositories;
+    }
+
+    /**
+     * Performs a "cautious" search for GAV that is somewhat "shielded" against Nexus Indexer asynchronicity. It will
+     * repeat the search 3 times, with 1000 milliseconds pause. The reason to do this, to be "almost sure" it is or it
+     * is not found, as Maven Indexer performs commits every second (hence, search might catch the pre-commit state),
+     * but also the execution path as for example a deploy "arrives" to index is itself async too
+     * (AsynchronousEventInspector). Hence, this method in short does a GAV search, but is "shielded" with some retries
+     * and sleeps to make sure that result is correct. For input parameters see
+     * {@link MavenIndexer#searchByGAV(String, String, String, String, String, String)} method.
+     * 
+     * @return
+     */
+    protected SearchResponse searchThreeTimesForGAV( final String groupId, final String artifactId,
+                                                     final String version, final String classifier, final String type,
+                                                     final String repositoryId )
+    {
+        SearchResponse response = null;
+        for ( int i = 0; i < 3; i++ )
+        {
+            response = getMavenIndexer().searchByGAV( groupId, artifactId, version, classifier, type, repositoryId );
+            try
+            {
+                Thread.sleep( 1000 );
+            }
+            catch ( InterruptedException e )
+            {
+                Throwables.propagate( e );
+            }
+        }
+        return response;
     }
 }

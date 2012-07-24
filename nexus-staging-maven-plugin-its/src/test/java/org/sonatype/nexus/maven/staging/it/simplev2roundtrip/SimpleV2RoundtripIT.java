@@ -22,10 +22,7 @@ import org.sonatype.nexus.maven.staging.it.PreparedVerifier;
 import org.sonatype.nexus.maven.staging.it.SimpleRountripMatrixSupport;
 import org.sonatype.nexus.mindexer.client.SearchResponse;
 
-import com.google.common.base.Throwables;
-import com.sonatype.nexus.staging.client.Profile;
 import com.sonatype.nexus.staging.client.StagingRepository;
-import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
 /**
  * IT that "implements" the Staging V2 testing guide's "One Shot" scenario followed by the "release" Post Staging Steps
@@ -53,42 +50,21 @@ public class SimpleV2RoundtripIT
     protected void postNexusAssertions( final PreparedVerifier verifier )
     {
         // there are no staging repositories
-        final StagingWorkflowV2Service stagingWorkflow = getStagingWorkflowV2Service();
-        for ( Profile profile : stagingWorkflow.listProfiles() )
+        final List<StagingRepository> stagingRepositories = getAllStagingRepositories();
+        if ( !stagingRepositories.isEmpty() )
         {
-            List<StagingRepository> stagingRepositories = stagingWorkflow.listStagingRepositories( profile.getId() );
-            if ( !stagingRepositories.isEmpty() )
-            {
-                Assert.fail( "Nexus should not have staging repositories, but it has: " + stagingRepositories );
-            }
+            Assert.fail( "Nexus should not have staging repositories, but it has: " + stagingRepositories );
         }
-        // stuff we staged are released
-        for ( int i = 0; i < 3; i++ )
+
+        // stuff we staged are released and found by indexer
+        final SearchResponse searchResponse =
+            searchThreeTimesForGAV( verifier.getProjectGroupId(), verifier.getProjectArtifactId(),
+                verifier.getProjectVersion(), null, null, "releases" );
+        if ( searchResponse.getHits().isEmpty() )
         {
-            final SearchResponse response =
-                getMavenIndexer().searchByGAV( verifier.getProjectGroupId(), verifier.getProjectArtifactId(),
-                    verifier.getProjectVersion(), null, null, "releases" );
-            if ( response.getHits().isEmpty() )
-            {
-                // to warm up indexes, as initial hit is not reliable, so we try the search 3 times before with yell
-                // "foul"
-                if ( i == 2 )
-                {
-                    Assert.fail( String.format(
-                        "Nexus should have staged artifact in releases repository with GAV=%s:%s:%s but those are not found on index!",
-                        verifier.getProjectGroupId(), verifier.getProjectArtifactId(), verifier.getProjectVersion() ) );
-                }
-                // sleep some before next retry
-                try
-                {
-                    // index commits happen every 1 second, so ensure we will have one at least
-                    Thread.sleep( 1000 );
-                }
-                catch ( InterruptedException e )
-                {
-                    Throwables.propagate( e );
-                }
-            }
+            Assert.fail( String.format(
+                "Nexus should have staged artifact in releases repository with GAV=%s:%s:%s but those are not found on index!",
+                verifier.getProjectGroupId(), verifier.getProjectArtifactId(), verifier.getProjectVersion() ) );
         }
     }
 

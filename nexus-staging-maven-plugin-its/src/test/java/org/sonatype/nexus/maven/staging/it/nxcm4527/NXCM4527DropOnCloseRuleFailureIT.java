@@ -22,10 +22,7 @@ import org.sonatype.nexus.maven.staging.it.PreparedVerifier;
 import org.sonatype.nexus.maven.staging.it.SimpleRountripMatrixSupport;
 import org.sonatype.nexus.mindexer.client.SearchResponse;
 
-import com.google.common.base.Throwables;
-import com.sonatype.nexus.staging.client.Profile;
 import com.sonatype.nexus.staging.client.StagingRepository;
-import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
 /**
  * See NXCM-4527, this IT implements it's verification part for Nexus Staging Maven Plugin side. Here, we build and
@@ -53,34 +50,22 @@ public class NXCM4527DropOnCloseRuleFailureIT
     @Override
     protected void postNexusAssertions( final PreparedVerifier verifier )
     {
-        // there are no staging repositories as we dropped them
-        final StagingWorkflowV2Service stagingWorkflow = getStagingWorkflowV2Service();
-        for ( Profile profile : stagingWorkflow.listProfiles() )
+        // there are no staging repositories as we dropped them (on rule failure)
+        final List<StagingRepository> stagingRepositories = getAllStagingRepositories();
+        if ( !stagingRepositories.isEmpty() )
         {
-            List<StagingRepository> stagingRepositories = stagingWorkflow.listStagingRepositories( profile.getId() );
-            if ( !stagingRepositories.isEmpty() )
-            {
-                Assert.fail( "Nexus should not have staging repositories, but it has: " + stagingRepositories );
-            }
+            Assert.fail( "Nexus should not have staging repositories, but it has: " + stagingRepositories );
         }
-        // stuff we staged should not be released
-        for ( int i = 0; i < 3; i++ )
+
+        // stuff we staged should not be released and not found by indexer
+        final SearchResponse searchResponse =
+            searchThreeTimesForGAV( verifier.getProjectGroupId(), verifier.getProjectArtifactId(),
+                verifier.getProjectVersion(), null, null, "releases" );
+        if ( !searchResponse.getHits().isEmpty() )
         {
-            final SearchResponse response =
-                getMavenIndexer().searchByGAV( verifier.getProjectGroupId(), verifier.getProjectArtifactId(),
-                    verifier.getProjectVersion(), null, null, "releases" );
-            if ( !response.getHits().isEmpty() )
-            {
-                Assert.fail( "Nexus should NOT have staged artifact in releases repository but it has!" );
-            }
-            try
-            {
-                Thread.sleep( 1000 );
-            }
-            catch ( InterruptedException e )
-            {
-                Throwables.propagate( e );
-            }
+            Assert.fail( String.format(
+                "Nexus should NOT have staged artifact in releases repository with GAV=%s:%s:%s but those are not found on index!",
+                verifier.getProjectGroupId(), verifier.getProjectArtifactId(), verifier.getProjectVersion() ) );
         }
     }
 
