@@ -17,13 +17,13 @@ import org.sonatype.nexus.maven.staging.it.PreparedVerifier;
 
 /**
  * See NXCM-4527, this IT implements it's verification part for Nexus Staging Maven Plugin side when the defaults are
- * overridden. Similar to {@link NXCM4527DropOnCloseRuleFailureIT} IT, but here we assert that staging repository is NOT
- * dropped, it should still exists.
+ * overridden. Similar to {@link NXCM4527BuildActionDropOnCloseRuleFailureIT} IT, but here we assert that staging
+ * repository is NOT dropped, it should still exists.
  * 
  * @author cstamas
  */
-public class NXCM4527DropOnCloseRuleFailureOverrideIT
-    extends NXCM4527DropOnCloseRuleFailureIT
+public class NXCM4527BuildActionDropOnCloseRuleFailureOverrideIT
+    extends NXCM4527BuildActionDropOnCloseRuleFailureIT
 {
     /**
      * Validates nexus side of affairs post maven invocations.

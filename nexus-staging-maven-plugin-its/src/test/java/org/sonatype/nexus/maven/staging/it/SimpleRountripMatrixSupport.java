@@ -28,9 +28,8 @@ import org.sonatype.nexus.bundle.launcher.NexusStartAndStopStrategy.Strategy;
 import org.sonatype.sisu.filetasks.FileTaskBuilder;
 
 /**
- * IT that "implements" the Staging V2 testing guide's "One Shot" scenario followed by the "release" Post Staging Steps
- * section. It also "verifies" that a "matrix" of projects (set up in m2 or m3 way) and maven runtimes (m2 and m3) all
- * work as expected.
+ * IT support clas that "implements" the "matrix". No reusable code (like some helper) should be added here, but into
+ * this parent class, as the matrix here is rather naive, and probably will be reimplemented.
  * 
  * @author cstamas
  * @see https://docs.sonatype.com/display/Nexus/Staging+V2+Testing

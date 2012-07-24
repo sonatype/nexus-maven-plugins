@@ -21,14 +21,14 @@ import org.sonatype.nexus.maven.staging.it.PreparedVerifier;
 
 /**
  * See NXCM-4527, this IT implements it's verification part for Nexus Staging Maven Plugin side. Here, we build and
- * deploy/stage a "malformed" project (will lack the javadoc JAR, achieved by passing in "-Dmaven.javadoc.skip=true" during
+ * stage a "malformed" project (will lack the javadoc JAR, achieved by passing in "-Dmaven.javadoc.skip=true" during
  * deploy). The project uses default settings for nexus-staging-maven-plugin, so such malformed staged project should
  * have the staging repository dropped upon rule failure. Hence, {@link #postNexusAssertions(PreparedVerifier)} contains
  * checks that there are no staging repositories but also that the artifact built is not released either.
  * 
  * @author cstamas
  */
-public class NXCM4527DropOnCloseRuleFailureIT
+public class NXCM4527BuildActionDropOnCloseRuleFailureIT
     extends NXCM4527Support
 {
     /**
@@ -46,10 +46,16 @@ public class NXCM4527DropOnCloseRuleFailureIT
     {
         try
         {
+            // we want to test the "close" build action here
+            verifier.getVerifier().addCliOption( "-DskipStagingRepositoryClose=true" );
             // skip javadoc, we want failing build
             verifier.getVerifier().addCliOption( "-Dmaven.javadoc.skip=true" );
             // v2 workflow
             verifier.getVerifier().executeGoals( Arrays.asList( "clean", "deploy" ) );
+            // should pass as we skip close
+            verifier.getVerifier().verifyErrorFreeLog();
+            // build action: close, will fail
+            verifier.getVerifier().executeGoals( Arrays.asList( "nexus-staging:close" ) );
             // should fail
             verifier.getVerifier().verifyErrorFreeLog();
             // if no exception, fail the test
