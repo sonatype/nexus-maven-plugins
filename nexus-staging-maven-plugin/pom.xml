@@ -29,10 +29,6 @@
 
   <description>Maven plugin side of Nexus Staging Suite.</description>
 
-  <properties>
-    <nexus-core.version>2.1-SNAPSHOT</nexus-core.version>
-  </properties>
-
   <dependencies>
     <!-- mojo-commons shall be used by this (and any other Sonatype) Maven plugin -->
     <dependency>
