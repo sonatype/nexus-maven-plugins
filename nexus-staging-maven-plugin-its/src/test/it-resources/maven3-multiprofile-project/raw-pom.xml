@@ -5,7 +5,7 @@
   <groupId>${itproject.groupId}</groupId>
   <artifactId>${itproject.artifactId}</artifactId>
   <version>${itproject.version}</version>
-  <packaging>jar</packaging>
+  <packaging>pom</packaging>
 
   <name>artifact</name>
   <description>Artifact</description>
@@ -39,14 +39,10 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
+  <modules>
+    <module>m1</module>
+    <module>m2</module>
+  </modules>
 
   <build>
     <plugins>
@@ -79,27 +75,12 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-deploy-plugin</artifactId>
-        <version>2.7</version>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
-      </plugin>
-      <plugin>
         <groupId>org.sonatype.plugins</groupId>
         <artifactId>nexus-staging-maven-plugin</artifactId>
         <version>${project.version}</version>
-        <executions>
-          <execution>
-            <id>default-deploy</id>
-            <phase>deploy</phase>
-            <goals>
-              <goal>deploy</goal>
-            </goals>
-          </execution>
-        </executions>
+        <extensions>true</extensions>
         <configuration>
+          <!-- all module will end up in 1st profile, except for m2 module -->
           <nexusUrl>http://localhost:${nexus.port}/nexus/</nexusUrl>
           <serverId>local-nexus</serverId>
         </configuration>

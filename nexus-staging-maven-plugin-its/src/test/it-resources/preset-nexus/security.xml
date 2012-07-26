@@ -48,6 +48,8 @@
       <roles>
         <role>staging-deployer-12a2439c79f79c6f</role>
         <role>staging-promoter-12a2439c79f79c6f</role>
+        <role>staging-deployer-23b3440d80080d70</role>
+        <role>staging-promoter-23b3440d80080d70</role>
         <role>nx-deployment</role>
         <role>repository-any-full</role>
       </roles>

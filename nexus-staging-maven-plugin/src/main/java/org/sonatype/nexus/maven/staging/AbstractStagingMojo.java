@@ -36,6 +36,8 @@ import org.sonatype.nexus.client.rest.Protocol;
 import org.sonatype.nexus.client.rest.ProxyInfo;
 import org.sonatype.nexus.client.rest.UsernamePasswordAuthenticationInfo;
 import org.sonatype.nexus.client.rest.jersey.JerseyNexusClientFactory;
+import org.sonatype.nexus.maven.staging.deploy.DeployMojo;
+import org.sonatype.nexus.maven.staging.workflow.CloseStageRepositoryMojo;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
 
@@ -146,6 +148,15 @@ public abstract class AbstractStagingMojo
      */
     private String description;
 
+    /**
+     * Controls whether the staging repository is kept or not (it will be dropped) in case of staging rule failure when
+     * "close" action is performed against it. This is applied in both cases, {@link DeployMojo} and
+     * {@link CloseStageRepositoryMojo} invocations.
+     * 
+     * @parameter expression="${keepStagingRepositoryOnCloseRuleFailure}"
+     */
+    private boolean keepStagingRepositoryOnCloseRuleFailure = false;
+
     // == getters for stuff above
 
     protected String getNexusUrl()
@@ -161,6 +172,11 @@ public abstract class AbstractStagingMojo
     protected String getDescription()
     {
         return description;
+    }
+
+    public boolean isKeepStagingRepositoryOnCloseRuleFailure()
+    {
+        return keepStagingRepositoryOnCloseRuleFailure;
     }
 
     protected String getDefaultDescriptionForAction( final String action )
@@ -448,7 +464,8 @@ public abstract class AbstractStagingMojo
         }
         catch ( UniformInterfaceException e )
         {
-            throw new MojoExecutionException( "Nexus base URL does not point to a valid Nexus location: " + e.getMessage(), e );
+            throw new MojoExecutionException( "Nexus base URL does not point to a valid Nexus location: "
+                + e.getMessage(), e );
         }
         catch ( Exception e )
         {
