@@ -11,11 +11,54 @@
       <targetGroups>
         <targetGroup>public</targetGroup>
       </targetGroups>
+      <closeRuleSets>
+        <closeRuleSet>12a3be672a21b49d</closeRuleSet>
+      </closeRuleSets>
+      <promoteTargetRepository>releases</promoteTargetRepository>
+      <mode>BOTH</mode>
+    </profile>
+    <profile>
+      <id>23b3440d80080d70</id>
+      <name>Test2</name>
+      <repositoryTargetId>1</repositoryTargetId>
+      <repositoryTemplateId>default_hosted_release</repositoryTemplateId>
+      <repositoryType>maven2</repositoryType>
+      <targetGroups>
+        <targetGroup>public</targetGroup>
+      </targetGroups>
+      <closeRuleSets>
+        <closeRuleSet>12a3be672a21b49d</closeRuleSet>
+      </closeRuleSets>
       <promoteTargetRepository>releases</promoteTargetRepository>
       <mode>BOTH</mode>
     </profile>
   </profiles>
   <profileOrder>
     <profileOrder>12a2439c79f79c6f</profileOrder>
+    <profileOrder>23b3440d80080d70</profileOrder>
   </profileOrder>
+  <ruleSets>
+    <ruleSet>
+      <id>12a3be672a21b49d</id>
+      <name>Common Rule</name>
+      <description>Enforces presence of Javadoc and Sources and Checksums</description>
+      <rules>
+        <rule>
+          <name>Staging Checksum Validation</name>
+          <type>checksum-staging</type>
+          <enabled>true</enabled>
+        </rule>
+        <rule>
+          <name>Staging Javadoc Validation</name>
+          <type>javadoc-staging</type>
+          <enabled>true</enabled>
+        </rule>
+        <rule>
+          <name>Staging Sources Validation</name>
+          <type>sources-staging</type>
+          <enabled>true</enabled>
+        </rule>
+      </rules>
+    </ruleSet>
+  </ruleSets>
 </stagingConfiguration>

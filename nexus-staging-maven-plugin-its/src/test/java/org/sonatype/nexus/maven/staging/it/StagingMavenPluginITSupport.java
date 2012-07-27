@@ -28,6 +28,8 @@ import javax.inject.Inject;
 
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.DefaultModelReader;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.Timeout;
@@ -42,12 +44,16 @@ import org.sonatype.nexus.client.core.NexusClient;
 import org.sonatype.nexus.client.rest.NexusClientFactory;
 import org.sonatype.nexus.client.rest.UsernamePasswordAuthenticationInfo;
 import org.sonatype.nexus.mindexer.client.MavenIndexer;
+import org.sonatype.nexus.mindexer.client.SearchResponse;
 import org.sonatype.sisu.bl.support.resolver.BundleResolver;
 import org.sonatype.sisu.filetasks.FileTaskBuilder;
 import org.sonatype.sisu.goodies.common.Time;
 
+import com.google.common.base.Throwables;
 import com.google.inject.Binder;
 import com.google.inject.name.Names;
+import com.sonatype.nexus.staging.client.Profile;
+import com.sonatype.nexus.staging.client.StagingRepository;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
 /**
@@ -59,7 +65,7 @@ import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 public abstract class StagingMavenPluginITSupport
     extends NexusRunningITSupport
 {
-    private final Logger logger = LoggerFactory.getLogger( StagingMavenPluginITSupport.class );
+    protected final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Rule
     public final Timeout defaultTimeout = new Timeout( Time.minutes( 5 ).toMillisI() );
@@ -143,6 +149,7 @@ public abstract class StagingMavenPluginITSupport
     @Before
     public void createClient()
     {
+        logger.info( "Creating NexusClient..." );
         nexusDeploymentClient =
             nexusClientFactory.createFor( baseUrlFrom( nexus().getUrl() ), new UsernamePasswordAuthenticationInfo(
                 "deployment", "deployment123" ) );
@@ -158,8 +165,8 @@ public abstract class StagingMavenPluginITSupport
         return nexusDeploymentClient.getSubsystem( StagingWorkflowV2Service.class );
     }
 
-    public Verifier createMavenVerifier( final String testId, final String mavenVersion, final File mavenSettings,
-                                         final File baseDir )
+    public PreparedVerifier createMavenVerifier( final String testId, final String mavenVersion,
+                                                 final File mavenSettings, final File baseDir )
         throws VerificationException, IOException
     {
         final File mavenHome = mavenHomes.get( mavenVersion );
@@ -168,24 +175,39 @@ public abstract class StagingMavenPluginITSupport
             throw new IllegalArgumentException( "Maven version " + mavenVersion + " was not prepared!" );
         }
 
-        final String logname = "maven-" + mavenVersion + ".log";
+        final String logname = testId + "-maven-" + mavenVersion + ".log";
         final String localRepoName = "target/maven-local-repository/";
         final File localRepoFile = new File( getBasedir(), localRepoName );
         final File filteredSettings = new File( getBasedir(), "target/settings.xml" );
         fileTaskBuilder.copy().file( file( mavenSettings ) ).filterUsing( "nexus.port",
             String.valueOf( nexus().getPort() ) ).to().file( file( filteredSettings ) ).run();
 
+        final String projectGroupId;
+        final String projectArtifactId;
+        final String projectVersion;
         // filter the POM if needed
+        final File pom = new File( baseDir, "pom.xml" );
         final File rawPom = new File( baseDir, "raw-pom.xml" );
         if ( rawPom.isFile() )
         {
+            projectGroupId = getClass().getPackage().getName();
+            projectArtifactId = baseDir.getName() + "-" + mavenVersion;
+            projectVersion = "1.0";
             final Properties context = new Properties();
             context.setProperty( "nexus.port", String.valueOf( nexus().getPort() ) );
-            context.setProperty( "itproject.groupId", "org.nexusit" );
-            context.setProperty( "itproject.artifactId", baseDir.getName() + "-" + mavenVersion );
-            context.setProperty( "itproject.version", "1.0" );
-            final File pom = new File( baseDir, "pom.xml" );
-            fileTaskBuilder.copy().file( file( rawPom ) ).filterUsing( context ).to().file( file( pom ) ).run();
+            context.setProperty( "itproject.groupId", projectGroupId );
+            context.setProperty( "itproject.artifactId", projectArtifactId );
+            context.setProperty( "itproject.version", projectVersion );
+            filterPomsIfNeeded( baseDir, context );
+        }
+        else
+        {
+            // TODO: improve this, as this below is not quite true,
+            // but this will do it for now and we do not use non-interpolated POMs for now anyway
+            final Model model = new DefaultModelReader().read( pom, null );
+            projectGroupId = model.getGroupId();
+            projectArtifactId = model.getArtifactId();
+            projectVersion = model.getVersion();
         }
 
         System.setProperty( "maven.home", mavenHome.getAbsolutePath() );
@@ -199,6 +221,107 @@ public abstract class StagingMavenPluginITSupport
         options.add( "-Dmaven.repo.local=" + localRepoFile.getAbsolutePath() );
         options.add( "-s " + filteredSettings.getAbsolutePath() );
         verifier.setCliOptions( options );
-        return verifier;
+        return new PreparedVerifier( verifier, baseDir, projectGroupId, projectArtifactId, projectVersion );
+    }
+
+    /**
+     * Recurses the baseDir searching for POMs and filters them.
+     * 
+     * @param baseDir
+     * @param properties
+     * @throws IOException
+     */
+    protected void filterPomsIfNeeded( final File baseDir, final Properties properties )
+        throws IOException
+    {
+        final File pom = new File( baseDir, "pom.xml" );
+        final File rawPom = new File( baseDir, "raw-pom.xml" );
+        if ( rawPom.isFile() )
+        {
+            fileTaskBuilder.copy().file( file( rawPom ) ).filterUsing( properties ).to().file( file( pom ) ).run();
+        }
+        else if ( !pom.isFile() )
+        {
+            // error
+            throw new IOException( "No raw-POM nor proper POM found!" );
+        }
+
+        final File[] fileList = baseDir.listFiles();
+        if ( fileList != null )
+        {
+            for ( File file : fileList )
+            {
+                // recurse only non src and target folders (sanity check)
+                if ( file.isDirectory() && !"src".equals( file.getName() ) && !"target".equals( file.getName() ) )
+                {
+                    filterPomsIfNeeded( file, properties );
+                }
+            }
+        }
+    }
+
+    // ==
+
+    /**
+     * Returns the list of all staging repositories - whether open or closed - found in all profiles (all staging
+     * repositories present instance-wide).
+     * 
+     * @return
+     */
+    protected List<StagingRepository> getAllStagingRepositories()
+    {
+        final ArrayList<StagingRepository> result = new ArrayList<StagingRepository>();
+        final StagingWorkflowV2Service stagingWorkflow = getStagingWorkflowV2Service();
+        final List<Profile> profiles = stagingWorkflow.listProfiles();
+        for ( Profile profile : profiles )
+        {
+            final List<StagingRepository> stagingRepositories =
+                stagingWorkflow.listStagingRepositories( profile.getId() );
+            result.addAll( stagingRepositories );
+        }
+        return result;
+    }
+
+    /**
+     * Returns the list of all staging repositories - whether open or closed - found in passed in profile.
+     * 
+     * @return
+     */
+    protected List<StagingRepository> getProfileStagingRepositories( final Profile profile )
+    {
+        List<StagingRepository> stagingRepositories =
+            getStagingWorkflowV2Service().listStagingRepositories( profile.getId() );
+        return stagingRepositories;
+    }
+
+    /**
+     * Performs a "cautious" search for GAV that is somewhat "shielded" against Nexus Indexer asynchronicity. It will
+     * repeat the search 3 times, with 1000 milliseconds pause. The reason to do this, to be "almost sure" it is or it
+     * is not found, as Maven Indexer performs commits every second (hence, search might catch the pre-commit state),
+     * but also the execution path as for example a deploy "arrives" to index is itself async too
+     * (AsynchronousEventInspector). Hence, this method in short does a GAV search, but is "shielded" with some retries
+     * and sleeps to make sure that result is correct. For input parameters see
+     * {@link MavenIndexer#searchByGAV(String, String, String, String, String, String)} method.
+     * 
+     * @return
+     */
+    protected SearchResponse searchThreeTimesForGAV( final String groupId, final String artifactId,
+                                                     final String version, final String classifier, final String type,
+                                                     final String repositoryId )
+    {
+        SearchResponse response = null;
+        for ( int i = 0; i < 3; i++ )
+        {
+            response = getMavenIndexer().searchByGAV( groupId, artifactId, version, classifier, type, repositoryId );
+            try
+            {
+                Thread.sleep( 1000 );
+            }
+            catch ( InterruptedException e )
+            {
+                Throwables.propagate( e );
+            }
+        }
+        return response;
     }
 }

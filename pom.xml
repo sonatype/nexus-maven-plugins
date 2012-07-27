@@ -318,7 +318,7 @@
           <configuration>
             <redirectTestOutputToFile>${maven.test.redirectTestOutputToFile}</redirectTestOutputToFile>
             <!-- force use of property -->
-            <forkMode>once</forkMode>
+            <forkMode>always</forkMode>
             <argLine>-ea</argLine>
             <workingDirectory>${project.build.directory}</workingDirectory>
             <systemPropertyVariables>

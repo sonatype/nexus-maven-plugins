@@ -15,6 +15,8 @@ package org.sonatype.nexus.maven.staging.deploy;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -41,6 +43,7 @@ import ch.qos.logback.classic.Level;
 
 import com.sonatype.nexus.staging.client.Profile;
 import com.sonatype.nexus.staging.client.ProfileMatchingParameters;
+import com.sonatype.nexus.staging.client.StagingRuleFailures;
 import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
@@ -199,6 +202,7 @@ public abstract class AbstractDeployMojo
     protected void stageRemotely()
         throws ArtifactDeploymentException, MojoExecutionException
     {
+        getLog().info( "Staging remotely..." );
         final File stageRoot = getStagingDirectoryRoot();
         final File[] localStageRepositories = stageRoot.listFiles();
         if ( localStageRepositories == null )
@@ -206,6 +210,8 @@ public abstract class AbstractDeployMojo
             getLog().info( "We have nothing locally staged, bailing out." );
             return;
         }
+        final List<StagingRepository> zappedStagingRepositories = new ArrayList<StagingRepository>();
+        Throwable problem = null;
         for ( File profileDirectory : localStageRepositories )
         {
             if ( !profileDirectory.isDirectory() )
@@ -232,31 +238,44 @@ public abstract class AbstractDeployMojo
             else
             {
                 // we do staging
-                getLog().info( "Performing staging against Nexus on URL " + getNexusUrl() );
+                getLog().info( " * Connecting to Nexus on URL " + getNexusUrl() );
                 final NexusStatus nexusStatus = getNexusClient().getNexusStatus();
                 getLog().info(
                     String.format( " * Remote Nexus reported itself as version %s and edition \"%s\"",
                         nexusStatus.getVersion(), nexusStatus.getEditionLong() ) );
 
-                boolean successful = false;
                 final Profile stagingProfile = selectStagingProfileById( profileId );
                 final StagingRepository stagingRepository = beforeUpload( stagingProfile );
+                zappedStagingRepositories.add( stagingRepository );
                 try
                 {
                     final String deployUrl = calculateUploadUrl( stagingRepository );
                     zapUp( getStagingDirectory( profileId ), deployUrl );
-                    successful = true;
+                    afterUpload( stagingRepository, skipStagingRepositoryClose );
                 }
                 catch ( IOException e )
                 {
-                    throw new ArtifactDeploymentException( "Cannot deploy!", e );
+                    problem = e;
+                    break;
                 }
-                finally
+                catch ( StagingRuleFailuresException e )
                 {
-                    afterUpload( stagingRepository, skipStagingRepositoryClose, successful );
+                    problem = e;
+                    break;
                 }
             }
         }
+        if ( problem != null )
+        {
+            afterUploadFailure( zappedStagingRepositories, problem );
+            getLog().error( "Remote staging finished with a failure." );
+            throw new ArtifactDeploymentException( "Remote staging failed: " + problem.getMessage(), problem );
+        }
+        else
+        {
+            getLog().info( "Remote staging finished with success." );
+        }
+
     }
 
     protected void zapUp( final File sourceDirectory, final String deployUrl )
@@ -293,7 +312,7 @@ public abstract class AbstractDeployMojo
         }
         zapper.deployDirectory( request );
         LogbackUtils.syncLogLevelWithMaven( getLog() );
-        getLog().info( " * Upload of locally staged artifacts done." );
+        getLog().info( " * Upload of locally staged artifacts finished." );
     }
 
     // ==
@@ -432,49 +451,45 @@ public abstract class AbstractDeployMojo
      * @param managed
      * @param skipClose
      * @param successful
-     * @throws ArtifactDeploymentException
      * @throws MojoExecutionException
+     * @throws StagingRuleFailuresException
      */
-    protected void afterUpload( final StagingRepository stagingRepository, final boolean skipClose,
-                                final boolean successful )
-        throws ArtifactDeploymentException, MojoExecutionException
+    protected void afterUpload( final StagingRepository stagingRepository, final boolean skipClose )
+        throws MojoExecutionException, StagingRuleFailuresException
     {
         // if upload successful. write out the properties file
-        if ( successful )
+        final String stagingRepositoryUrl =
+            concat( getNexusUrl(), "/content/repositories", stagingRepository.getRepositoryId() );
+
+        final Properties stagingProperties = new Properties();
+        // the staging repository ID where the staging went
+        stagingProperties.put( STAGING_REPOSITORY_ID, stagingRepository.getRepositoryId() );
+        // the staging repository's profile ID where the staging went
+        stagingProperties.put( STAGING_REPOSITORY_PROFILE_ID, stagingRepository.getProfile().getId() );
+        // the staging repository URL (if closed! see below)
+        stagingProperties.put( STAGING_REPOSITORY_URL, stagingRepositoryUrl );
+        // targeted repo mode or not (are we closing it or someone else? If false, the URL above might not yet
+        // exists if not yet closed....
+        stagingProperties.put( STAGING_REPOSITORY_MANAGED, String.valueOf( stagingRepository.isManaged() ) );
+
+        final File stagingPropertiesFile =
+            new File( getStagingDirectoryRoot(), stagingRepository.getProfile().getId()
+                + STAGING_REPOSITORY_PROPERTY_FILE_NAME_SUFFIX );
+        FileOutputStream fout = null;
+        try
         {
-            final String stagingRepositoryUrl =
-                concat( getNexusUrl(), "/content/repositories", stagingRepository.getRepositoryId() );
-
-            final Properties stagingProperties = new Properties();
-            // the staging repository ID where the staging went
-            stagingProperties.put( STAGING_REPOSITORY_ID, stagingRepository.getRepositoryId() );
-            // the staging repository's profile ID where the staging went
-            stagingProperties.put( STAGING_REPOSITORY_PROFILE_ID, stagingRepository.getProfile().getId() );
-            // the staging repository URL (if closed! see below)
-            stagingProperties.put( STAGING_REPOSITORY_URL, stagingRepositoryUrl );
-            // targeted repo mode or not (are we closing it or someone else? If false, the URL above might not yet
-            // exists if not yet closed....
-            stagingProperties.put( STAGING_REPOSITORY_MANAGED, String.valueOf( stagingRepository.isManaged() ) );
-
-            final File stagingPropertiesFile =
-                new File( getStagingDirectoryRoot(), stagingRepository.getProfile().getId()
-                    + STAGING_REPOSITORY_PROPERTY_FILE_NAME_SUFFIX );
-            FileOutputStream fout = null;
-            try
-            {
-                fout = new FileOutputStream( stagingPropertiesFile );
-                stagingProperties.store( fout, "Generated by " + getPluginGav() );
-                fout.flush();
-            }
-            catch ( IOException e )
-            {
-                throw new ArtifactDeploymentException( "Error saving staging repository properties to file "
-                    + stagingPropertiesFile, e );
-            }
-            finally
-            {
-                IOUtil.close( fout );
-            }
+            fout = new FileOutputStream( stagingPropertiesFile );
+            stagingProperties.store( fout, "Generated by " + getPluginGav() );
+            fout.flush();
+        }
+        catch ( IOException e )
+        {
+            throw new MojoExecutionException( "Error saving staging repository properties to file "
+                + stagingPropertiesFile, e );
+        }
+        finally
+        {
+            IOUtil.close( fout );
         }
 
         // if repository is managed, then manage it
@@ -485,29 +500,22 @@ public abstract class AbstractDeployMojo
             {
                 if ( !skipClose )
                 {
-                    if ( successful )
+                    try
                     {
                         getLog().info(
                             " * Closing staging repository with ID \"" + stagingRepository.getRepositoryId() + "\"." );
                         stagingService.finishStaging( stagingRepository.getProfile(),
                             stagingRepository.getRepositoryId(), getDescriptionWithDefaultsForAction( "Closed" ) );
                     }
-                    else
+                    catch ( StagingRuleFailuresException e )
                     {
-                        if ( !keepStagingRepositoryOnFailure )
-                        {
-                            getLog().warn(
-                                "Dropping failed staging repository with ID \"" + stagingRepository.getRepositoryId()
-                                    + "\" (due to unsuccesful upload)." );
-                            stagingService.dropStagingRepositories( getDefaultDescriptionForAction( "Dropped" )
-                                + " (due to unsuccesful upload).", stagingRepository.getRepositoryId() );
-                        }
-                        else
-                        {
-                            getLog().warn(
-                                "Not dropping failed staging repository with ID \""
-                                    + stagingRepository.getRepositoryId() + "\" (due to unsuccesful upload)." );
-                        }
+                        getLog().error(
+                            "Rule failure while trying to close staging repository with ID \""
+                                + stagingRepository.getRepositoryId() + "\"." );
+                        // report staging repository failures
+                        ErrorDumper.dumpErrors( getLog(), e );
+                        // rethrow
+                        throw e;
                     }
                 }
                 else
@@ -515,7 +523,6 @@ public abstract class AbstractDeployMojo
                     getLog().info(
                         " * Not closing staging repository with ID \"" + stagingRepository.getRepositoryId() + "\"." );
                 }
-                getLog().info( "Finished staging against Nexus " + ( successful ? "with success." : "with failure." ) );
             }
             catch ( NexusErrorMessageException e )
             {
@@ -527,21 +534,113 @@ public abstract class AbstractDeployMojo
                 throw new MojoExecutionException( "Could not perform action against repository \""
                     + stagingRepository.getRepositoryId() + "\": Nexus ErrorResponse received!", e );
             }
-            catch ( StagingRuleFailuresException e )
+        }
+    }
+
+    /**
+     * Performs various cleanup after staging repository failure.
+     * 
+     * @param stagingRepositories
+     * @param problem
+     * @throws MojoExecutionException
+     */
+    protected void afterUploadFailure( final List<StagingRepository> stagingRepositories, final Throwable problem )
+        throws MojoExecutionException
+    {
+        // rule failed, undo all what we did on server side and client side: drop all the products of this reactor
+        if ( problem instanceof StagingRuleFailuresException )
+        {
+            final StagingRuleFailuresException srfe = (StagingRuleFailuresException) problem;
+            final List<String> failedRepositories = new ArrayList<String>();
+            for ( StagingRuleFailures failures : srfe.getFailures() )
             {
-                getLog().error(
-                    "Error while trying to close staging repository with ID \"" + stagingRepository.getRepositoryId()
-                        + "\"." );
-                ErrorDumper.dumpErrors( getLog(), e );
-                // fail the build
-                throw new MojoExecutionException( "Could not perform action against repository \""
-                    + stagingRepository.getRepositoryId() + "\": there are failing staging rules!", e );
+                failedRepositories.add( failures.getRepositoryName() + "(id=" + failures.getRepositoryId() + ")" );
+            }
+            final String msg = "Rule failure during close of staging repositories: " + failedRepositories;
+
+            getLog().error( "Cleaning up local stage directory after a " + msg );
+            // delete properties (as they are getting created when remotely staged)
+            final File stageRoot = getStagingDirectoryRoot();
+            final File[] localStageRepositories = stageRoot.listFiles();
+            if ( localStageRepositories != null )
+            {
+                for ( File file : localStageRepositories )
+                {
+                    if ( file.isFile() && file.getName().endsWith( STAGING_REPOSITORY_PROPERTY_FILE_NAME_SUFFIX ) )
+                    {
+                        getLog().error(
+                            " * Deleting context " + file.getName() );
+                        file.delete();
+                    }
+                }
+            }
+
+            getLog().error( "Cleaning up remote stage repositories after a " + msg );
+            // drop all created staging repositories
+            final StagingWorkflowV2Service stagingService = getStagingWorkflowService();
+            for ( StagingRepository stagingRepository : stagingRepositories )
+            {
+                if ( stagingRepository.isManaged() )
+                {
+                    if ( !isKeepStagingRepositoryOnCloseRuleFailure() )
+                    {
+                        getLog().error(
+                            " * Dropping failed staging repository with ID \"" + stagingRepository.getRepositoryId()
+                                + "\" (" + msg + ")." );
+                        stagingService.dropStagingRepositories( getDefaultDescriptionForAction( "Dropped" ) + " ("
+                            + msg + ").", stagingRepository.getRepositoryId() );
+                    }
+                    else
+                    {
+                        getLog().error(
+                            " * Not dropping failed staging repository with ID \"" + stagingRepository.getRepositoryId()
+                                + "\" (" + msg + ")." );
+                    }
+                }
             }
         }
-
-        if ( !successful )
+        else if ( problem instanceof IOException )
         {
-            getLog().error( "Remote staging was unsuccesful!" );
+            getLog().error( "Cleaning up local stage directory after an upload IO failure." );
+            // delete properties (as they are getting created when remotely staged)
+            final File stageRoot = getStagingDirectoryRoot();
+            final File[] localStageRepositories = stageRoot.listFiles();
+            if ( localStageRepositories != null )
+            {
+                for ( File file : localStageRepositories )
+                {
+                    if ( file.isFile() && file.getName().endsWith( STAGING_REPOSITORY_PROPERTY_FILE_NAME_SUFFIX ) )
+                    {
+                        getLog().error(
+                            " * Deleting context " + file.getName() );
+                        file.delete();
+                    }
+                }
+            }
+
+            getLog().error( "Cleaning up remote stage repositories after an upload IO failure." );
+            // drop all created staging repositories
+            final StagingWorkflowV2Service stagingService = getStagingWorkflowService();
+            for ( StagingRepository stagingRepository : stagingRepositories )
+            {
+                if ( stagingRepository.isManaged() )
+                {
+                    if ( !keepStagingRepositoryOnFailure )
+                    {
+                        getLog().error(
+                            " * Dropping failed staging repository with ID \"" + stagingRepository.getRepositoryId()
+                                + "\" (due to unsuccesful upload)." );
+                        stagingService.dropStagingRepositories( getDefaultDescriptionForAction( "Dropped" )
+                            + " (due to unsuccesful upload).", stagingRepository.getRepositoryId() );
+                    }
+                    else
+                    {
+                        getLog().error(
+                            " * Not dropping failed staging repository with ID \"" + stagingRepository.getRepositoryId()
+                                + "\" (due to unsuccesful upload)." );
+                    }
+                }
+            }
         }
     }
 
