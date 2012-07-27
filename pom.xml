@@ -289,7 +289,7 @@
             <autoVersionSubmodules>true</autoVersionSubmodules>
             <useReleaseProfile>false</useReleaseProfile>
             <goals>deploy</goals>
-            <arguments>-Prelease ${arguments}</arguments>
+            <arguments>-Prelease -Pnoit ${arguments}</arguments>
           </configuration>
         </plugin>
         <plugin>
