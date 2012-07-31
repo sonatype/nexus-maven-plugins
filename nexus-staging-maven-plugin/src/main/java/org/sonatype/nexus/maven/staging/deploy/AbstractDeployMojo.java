@@ -235,6 +235,12 @@ public abstract class AbstractDeployMojo
             else
             {
                 // we do staging
+                if ( getNexusClient() == null )
+                {
+                    createTransport( getNexusUrl() );
+                    createNexusClient( getServer(), getProxy() );
+                }
+
                 getLog().info( " * Connecting to Nexus on URL " + getNexusUrl() );
                 final NexusStatus nexusStatus = getNexusClient().getNexusStatus();
                 getLog().info(
