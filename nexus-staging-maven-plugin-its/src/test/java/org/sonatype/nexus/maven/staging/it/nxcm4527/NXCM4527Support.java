@@ -17,7 +17,7 @@ import java.util.List;
 import junit.framework.Assert;
 
 import org.sonatype.nexus.maven.staging.it.PreparedVerifier;
-import org.sonatype.nexus.maven.staging.it.SimpleRountripMatrixSupport;
+import org.sonatype.nexus.maven.staging.it.SimpleRoundtripMatrixBaseTests;
 import org.sonatype.nexus.mindexer.client.SearchResponse;
 
 import com.sonatype.nexus.staging.client.StagingRepository;
@@ -29,7 +29,7 @@ import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
  * @author cstamas
  */
 public abstract class NXCM4527Support
-    extends SimpleRountripMatrixSupport
+    extends SimpleRoundtripMatrixBaseTests
 {
     /**
      * Drop left-behind staging repositories to interfere with subsequent assertions (we share nexus instance, it is

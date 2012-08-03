@@ -19,7 +19,7 @@ import junit.framework.Assert;
 
 import org.apache.maven.it.VerificationException;
 import org.sonatype.nexus.maven.staging.it.PreparedVerifier;
-import org.sonatype.nexus.maven.staging.it.SimpleRountripMatrixSupport;
+import org.sonatype.nexus.maven.staging.it.SimpleRoundtripMatrixBaseTests;
 import org.sonatype.nexus.mindexer.client.SearchResponse;
 
 import com.sonatype.nexus.staging.client.StagingRepository;
@@ -33,7 +33,7 @@ import com.sonatype.nexus.staging.client.StagingRepository;
  * @see https://docs.sonatype.com/display/Nexus/Staging+V2+Testing
  */
 public class SimpleV2RoundtripIT
-    extends SimpleRountripMatrixSupport
+    extends SimpleRoundtripMatrixBaseTests
 {
     /**
      * Nothing to validate before hand.

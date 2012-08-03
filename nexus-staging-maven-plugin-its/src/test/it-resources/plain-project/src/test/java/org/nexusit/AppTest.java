@@ -10,37 +10,41 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.nexus.maven.staging.deploy;
+package org.nexusit;
 
-import com.sonatype.nexus.staging.client.Profile;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
-public class StagingRepository
+/**
+ * Unit test for simple App.
+ */
+public class AppTest 
+    extends TestCase
 {
-    private final Profile profile;
-
-    private final String repositoryId;
-
-    private final boolean managed;
-
-    public StagingRepository( final Profile profile, final String repositoryId, final boolean managed )
+    /**
+     * Create the test case
+     *
+     * @param testName name of the test case
+     */
+    public AppTest( String testName )
     {
-        this.profile = profile;
-        this.repositoryId = repositoryId;
-        this.managed = managed;
+        super( testName );
     }
 
-    protected Profile getProfile()
+    /**
+     * @return the suite of tests being tested
+     */
+    public static Test suite()
     {
-        return profile;
+        return new TestSuite( AppTest.class );
     }
 
-    protected String getRepositoryId()
+    /**
+     * Rigourous Test :-)
+     */
+    public void testApp()
     {
-        return repositoryId;
-    }
-
-    protected boolean isManaged()
-    {
-        return managed;
+        assertTrue( true );
     }
 }
