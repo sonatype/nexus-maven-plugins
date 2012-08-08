@@ -82,7 +82,7 @@ public abstract class StagingMavenPluginITSupport
     protected final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Rule
-    public final Timeout defaultTimeout = new Timeout( Time.minutes( 5 ).toMillisI() );
+    public final Timeout defaultTimeout = new Timeout( Time.minutes( 10 ).toMillisI() );
 
     @Inject
     private NexusClientFactory nexusClientFactory;
