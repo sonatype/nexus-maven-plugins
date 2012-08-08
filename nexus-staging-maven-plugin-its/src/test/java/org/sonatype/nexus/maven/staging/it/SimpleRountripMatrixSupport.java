@@ -38,13 +38,18 @@ public abstract class SimpleRountripMatrixSupport
     @Inject
     private FileTaskBuilder fileTaskBuilder;
 
+    public SimpleRountripMatrixSupport( final String nexusBundleCoordinates )
+    {
+        super( nexusBundleCoordinates );
+    }
+
     @Override
     protected NexusBundleConfiguration configureNexus( final NexusBundleConfiguration configuration )
     {
         // TODO: (cstamas) I promised to Alin to change this "old way of doing things" to use of REST API that would
         // configure Nexus properly once the Security and Staging Management Nexus Client subsystems are done.
         return super.configureNexus( configuration ).addOverlays(
-            fileTaskBuilder.copy().directory( file( resolveTestFile( "preset-nexus" ) ) ).to().directory(
+            fileTaskBuilder.copy().directory( file( testData().resolveFile( "preset-nexus" ) ) ).to().directory(
                 path( "sonatype-work/nexus/conf" ) ) );
     }
 
@@ -119,7 +124,7 @@ public abstract class SimpleRountripMatrixSupport
     {
         final PreparedVerifier verifier =
             createMavenVerifier( getClass().getSimpleName(), M2_VERSION,
-                resolveTestFile( "preset-nexus-maven-settings.xml" ), new File( getBasedir(),
+                testData().resolveFile( "preset-nexus-maven-settings.xml" ), new File( getBasedir(),
                     "target/test-classes/maven2-project" ) );
         roundtrip( verifier );
     }
@@ -136,7 +141,7 @@ public abstract class SimpleRountripMatrixSupport
     {
         final PreparedVerifier verifier =
             createMavenVerifier( getClass().getSimpleName(), M3_VERSION,
-                resolveTestFile( "preset-nexus-maven-settings.xml" ), new File( getBasedir(),
+                testData().resolveFile( "preset-nexus-maven-settings.xml" ), new File( getBasedir(),
                     "target/test-classes/maven2-project" ) );
         roundtrip( verifier );
     }
@@ -153,7 +158,7 @@ public abstract class SimpleRountripMatrixSupport
     {
         final PreparedVerifier verifier =
             createMavenVerifier( getClass().getSimpleName(), M3_VERSION,
-                resolveTestFile( "preset-nexus-maven-settings.xml" ), new File( getBasedir(),
+                testData().resolveFile( "preset-nexus-maven-settings.xml" ), new File( getBasedir(),
                     "target/test-classes/maven3-project" ) );
         roundtrip( verifier );
     }

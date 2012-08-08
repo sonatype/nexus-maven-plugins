@@ -35,6 +35,12 @@ import com.sonatype.nexus.staging.client.StagingRepository;
 public class SimpleV2RoundtripIT
     extends SimpleRountripMatrixSupport
 {
+
+    public SimpleV2RoundtripIT( final String nexusBundleCoordinates )
+    {
+        super( nexusBundleCoordinates );
+    }
+
     /**
      * Nothing to validate before hand.
      */

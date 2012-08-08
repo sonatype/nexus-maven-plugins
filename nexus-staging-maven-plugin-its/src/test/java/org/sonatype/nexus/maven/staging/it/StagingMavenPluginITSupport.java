@@ -13,12 +13,18 @@
 package org.sonatype.nexus.maven.staging.it;
 
 import static org.sonatype.nexus.client.rest.BaseUrl.baseUrlFrom;
+import static org.sonatype.nexus.testsuite.support.NexusStartAndStopStrategy.Strategy.*;
+import static org.sonatype.nexus.testsuite.support.ParametersLoaders.firstAvailableTestParameters;
+import static org.sonatype.nexus.testsuite.support.ParametersLoaders.systemTestParameters;
+import static org.sonatype.nexus.testsuite.support.ParametersLoaders.testParameters;
 import static org.sonatype.sisu.filetasks.builder.FileRef.file;
+import static org.sonatype.sisu.goodies.common.Varargs.$;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,25 +39,21 @@ import org.apache.maven.model.io.DefaultModelReader;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.Timeout;
+import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.nexus.bundle.launcher.NexusBundleConfiguration;
-import org.sonatype.nexus.bundle.launcher.NexusRunningITSupport;
-import org.sonatype.nexus.bundle.launcher.NexusStartAndStopStrategy;
-import org.sonatype.nexus.bundle.launcher.NexusStartAndStopStrategy.Strategy;
-import org.sonatype.nexus.bundle.launcher.support.NexusBundleResolver;
 import org.sonatype.nexus.client.core.NexusClient;
 import org.sonatype.nexus.client.rest.NexusClientFactory;
 import org.sonatype.nexus.client.rest.UsernamePasswordAuthenticationInfo;
 import org.sonatype.nexus.mindexer.client.MavenIndexer;
 import org.sonatype.nexus.mindexer.client.SearchResponse;
-import org.sonatype.sisu.bl.support.resolver.BundleResolver;
+import org.sonatype.nexus.testsuite.support.NexusRunningParametrizedITSupport;
+import org.sonatype.nexus.testsuite.support.NexusStartAndStopStrategy;
 import org.sonatype.sisu.filetasks.FileTaskBuilder;
 import org.sonatype.sisu.goodies.common.Time;
 
 import com.google.common.base.Throwables;
-import com.google.inject.Binder;
-import com.google.inject.name.Names;
 import com.sonatype.nexus.staging.client.Profile;
 import com.sonatype.nexus.staging.client.StagingRepository;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
@@ -61,14 +63,26 @@ import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
  * 
  * @author cstamas
  */
-@NexusStartAndStopStrategy( Strategy.EACH_TEST )
+@NexusStartAndStopStrategy( EACH_TEST )
 public abstract class StagingMavenPluginITSupport
-    extends NexusRunningITSupport
+    extends NexusRunningParametrizedITSupport
 {
+
+    @Parameterized.Parameters
+    public static Collection<Object[]> data()
+    {
+        return firstAvailableTestParameters(
+            systemTestParameters(),
+            testParameters(
+                $( "com.sonatype.nexus:nexus-professional:zip:bundle" )
+            )
+        ).load();
+    }
+
     protected final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Rule
-    public final Timeout defaultTimeout = new Timeout( Time.minutes( 5 ).toMillisI() );
+    public final Timeout defaultTimeout = new Timeout( Time.minutes( 10 ).toMillisI() );
 
     @Inject
     private NexusClientFactory nexusClientFactory;
@@ -78,26 +92,15 @@ public abstract class StagingMavenPluginITSupport
 
     private NexusClient nexusDeploymentClient;
 
+    public StagingMavenPluginITSupport( final String nexusBundleCoordinates )
+    {
+        super( nexusBundleCoordinates );
+    }
+
     @Override
     protected NexusBundleConfiguration configureNexus( final NexusBundleConfiguration configuration )
     {
         return configuration.setSystemProperty( "nexus.createTrialLicense", Boolean.TRUE.toString() );
-    }
-
-    @Override
-    public void configure( final Binder binder )
-    {
-        super.configure( binder );
-        binder.bind( BundleResolver.class ).annotatedWith(
-            Names.named( NexusBundleResolver.FALLBACK_NEXUS_BUNDLE_RESOLVER ) ).toInstance( new BundleResolver()
-        {
-            @Override
-            public File resolve()
-            {
-                return resolveFromDependencyManagement( "com.sonatype.nexus", "nexus-professional", null, null, null,
-                    null );
-            }
-        } );
     }
 
     private final String MAVEN_G = "org.apache.maven";
@@ -133,7 +136,8 @@ public abstract class StagingMavenPluginITSupport
             if ( !mavenHome.isDirectory() )
             {
                 logger.info( "  Expanding Maven " + mavenVersion + "..." );
-                final File maven2bundle = resolveArtifact( MAVEN_G + ":" + MAVEN_A + ":zip:bin:" + mavenVersion );
+                final File maven2bundle = artifactResolver().resolveArtifact(
+                    MAVEN_G + ":" + MAVEN_A + ":zip:bin:" + mavenVersion );
                 fileTaskBuilder.expand( file( maven2bundle ) ).to().directory( file( mavenHomesBase ) ).run();
                 fileTaskBuilder.chmod( file( new File( mavenHome, "bin" ) ) ).include( "mvn" ).permissions( "755" ).run();
             }

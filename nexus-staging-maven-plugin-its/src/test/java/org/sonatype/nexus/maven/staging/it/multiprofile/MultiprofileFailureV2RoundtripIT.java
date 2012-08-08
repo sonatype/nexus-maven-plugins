@@ -12,6 +12,7 @@
  */
 package org.sonatype.nexus.maven.staging.it.multiprofile;
 
+import static org.sonatype.nexus.testsuite.support.NexusStartAndStopStrategy.Strategy.EACH_METHOD;
 import static org.sonatype.sisu.filetasks.builder.FileRef.file;
 import static org.sonatype.sisu.filetasks.builder.FileRef.path;
 
@@ -27,10 +28,9 @@ import junit.framework.Assert;
 import org.apache.maven.it.VerificationException;
 import org.junit.Test;
 import org.sonatype.nexus.bundle.launcher.NexusBundleConfiguration;
-import org.sonatype.nexus.bundle.launcher.NexusStartAndStopStrategy;
-import org.sonatype.nexus.bundle.launcher.NexusStartAndStopStrategy.Strategy;
 import org.sonatype.nexus.maven.staging.it.PreparedVerifier;
 import org.sonatype.nexus.maven.staging.it.StagingMavenPluginITSupport;
+import org.sonatype.nexus.testsuite.support.NexusStartAndStopStrategy;
 import org.sonatype.sisu.filetasks.FileTaskBuilder;
 
 import com.sonatype.nexus.staging.client.StagingRepository;
@@ -45,12 +45,17 @@ import com.sonatype.nexus.staging.client.StagingRepository;
  * @author cstamas
  * @see https://docs.sonatype.com/display/Nexus/Staging+V2+Testing
  */
-@NexusStartAndStopStrategy( Strategy.EACH_METHOD )
+@NexusStartAndStopStrategy( EACH_METHOD )
 public class MultiprofileFailureV2RoundtripIT
     extends StagingMavenPluginITSupport
 {
     @Inject
     private FileTaskBuilder fileTaskBuilder;
+
+    public MultiprofileFailureV2RoundtripIT( final String nexusBundleCoordinates )
+    {
+        super( nexusBundleCoordinates );
+    }
 
     @Override
     protected NexusBundleConfiguration configureNexus( final NexusBundleConfiguration configuration )
@@ -58,7 +63,7 @@ public class MultiprofileFailureV2RoundtripIT
         // TODO: (cstamas) I promised to Alin to change this "old way of doing things" to use of REST API that would
         // configure Nexus properly once the Security and Staging Management Nexus Client subsystems are done.
         return super.configureNexus( configuration ).addOverlays(
-            fileTaskBuilder.copy().directory( file( resolveTestFile( "preset-nexus" ) ) ).to().directory(
+            fileTaskBuilder.copy().directory( file( testData().resolveFile( "preset-nexus" ) ) ).to().directory(
                 path( "sonatype-work/nexus/conf" ) ) );
     }
 
@@ -80,7 +85,7 @@ public class MultiprofileFailureV2RoundtripIT
     {
         final PreparedVerifier verifier =
             createMavenVerifier( getClass().getSimpleName() + "_roundtripWithM3MultiprofileProjectUsingM3Deploy",
-                M3_VERSION, resolveTestFile( "preset-nexus-maven-settings.xml" ), new File( getBasedir(),
+                M3_VERSION, testData().resolveFile( "preset-nexus-maven-settings.xml" ), new File( getBasedir(),
                     "target/test-classes/maven3-multiprofile-project" ) );
 
         try
@@ -122,7 +127,7 @@ public class MultiprofileFailureV2RoundtripIT
         final PreparedVerifier verifier =
             createMavenVerifier( getClass().getSimpleName()
                 + "_roundtripWithM3MultiprofileProjectUsingM3BuildActionClose", M3_VERSION,
-                resolveTestFile( "preset-nexus-maven-settings.xml" ), new File( getBasedir(),
+                testData().resolveFile( "preset-nexus-maven-settings.xml" ), new File( getBasedir(),
                     "target/test-classes/maven3-multiprofile-project" ) );
 
         try
