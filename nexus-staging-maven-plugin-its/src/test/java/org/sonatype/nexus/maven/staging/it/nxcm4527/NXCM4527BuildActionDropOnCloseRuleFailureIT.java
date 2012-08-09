@@ -31,6 +31,12 @@ import org.sonatype.nexus.maven.staging.it.PreparedVerifier;
 public class NXCM4527BuildActionDropOnCloseRuleFailureIT
     extends NXCM4527Support
 {
+
+    public NXCM4527BuildActionDropOnCloseRuleFailureIT( final String nexusBundleCoordinates )
+    {
+        super( nexusBundleCoordinates );
+    }
+
     /**
      * Validates nexus side of affairs post maven invocations.
      */
