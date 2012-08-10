@@ -179,8 +179,8 @@ public abstract class AbstractDeployMojo
      * 
      * @param source the file to stage
      * @param artifact the artifact definition
-     * @param stagingRepository the repository to stage to
      * @param localRepository the local repository to install into
+     * @param stagingDirectory the local directory where to locally stage
      * @throws ArtifactDeploymentException if an error occurred deploying the artifact
      */
     protected void stageLocally( File source, Artifact artifact, ArtifactRepository localRepository,
@@ -191,13 +191,10 @@ public abstract class AbstractDeployMojo
     }
 
     /**
-     * Stages remotely.
+     * Stages remotely the locally staged directory(ies).
      * 
-     * @param source the file to stage
-     * @param artifact the artifact definition
-     * @param stagingRepository the repository to stage to
-     * @param localRepository the local repository to install into
-     * @throws ArtifactDeploymentException if an error occurred deploying the artifact
+     * @throws ArtifactDeploymentException if an error occurred uploading the artifacts
+     * @throws MojoExecutionException if some staging related problem, like wrong profile ID, etc. happened
      */
     protected void stageRemotely()
         throws ArtifactDeploymentException, MojoExecutionException
@@ -278,6 +275,13 @@ public abstract class AbstractDeployMojo
 
     }
 
+    /**
+     * Uploads the {@code sourceDirectory} to the {@code deployUrl}.
+     * 
+     * @param sourceDirectory
+     * @param deployUrl
+     * @throws IOException
+     */
     protected void zapUp( final File sourceDirectory, final String deployUrl )
         throws IOException
     {
@@ -317,6 +321,12 @@ public abstract class AbstractDeployMojo
 
     // ==
 
+    /**
+     * Selects a staging profile based on informations given (configured) to Mojo.
+     * 
+     * @return the profileID selected or a special {@link AbstractStagingMojo#DIRECT_UPLOAD} constant.
+     * @throws MojoExecutionException
+     */
     protected String selectStagingProfile()
         throws MojoExecutionException
     {
@@ -376,7 +386,7 @@ public abstract class AbstractDeployMojo
      * Returns the Profile instance selected by ID on remote Nexus.
      * 
      * @param stagingProfileId
-     * @return
+     * @return the {@link Profile} for given {@code stagingProfileId}.
      * @throws MojoExecutionException
      */
     protected Profile selectStagingProfileById( final String stagingProfileId )
@@ -568,8 +578,7 @@ public abstract class AbstractDeployMojo
                 {
                     if ( file.isFile() && file.getName().endsWith( STAGING_REPOSITORY_PROPERTY_FILE_NAME_SUFFIX ) )
                     {
-                        getLog().error(
-                            " * Deleting context " + file.getName() );
+                        getLog().error( " * Deleting context " + file.getName() );
                         file.delete();
                     }
                 }
@@ -593,8 +602,8 @@ public abstract class AbstractDeployMojo
                     else
                     {
                         getLog().error(
-                            " * Not dropping failed staging repository with ID \"" + stagingRepository.getRepositoryId()
-                                + "\" (" + msg + ")." );
+                            " * Not dropping failed staging repository with ID \""
+                                + stagingRepository.getRepositoryId() + "\" (" + msg + ")." );
                     }
                 }
             }
@@ -611,8 +620,7 @@ public abstract class AbstractDeployMojo
                 {
                     if ( file.isFile() && file.getName().endsWith( STAGING_REPOSITORY_PROPERTY_FILE_NAME_SUFFIX ) )
                     {
-                        getLog().error(
-                            " * Deleting context " + file.getName() );
+                        getLog().error( " * Deleting context " + file.getName() );
                         file.delete();
                     }
                 }
@@ -636,8 +644,8 @@ public abstract class AbstractDeployMojo
                     else
                     {
                         getLog().error(
-                            " * Not dropping failed staging repository with ID \"" + stagingRepository.getRepositoryId()
-                                + "\" (due to unsuccesful upload)." );
+                            " * Not dropping failed staging repository with ID \""
+                                + stagingRepository.getRepositoryId() + "\" (due to unsuccesful upload)." );
                     }
                 }
             }
