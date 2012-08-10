@@ -100,6 +100,10 @@ public class DeployMojo
             return;
         }
 
+        // StagingV2 cannot work offline, it needs REST calls to talk to Nexus even if not
+        // deploying remotely, but for stuff like profile selection, matching, etc.
+        failIfOffline();
+
         final String profileId = selectStagingProfile();
         final File stagingDirectory = getStagingDirectory( profileId );
 
