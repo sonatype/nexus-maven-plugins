@@ -12,7 +12,6 @@
  */
 package org.sonatype.nexus.maven.staging.it;
 
-import static org.sonatype.nexus.client.rest.BaseUrl.baseUrlFrom;
 import static org.sonatype.nexus.testsuite.support.NexusStartAndStopStrategy.Strategy.*;
 import static org.sonatype.nexus.testsuite.support.ParametersLoaders.firstAvailableTestParameters;
 import static org.sonatype.nexus.testsuite.support.ParametersLoaders.systemTestParameters;
@@ -30,8 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.inject.Inject;
-
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.model.Model;
@@ -44,13 +41,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.nexus.bundle.launcher.NexusBundleConfiguration;
 import org.sonatype.nexus.client.core.NexusClient;
-import org.sonatype.nexus.client.rest.NexusClientFactory;
-import org.sonatype.nexus.client.rest.UsernamePasswordAuthenticationInfo;
 import org.sonatype.nexus.mindexer.client.MavenIndexer;
 import org.sonatype.nexus.mindexer.client.SearchResponse;
 import org.sonatype.nexus.testsuite.support.NexusRunningParametrizedITSupport;
 import org.sonatype.nexus.testsuite.support.NexusStartAndStopStrategy;
-import org.sonatype.sisu.filetasks.FileTaskBuilder;
 import org.sonatype.sisu.goodies.common.Time;
 
 import com.google.common.base.Throwables;
@@ -84,12 +78,6 @@ public abstract class StagingMavenPluginITSupport
 
     @Rule
     public final Timeout defaultTimeout = new Timeout( Time.minutes( 10 ).toMillisI() );
-
-    @Inject
-    private NexusClientFactory nexusClientFactory;
-
-    @Inject
-    private FileTaskBuilder fileTaskBuilder;
 
     private NexusClient nexusDeploymentClient;
 
@@ -139,8 +127,8 @@ public abstract class StagingMavenPluginITSupport
                 logger.info( "  Expanding Maven " + mavenVersion + "..." );
                 final File maven2bundle = artifactResolver().resolveArtifact(
                     MAVEN_G + ":" + MAVEN_A + ":zip:bin:" + mavenVersion );
-                fileTaskBuilder.expand( file( maven2bundle ) ).to().directory( file( mavenHomesBase ) ).run();
-                fileTaskBuilder.chmod( file( new File( mavenHome, "bin" ) ) ).include( "mvn" ).permissions( "755" ).run();
+                tasks().expand( file( maven2bundle ) ).to().directory( file( mavenHomesBase ) ).run();
+                tasks().chmod( file( new File( mavenHome, "bin" ) ) ).include( "mvn" ).permissions( "755" ).run();
             }
             else
             {
@@ -155,9 +143,7 @@ public abstract class StagingMavenPluginITSupport
     public void createClient()
     {
         logger.info( "Creating NexusClient..." );
-        nexusDeploymentClient =
-            nexusClientFactory.createFor( baseUrlFrom( nexus().getUrl() ), new UsernamePasswordAuthenticationInfo(
-                "deployment", "deployment123" ) );
+        nexusDeploymentClient = createNexusClient( nexus(), "deployment", "deployment123" );
     }
 
     public MavenIndexer getMavenIndexer()
@@ -184,7 +170,7 @@ public abstract class StagingMavenPluginITSupport
         final String localRepoName = "target/maven-local-repository/";
         final File localRepoFile = new File( getBasedir(), localRepoName );
         final File filteredSettings = new File( getBasedir(), "target/settings.xml" );
-        fileTaskBuilder.copy().file( file( mavenSettings ) ).filterUsing( "nexus.port",
+        tasks().copy().file( file( mavenSettings ) ).filterUsing( "nexus.port",
             String.valueOf( nexus().getPort() ) ).to().file( file( filteredSettings ) ).run();
 
         final String projectGroupId;
@@ -243,7 +229,7 @@ public abstract class StagingMavenPluginITSupport
         final File rawPom = new File( baseDir, "raw-pom.xml" );
         if ( rawPom.isFile() )
         {
-            fileTaskBuilder.copy().file( file( rawPom ) ).filterUsing( properties ).to().file( file( pom ) ).run();
+            tasks().copy().file( file( rawPom ) ).filterUsing( properties ).to().file( file( pom ) ).run();
         }
         else if ( !pom.isFile() )
         {
