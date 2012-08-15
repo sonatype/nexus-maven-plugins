@@ -57,6 +57,7 @@ import com.google.common.base.Throwables;
 import com.sonatype.nexus.staging.client.Profile;
 import com.sonatype.nexus.staging.client.StagingRepository;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
+import com.sonatype.nexus.testsuite.support.NexusProConfigurator;
 
 /**
  * A base class that gets and prepares given version of Maven. Also, it creates Verifier for it.
@@ -100,7 +101,7 @@ public abstract class StagingMavenPluginITSupport
     @Override
     protected NexusBundleConfiguration configureNexus( final NexusBundleConfiguration configuration )
     {
-        return configuration.setSystemProperty( "nexus.createTrialLicense", Boolean.TRUE.toString() );
+        return new NexusProConfigurator( this ).configure( configuration );
     }
 
     private final String MAVEN_G = "org.apache.maven";
