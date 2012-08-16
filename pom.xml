@@ -374,6 +374,8 @@
             </includes>
             <excludes>
               <exclude>**/target/**</exclude>
+              <!-- shade plugin turd -->
+              <exclude>**/dependency-reduced-pom.xml</exclude>
               <!-- grid makes this directory -->
               <exclude>.maven/**</exclude>
               <!-- eclipse makes this directory -->
