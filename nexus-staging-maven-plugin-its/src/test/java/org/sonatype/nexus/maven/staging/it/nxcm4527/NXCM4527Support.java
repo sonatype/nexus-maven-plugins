@@ -31,6 +31,12 @@ import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 public abstract class NXCM4527Support
     extends SimpleRoundtripMatrixBaseTests
 {
+
+    public NXCM4527Support( final String nexusBundleCoordinates )
+    {
+        super( nexusBundleCoordinates );
+    }
+
     /**
      * Drop left-behind staging repositories to interfere with subsequent assertions (we share nexus instance, it is
      * "rebooted" per class).

@@ -30,10 +30,10 @@ public class DeployStagedMojo
     public void execute()
         throws MojoExecutionException, MojoFailureException
     {
+        failIfOffline();
+
         if ( isThisLastProjectWithThisMojoInExecution() )
         {
-            failIfOffline();
-
             try
             {
                 getLog().info( "Staging remotely..." );

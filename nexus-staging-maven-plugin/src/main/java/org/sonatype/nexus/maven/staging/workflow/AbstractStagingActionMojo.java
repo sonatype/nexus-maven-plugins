@@ -35,6 +35,9 @@ public abstract class AbstractStagingActionMojo
     public final void execute()
         throws MojoExecutionException, MojoFailureException
     {
+        // all these RC or build actions cannot work in offline mode, as we perform remote REST calls
+        failIfOffline();
+
         if ( shouldExecute() )
         {
             getLog().info( "Connecting to Nexus..." );

@@ -25,16 +25,15 @@ import org.sonatype.nexus.bundle.launcher.NexusBundleConfiguration;
 import org.sonatype.sisu.filetasks.FileTaskBuilder;
 
 /**
- * IT support class that "implements" the "matrix". No reusable code (like some helper) should be added here, but into
+ * IT support clas that "implements" the "matrix". No reusable code (like some helper) should be added here, but into
  * this parent class, as the matrix here is rather naive, and probably will be reimplemented.
- *
+ * 
  * @author cstamas
  * @see https://docs.sonatype.com/display/Nexus/Staging+V2+Testing
  */
 public abstract class SimpleRoundtripMatrixSupport
     extends StagingMavenPluginITSupport
 {
-
     @Inject
     private FileTaskBuilder fileTaskBuilder;
 
@@ -44,7 +43,7 @@ public abstract class SimpleRoundtripMatrixSupport
         // TODO: (cstamas) I promised to Alin to change this "old way of doing things" to use of REST API that would
         // configure Nexus properly once the Security and Staging Management Nexus Client subsystems are done.
         return super.configureNexus( configuration ).addOverlays(
-            fileTaskBuilder.copy().directory( file( resolveTestFile( "preset-nexus" ) ) ).to().directory(
+            fileTaskBuilder.copy().directory( file( testData().resolveFile( "preset-nexus" ) ) ).to().directory(
                 path( "sonatype-work/nexus/conf" ) ) );
     }
 
@@ -83,9 +82,9 @@ public abstract class SimpleRoundtripMatrixSupport
 
     /**
      * Simulates separate invocation of commands. Deploy then release.
-     *
+     * 
      * @param verifier
-     * @throws org.apache.maven.it.VerificationException
+     * @throws VerificationException
      */
     protected void roundtrip( final PreparedVerifier verifier )
         throws VerificationException
@@ -109,6 +108,6 @@ public abstract class SimpleRoundtripMatrixSupport
         throws VerificationException, IOException
     {
         return createMavenVerifier( getClass().getSimpleName(), mavenVersion,
-                                    resolveTestFile( "preset-nexus-maven-settings.xml" ), projectDirectory );
+                                    testData().resolveFile( "preset-nexus-maven-settings.xml" ), projectDirectory );
     }
 }
