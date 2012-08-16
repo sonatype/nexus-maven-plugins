@@ -40,6 +40,11 @@ public class Nxcm4548StandaloneDeployStagedIT
 
     private File tmpDir;
 
+    public Nxcm4548StandaloneDeployStagedIT(final String nexusBundleCoordinates)
+    {
+        super(nexusBundleCoordinates);
+    }
+
     @Before
     public void setupTmpDir()
         throws IOException

@@ -37,7 +37,8 @@ public abstract class SimpleRoundtripMatrixSupport
     @Inject
     private FileTaskBuilder fileTaskBuilder;
 
-    public SimpleRoundtripMatrixSupport(final String nexusBundleCoordinates) {
+    public SimpleRoundtripMatrixSupport(final String nexusBundleCoordinates)
+    {
         super(nexusBundleCoordinates);
     }
 

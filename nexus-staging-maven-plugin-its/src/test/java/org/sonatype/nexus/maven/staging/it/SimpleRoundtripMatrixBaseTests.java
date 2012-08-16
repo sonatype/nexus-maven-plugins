@@ -32,6 +32,11 @@ public abstract class SimpleRoundtripMatrixBaseTests
     extends SimpleRoundtripMatrixSupport
 {
 
+    public SimpleRoundtripMatrixBaseTests(final String nexusBundleCoordinates)
+    {
+        super(nexusBundleCoordinates);
+    }
+
     /**
      * Project set up in m2-way with m2.
      *
@@ -60,7 +65,7 @@ public abstract class SimpleRoundtripMatrixBaseTests
 
     /**
      * Project set up in m3-way using m3.
-     * 
+     *
      * @throws VerificationException
      * @throws IOException
      */
