@@ -17,30 +17,29 @@ import static org.sonatype.sisu.filetasks.builder.FileRef.path;
 
 import java.io.File;
 import java.io.IOException;
-
+import java.net.MalformedURLException;
 import javax.inject.Inject;
 
 import org.apache.maven.it.VerificationException;
-import org.junit.Test;
 import org.sonatype.nexus.bundle.launcher.NexusBundleConfiguration;
 import org.sonatype.sisu.filetasks.FileTaskBuilder;
 
 /**
  * IT support clas that "implements" the "matrix". No reusable code (like some helper) should be added here, but into
  * this parent class, as the matrix here is rather naive, and probably will be reimplemented.
- * 
+ *
  * @author cstamas
- * @see https://docs.sonatype.com/display/Nexus/Staging+V2+Testing
+ * @see <a href="https://docs.sonatype.com/display/Nexus/Staging+V2+Testing">Staging V2 Testing</a>
  */
-public abstract class SimpleRountripMatrixSupport
+public abstract class SimpleRoundtripMatrixSupport
     extends StagingMavenPluginITSupport
 {
     @Inject
     private FileTaskBuilder fileTaskBuilder;
 
-    public SimpleRountripMatrixSupport( final String nexusBundleCoordinates )
+    public SimpleRoundtripMatrixSupport(final String nexusBundleCoordinates)
     {
-        super( nexusBundleCoordinates );
+        super(nexusBundleCoordinates);
     }
 
     @Override
@@ -88,7 +87,7 @@ public abstract class SimpleRountripMatrixSupport
 
     /**
      * Simulates separate invocation of commands. Deploy then release.
-     * 
+     *
      * @param verifier
      * @throws VerificationException
      */
@@ -110,56 +109,10 @@ public abstract class SimpleRountripMatrixSupport
     protected abstract void invokeMaven( final PreparedVerifier verifier )
         throws VerificationException;
 
-    // ==
-
-    /**
-     * Project set up in m2-way with m2.
-     * 
-     * @throws VerificationException
-     * @throws IOException
-     */
-    @Test
-    public void roundtripWithM2ProjectUsingM2()
+    protected PreparedVerifier createMavenVerifier( final String mavenVersion, final File projectDirectory )
         throws VerificationException, IOException
     {
-        final PreparedVerifier verifier =
-            createMavenVerifier( getClass().getSimpleName(), M2_VERSION,
-                testData().resolveFile( "preset-nexus-maven-settings.xml" ), new File( getBasedir(),
-                    "target/test-classes/maven2-project" ) );
-        roundtrip( verifier );
-    }
-
-    /**
-     * Project set up in m2-way with m3.
-     * 
-     * @throws VerificationException
-     * @throws IOException
-     */
-    @Test
-    public void roundtripWithM2ProjectUsingM3()
-        throws VerificationException, IOException
-    {
-        final PreparedVerifier verifier =
-            createMavenVerifier( getClass().getSimpleName(), M3_VERSION,
-                testData().resolveFile( "preset-nexus-maven-settings.xml" ), new File( getBasedir(),
-                    "target/test-classes/maven2-project" ) );
-        roundtrip( verifier );
-    }
-
-    /**
-     * Project set up in m3-way using m3.
-     * 
-     * @throws VerificationException
-     * @throws IOException
-     */
-    @Test
-    public void roundtripWithM3ProjectUsingM3()
-        throws VerificationException, IOException
-    {
-        final PreparedVerifier verifier =
-            createMavenVerifier( getClass().getSimpleName(), M3_VERSION,
-                testData().resolveFile( "preset-nexus-maven-settings.xml" ), new File( getBasedir(),
-                    "target/test-classes/maven3-project" ) );
-        roundtrip( verifier );
+        return createMavenVerifier( getClass().getSimpleName(), mavenVersion,
+                                    testData().resolveFile( "preset-nexus-maven-settings.xml" ), projectDirectory );
     }
 }
