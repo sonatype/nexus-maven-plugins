@@ -27,15 +27,19 @@ import org.sonatype.sisu.filetasks.FileTaskBuilder;
 /**
  * IT support clas that "implements" the "matrix". No reusable code (like some helper) should be added here, but into
  * this parent class, as the matrix here is rather naive, and probably will be reimplemented.
- * 
+ *
  * @author cstamas
- * @see https://docs.sonatype.com/display/Nexus/Staging+V2+Testing
+ * @see <a href="https://docs.sonatype.com/display/Nexus/Staging+V2+Testing">Staging V2 Testing</a>
  */
 public abstract class SimpleRoundtripMatrixSupport
     extends StagingMavenPluginITSupport
 {
     @Inject
     private FileTaskBuilder fileTaskBuilder;
+
+    public SimpleRoundtripMatrixSupport(final String nexusBundleCoordinates) {
+        super(nexusBundleCoordinates);
+    }
 
     @Override
     protected NexusBundleConfiguration configureNexus( final NexusBundleConfiguration configuration )
@@ -82,7 +86,7 @@ public abstract class SimpleRoundtripMatrixSupport
 
     /**
      * Simulates separate invocation of commands. Deploy then release.
-     * 
+     *
      * @param verifier
      * @throws VerificationException
      */
