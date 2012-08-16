@@ -373,22 +373,12 @@
               <include>**/*.js</include>
             </includes>
             <excludes>
+              <exclude>**/.*/**</exclude>
               <exclude>**/target/**</exclude>
-              <!-- shade plugin turd -->
               <exclude>**/dependency-reduced-pom.xml</exclude>
-              <!-- grid makes this directory -->
-              <exclude>.maven/**</exclude>
-              <!-- eclipse makes this directory -->
-              <exclude>**/.settings/**</exclude>
-              <!-- netbeans adds these -->
               <exclude>**/nbactions*.xml</exclude>
               <exclude>**/nb-configuration.xml</exclude>
-              <!-- IntelliJ IDEA project directory -->
-              <exclude>**/.idea/**</exclude>
               <exclude>**/atlassian-ide-plugin.xml</exclude>
-              <!-- The classes in guava package are copied over from com.google.common.eventbus in order to make then extensible (they 
-                are package protected) -->
-              <exclude>**/org/sonatype/nexus/eventbus/internal/guava/**</exclude>
             </excludes>
             <mapping>
               <vm>XML_STYLE</vm>
