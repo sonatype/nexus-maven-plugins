@@ -28,9 +28,9 @@ import com.sonatype.nexus.staging.client.StagingRepository;
  * IT that "implements" the Staging V2 testing guide's "One Shot" scenario followed by the "release" Post Staging Steps
  * section. It also "verifies" that a "matrix" of projects (set up in m2 or m3 way) and maven runtimes (m2 and m3) all
  * work as expected.
- * 
+ *
  * @author cstamas
- * @see https://docs.sonatype.com/display/Nexus/Staging+V2+Testing
+ * @see <a href="https://docs.sonatype.com/display/Nexus/Staging+V2+Testing">Staging V2 Testing</a>
  */
 public class SimpleV2RoundtripIT
     extends SimpleRoundtripMatrixBaseTests
@@ -76,7 +76,7 @@ public class SimpleV2RoundtripIT
 
     /**
      * Simulates separate invocation of commands. Deploy then release.
-     * 
+     *
      * @param verifier
      * @throws VerificationException
      */
