@@ -236,7 +236,7 @@ public abstract class AbstractStagingMojo
     {
         if ( offline )
         {
-            throw new MojoFailureException( "Cannot deploy artifacts when Maven is in offline mode" );
+            throw new MojoFailureException( "Cannot use Staging features in Offline mode, as REST Requests are needed to be made against Nexus even while locally staging only." );
         }
     }
 
