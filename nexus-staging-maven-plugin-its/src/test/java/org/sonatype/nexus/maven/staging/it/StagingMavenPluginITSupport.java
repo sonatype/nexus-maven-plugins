@@ -58,7 +58,7 @@ import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
 /**
  * A base class that gets and prepares given version of Maven. Also, it creates Verifier for it.
- *
+ * 
  * @author cstamas
  */
 @NexusStartAndStopStrategy( Strategy.EACH_TEST )
@@ -112,7 +112,7 @@ public abstract class StagingMavenPluginITSupport
 
     /**
      * Override this method to have other than default versions involved.
-     *
+     * 
      * @return
      */
     protected List<String> getMavenVersions()
@@ -210,10 +210,8 @@ public abstract class StagingMavenPluginITSupport
             projectVersion = model.getVersion();
         }
 
+        System.setProperty( "maven.home", mavenHome.getAbsolutePath() );
         Verifier verifier = new Verifier( baseDir.getAbsolutePath(), false );
-        // prevent mvn script from inheriting the M2_HOME of current env, potentially causing use of another version of Maven
-        // when mvn(.bat) script executes
-        verifier.setEnvironmentVariable("M2_HOME",mavenHome.getCanonicalPath() );
         verifier.setAutoclean( false ); // no autoclean to be able to simulate multiple invocations
         verifier.setLogFileName( logname );
         verifier.setLocalRepo( localRepoFile.getAbsolutePath() );
@@ -228,7 +226,7 @@ public abstract class StagingMavenPluginITSupport
 
     /**
      * Recurses the baseDir searching for POMs and filters them.
-     *
+     * 
      * @param baseDir
      * @param properties
      * @throws IOException
@@ -267,7 +265,7 @@ public abstract class StagingMavenPluginITSupport
     /**
      * Returns the list of all staging repositories - whether open or closed - found in all profiles (all staging
      * repositories present instance-wide).
-     *
+     * 
      * @return
      */
     protected List<StagingRepository> getAllStagingRepositories()
@@ -286,7 +284,7 @@ public abstract class StagingMavenPluginITSupport
 
     /**
      * Returns the list of all staging repositories - whether open or closed - found in passed in profile.
-     *
+     * 
      * @return
      */
     protected List<StagingRepository> getProfileStagingRepositories( final Profile profile )
@@ -304,7 +302,7 @@ public abstract class StagingMavenPluginITSupport
      * (AsynchronousEventInspector). Hence, this method in short does a GAV search, but is "shielded" with some retries
      * and sleeps to make sure that result is correct. For input parameters see
      * {@link MavenIndexer#searchByGAV(String, String, String, String, String, String)} method.
-     *
+     * 
      * @return
      */
     protected SearchResponse searchThreeTimesForGAV( final String groupId, final String artifactId,
