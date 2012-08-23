@@ -215,6 +215,7 @@ public abstract class StagingMavenPluginITSupport
         verifier.setAutoclean( false ); // no autoclean to be able to simulate multiple invocations
         verifier.setLogFileName( logname );
         verifier.setLocalRepo( localRepoFile.getAbsolutePath() );
+        verifier.setMavenDebug( true );
         verifier.resetStreams();
         List<String> options = new ArrayList<String>();
         // options.add( "-X" );
