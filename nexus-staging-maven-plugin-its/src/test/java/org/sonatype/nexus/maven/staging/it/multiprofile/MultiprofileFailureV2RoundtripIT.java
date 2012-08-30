@@ -91,11 +91,11 @@ public class MultiprofileFailureV2RoundtripIT
         try
         {
             // skip javadoc, we want failing build but in m2
-            verifier.getVerifier().addCliOption( "-Pmake-it-fail" );
+            verifier.addCliOption( "-Pmake-it-fail" );
             // v2 workflow
-            verifier.getVerifier().executeGoals( Arrays.asList( "clean", "deploy" ) );
+            verifier.executeGoals( Arrays.asList( "clean", "deploy" ) );
             // should fail
-            verifier.getVerifier().verifyErrorFreeLog();
+            verifier.verifyErrorFreeLog();
             // foolproof the failure
             Assert.fail( "We should not get here, close at the end of deploy should fail!" );
         }
@@ -133,17 +133,17 @@ public class MultiprofileFailureV2RoundtripIT
         try
         {
             // skip javadoc, we want failing build but in m2
-            verifier.getVerifier().addCliOption( "-Pmake-it-fail" );
+            verifier.addCliOption( "-Pmake-it-fail" );
             // we want to test the "close" build action here
-            verifier.getVerifier().addCliOption( "-DskipStagingRepositoryClose=true" );
+            verifier.addCliOption( "-DskipStagingRepositoryClose=true" );
             // v2 workflow
-            verifier.getVerifier().executeGoals( Arrays.asList( "clean", "deploy" ) );
+            verifier.executeGoals( Arrays.asList( "clean", "deploy" ) );
             // should not fail
-            verifier.getVerifier().verifyErrorFreeLog();
+            verifier.verifyErrorFreeLog();
             // build action: close, will fail
-            verifier.getVerifier().executeGoals( Arrays.asList( "nexus-staging:close" ) );
+            verifier.executeGoals( Arrays.asList( "nexus-staging:close" ) );
             // should fail
-            verifier.getVerifier().verifyErrorFreeLog();
+            verifier.verifyErrorFreeLog();
             // foolproof the failure
             Assert.fail( "We should not get here, close at the end of deploy should fail!" );
         }

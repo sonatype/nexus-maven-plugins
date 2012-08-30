@@ -53,11 +53,11 @@ public class NXCM4527DropOnCloseRuleFailureIT
         try
         {
             // skip javadoc, we want failing build
-            verifier.getVerifier().addCliOption( "-Dmaven.javadoc.skip=true" );
+            verifier.addCliOption( "-Dmaven.javadoc.skip=true" );
             // v2 workflow
-            verifier.getVerifier().executeGoals( Arrays.asList( "clean", "deploy" ) );
+            verifier.executeGoals( Arrays.asList( "clean", "deploy" ) );
             // should fail
-            verifier.getVerifier().verifyErrorFreeLog();
+            verifier.verifyErrorFreeLog();
             // if no exception, fail the test
             Assert.fail( "We should end up with failed remote staging!" );
         }

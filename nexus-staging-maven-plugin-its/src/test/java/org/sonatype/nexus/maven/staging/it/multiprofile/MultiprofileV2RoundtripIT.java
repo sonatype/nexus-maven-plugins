@@ -86,9 +86,9 @@ public class MultiprofileV2RoundtripIT
                     "target/test-classes/maven3-multiprofile-project" ) );
 
         // v2 workflow
-        verifier.getVerifier().executeGoals( Arrays.asList( "clean", "deploy" ) );
+        verifier.executeGoals( Arrays.asList( "clean", "deploy" ) );
         // should not fail
-        verifier.getVerifier().verifyErrorFreeLog();
+        verifier.verifyErrorFreeLog();
 
         // perform some checks
         {
@@ -106,9 +106,9 @@ public class MultiprofileV2RoundtripIT
         }
 
         // v2 release
-        verifier.getVerifier().executeGoals( Arrays.asList( "nexus-staging:release" ) );
+        verifier.executeGoals( Arrays.asList( "nexus-staging:release" ) );
         // should not fail
-        verifier.getVerifier().verifyErrorFreeLog();
+        verifier.verifyErrorFreeLog();
 
         // post execution Nexus side asserts
         {
@@ -150,15 +150,15 @@ public class MultiprofileV2RoundtripIT
                     "target/test-classes/maven3-multiprofile-project" ) );
 
         // we want to test the "close" build action here
-        verifier.getVerifier().addCliOption( "-DskipStagingRepositoryClose=true" );
+        verifier.addCliOption( "-DskipStagingRepositoryClose=true" );
         // v2 workflow
-        verifier.getVerifier().executeGoals( Arrays.asList( "clean", "deploy" ) );
+        verifier.executeGoals( Arrays.asList( "clean", "deploy" ) );
         // should not fail
-        verifier.getVerifier().verifyErrorFreeLog();
+        verifier.verifyErrorFreeLog();
         // build action: close, should not fail
-        verifier.getVerifier().executeGoals( Arrays.asList( "nexus-staging:close" ) );
+        verifier.executeGoals( Arrays.asList( "nexus-staging:close" ) );
         // should not fail
-        verifier.getVerifier().verifyErrorFreeLog();
+        verifier.verifyErrorFreeLog();
 
         // perform some checks
         {
@@ -176,9 +176,9 @@ public class MultiprofileV2RoundtripIT
         }
 
         // v2 release
-        verifier.getVerifier().executeGoals( Arrays.asList( "nexus-staging:release" ) );
+        verifier.executeGoals( Arrays.asList( "nexus-staging:release" ) );
         // should not fail
-        verifier.getVerifier().verifyErrorFreeLog();
+        verifier.verifyErrorFreeLog();
 
         // post execution Nexus side asserts
         {
