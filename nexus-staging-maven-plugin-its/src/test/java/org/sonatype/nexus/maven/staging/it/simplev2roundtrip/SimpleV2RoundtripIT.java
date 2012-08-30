@@ -85,12 +85,12 @@ public class SimpleV2RoundtripIT
         throws VerificationException
     {
         // v2 workflow
-        verifier.getVerifier().executeGoals( Arrays.asList( "clean", "deploy" ) );
+        verifier.executeGoals( Arrays.asList( "clean", "deploy" ) );
         // should not fail
-        verifier.getVerifier().verifyErrorFreeLog();
+        verifier.verifyErrorFreeLog();
         // v2 release
-        verifier.getVerifier().executeGoals( Arrays.asList( "nexus-staging:release" ) );
+        verifier.executeGoals( Arrays.asList( "nexus-staging:release" ) );
         // should not fail
-        verifier.getVerifier().verifyErrorFreeLog();
+        verifier.verifyErrorFreeLog();
     }
 }

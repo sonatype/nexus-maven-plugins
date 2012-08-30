@@ -166,12 +166,13 @@ public abstract class StagingMavenPluginITSupport
             throw new IllegalArgumentException( "Maven version " + mavenVersion + " was not prepared!" );
         }
 
-        final String logname = testId + "-maven-" + mavenVersion + ".log";
+        final String logNameTemplate = testId + "-maven-" + mavenVersion + "-%s.log";
+
         final String localRepoName = "target/maven-local-repository/";
         final File localRepoFile = new File( getBasedir(), localRepoName );
         final File filteredSettings = new File( getBasedir(), "target/settings.xml" );
         tasks().copy().file( file( mavenSettings ) ).filterUsing( "nexus.port",
-            String.valueOf( nexus().getPort() ) ).to().file( file( filteredSettings ) ).run();
+                                                                  String.valueOf( nexus().getPort() ) ).to().file( file( filteredSettings ) ).run();
 
         final String projectGroupId;
         final String projectArtifactId;
@@ -202,9 +203,10 @@ public abstract class StagingMavenPluginITSupport
         }
 
         System.setProperty( "maven.home", mavenHome.getAbsolutePath() );
-        Verifier verifier = new Verifier( baseDir.getAbsolutePath(), false );
+        final PreparedVerifier verifier = new PreparedVerifier(
+            baseDir, projectGroupId, projectArtifactId, projectVersion, logNameTemplate
+        );
         verifier.setAutoclean( false ); // no autoclean to be able to simulate multiple invocations
-        verifier.setLogFileName( logname );
         verifier.setLocalRepo( localRepoFile.getAbsolutePath() );
         verifier.setMavenDebug( true );
         verifier.resetStreams();
@@ -213,7 +215,7 @@ public abstract class StagingMavenPluginITSupport
         options.add( "-Dmaven.repo.local=" + localRepoFile.getAbsolutePath() );
         options.add( "-s " + filteredSettings.getAbsolutePath() );
         verifier.setCliOptions( options );
-        return new PreparedVerifier( verifier, baseDir, projectGroupId, projectArtifactId, projectVersion );
+        return verifier;
     }
 
     /**

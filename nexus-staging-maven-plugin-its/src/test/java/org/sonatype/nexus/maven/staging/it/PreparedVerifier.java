@@ -12,23 +12,23 @@
  */
 package org.sonatype.nexus.maven.staging.it;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.io.File;
+import java.util.List;
 
+import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
-
-import com.google.common.base.Preconditions;
 
 /**
  * A simple "wrapper" class that carried the {@link Verifier} but also some extra data about the project being built by
  * Verifier that makes easier the post-build assertions.
- * 
+ *
  * @author cstamas
  */
 public class PreparedVerifier
+    extends Verifier
 {
-    private final Verifier verifier;
-
-    private final File baseDir;
 
     private final String projectGroupId;
 
@@ -36,24 +36,22 @@ public class PreparedVerifier
 
     private final String projectVersion;
 
-    public PreparedVerifier( final Verifier verifier, final File baseDir, final String projectGroupId,
-                             final String projectArtifactId, final String projectVersion )
-    {
-        this.verifier = Preconditions.checkNotNull( verifier );
-        this.baseDir = Preconditions.checkNotNull( baseDir );
-        this.projectGroupId = Preconditions.checkNotNull( projectGroupId );
-        this.projectArtifactId = Preconditions.checkNotNull( projectArtifactId );
-        this.projectVersion = Preconditions.checkNotNull( projectVersion );
-    }
+    private int numberOfRuns;
 
-    public Verifier getVerifier()
-    {
-        return verifier;
-    }
+    private final String logNameTemplate;
 
-    public File getBaseDir()
+    public PreparedVerifier( final File baseDir,
+                             final String projectGroupId, final String projectArtifactId, final String projectVersion,
+                             final String logNameTemplate )
+        throws VerificationException
     {
-        return baseDir;
+        super( checkNotNull( baseDir ).getAbsolutePath(), false );
+
+        this.numberOfRuns = 0;
+        this.projectGroupId = checkNotNull( projectGroupId );
+        this.projectArtifactId = checkNotNull( projectArtifactId );
+        this.projectVersion = checkNotNull( projectVersion );
+        this.logNameTemplate = checkNotNull( logNameTemplate );
     }
 
     public String getProjectGroupId()
@@ -69,5 +67,13 @@ public class PreparedVerifier
     public String getProjectVersion()
     {
         return projectVersion;
+    }
+
+    @Override
+    public void executeGoals( final List goals )
+        throws VerificationException
+    {
+        setLogFileName( String.format( logNameTemplate, ++numberOfRuns ) );
+        super.executeGoals( goals );
     }
 }
