@@ -74,8 +74,8 @@ public abstract class NXCM4527Support
 
         // stuff we staged should not be released and not found by indexer
         final SearchResponse searchResponse =
-            searchThreeTimesForGAV( verifier.getProjectGroupId(), verifier.getProjectArtifactId(),
-                verifier.getProjectVersion(), null, null, "releases" );
+            searchWithRetriesForGAV( verifier.getProjectGroupId(), verifier.getProjectArtifactId(),
+                                     verifier.getProjectVersion(), null, null, "releases" );
         if ( !searchResponse.getHits().isEmpty() )
         {
             Assert.fail( String.format(
@@ -102,8 +102,8 @@ public abstract class NXCM4527Support
 
         // stuff we staged should not be released and not found by indexer
         final SearchResponse searchResponse =
-            searchThreeTimesForGAV( verifier.getProjectGroupId(), verifier.getProjectArtifactId(),
-                verifier.getProjectVersion(), null, null, "releases" );
+            searchWithRetriesForGAV( verifier.getProjectGroupId(), verifier.getProjectArtifactId(),
+                                     verifier.getProjectVersion(), null, null, "releases" );
         if ( !searchResponse.getHits().isEmpty() )
         {
             Assert.fail( String.format(

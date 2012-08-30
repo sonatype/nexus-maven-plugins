@@ -64,8 +64,8 @@ public class SimpleV2RoundtripIT
 
         // stuff we staged are released and found by indexer
         final SearchResponse searchResponse =
-            searchThreeTimesForGAV( verifier.getProjectGroupId(), verifier.getProjectArtifactId(),
-                verifier.getProjectVersion(), null, null, "releases" );
+            searchWithRetriesForGAV( verifier.getProjectGroupId(), verifier.getProjectArtifactId(),
+                                     verifier.getProjectVersion(), null, null, "releases" );
         if ( searchResponse.getHits().isEmpty() )
         {
             Assert.fail( String.format(

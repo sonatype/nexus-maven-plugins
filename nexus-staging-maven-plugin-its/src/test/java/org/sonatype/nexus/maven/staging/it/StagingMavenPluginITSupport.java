@@ -299,12 +299,12 @@ public abstract class StagingMavenPluginITSupport
      * 
      * @return
      */
-    protected SearchResponse searchThreeTimesForGAV( final String groupId, final String artifactId,
-                                                     final String version, final String classifier, final String type,
-                                                     final String repositoryId )
+    protected SearchResponse searchWithRetriesForGAV( final String groupId, final String artifactId,
+                                                      final String version, final String classifier, final String type,
+                                                      final String repositoryId )
     {
         SearchResponse response = null;
-        for ( int i = 0; i < 3; i++ )
+        for ( int i = 0; i < 10; i++ )
         {
             response = getMavenIndexer().searchByGAV( groupId, artifactId, version, classifier, type, repositoryId );
             try
