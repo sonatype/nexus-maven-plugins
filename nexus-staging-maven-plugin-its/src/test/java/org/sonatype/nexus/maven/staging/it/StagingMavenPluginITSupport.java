@@ -205,7 +205,23 @@ public abstract class StagingMavenPluginITSupport
         System.setProperty( "maven.home", mavenHome.getAbsolutePath() );
         final PreparedVerifier verifier = new PreparedVerifier(
             baseDir, projectGroupId, projectArtifactId, projectVersion, logNameTemplate
-        );
+        )
+        {
+            @Override
+            public void executeGoals( final List goals )
+                throws VerificationException
+            {
+                try
+                {
+                    super.executeGoals( goals );
+                }
+                finally
+                {
+                    final File mavenLog = new File( baseDir, getLogFileName() );
+                    testIndex().recordLink( "maven.log/" + getNumberOfRuns(), mavenLog );
+                }
+            }
+        };
         verifier.setAutoclean( false ); // no autoclean to be able to simulate multiple invocations
         verifier.setLocalRepo( localRepoFile.getAbsolutePath() );
         verifier.setMavenDebug( true );

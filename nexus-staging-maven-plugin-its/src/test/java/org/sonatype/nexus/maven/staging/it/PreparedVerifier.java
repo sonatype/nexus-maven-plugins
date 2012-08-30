@@ -76,4 +76,10 @@ public class PreparedVerifier
         setLogFileName( String.format( logNameTemplate, ++numberOfRuns ) );
         super.executeGoals( goals );
     }
+
+    public int getNumberOfRuns()
+    {
+        return numberOfRuns;
+    }
+
 }
