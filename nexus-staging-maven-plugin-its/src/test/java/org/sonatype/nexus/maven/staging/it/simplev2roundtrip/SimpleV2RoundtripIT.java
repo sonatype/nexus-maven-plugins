@@ -64,8 +64,8 @@ public class SimpleV2RoundtripIT
 
         // stuff we staged are released and found by indexer
         final SearchResponse searchResponse =
-            searchThreeTimesForGAV( verifier.getProjectGroupId(), verifier.getProjectArtifactId(),
-                verifier.getProjectVersion(), null, null, "releases" );
+            searchWithRetriesForGAV( verifier.getProjectGroupId(), verifier.getProjectArtifactId(),
+                                     verifier.getProjectVersion(), null, null, "releases" );
         if ( searchResponse.getHits().isEmpty() )
         {
             Assert.fail( String.format(
@@ -85,12 +85,12 @@ public class SimpleV2RoundtripIT
         throws VerificationException
     {
         // v2 workflow
-        verifier.getVerifier().executeGoals( Arrays.asList( "clean", "deploy" ) );
+        verifier.executeGoals( Arrays.asList( "clean", "deploy" ) );
         // should not fail
-        verifier.getVerifier().verifyErrorFreeLog();
+        verifier.verifyErrorFreeLog();
         // v2 release
-        verifier.getVerifier().executeGoals( Arrays.asList( "nexus-staging:release" ) );
+        verifier.executeGoals( Arrays.asList( "nexus-staging:release" ) );
         // should not fail
-        verifier.getVerifier().verifyErrorFreeLog();
+        verifier.verifyErrorFreeLog();
     }
 }

@@ -78,24 +78,24 @@ public class Nxcm4548StandaloneDeployStagedIT
     {
         final File localStagingDir = new File( tmpDir, "12a2439c79f79c6f" );
 
-        verifier.getVerifier().addCliOption( "-DaltStagingDirectory=" + tmpDir.getAbsolutePath() );
-        verifier.getVerifier().addCliOption( "-DserverId=local-nexus" );
-        verifier.getVerifier().addCliOption( "-DaltDeploymentRepository=dummy::default::" + localStagingDir.toURI() );
+        verifier.addCliOption( "-DaltStagingDirectory=" + tmpDir.getAbsolutePath() );
+        verifier.addCliOption( "-DserverId=local-nexus" );
+        verifier.addCliOption( "-DaltDeploymentRepository=dummy::default::" + localStagingDir.toURI() );
 
-        verifier.getVerifier().addCliOption(
+        verifier.addCliOption(
             "-DnexusUrl=" + nexus().getUrl().toExternalForm()
                     // verifier replaces "//" with "/", which will make nexus-client unable to parse the URL
                     .replace( "http://", "http:///" )
         );
 
 
-        verifier.getVerifier().executeGoals( Lists.newArrayList( "clean", "deploy" ) );
-        verifier.getVerifier().verifyErrorFreeLog();
-        verifier.getVerifier().verifyTextInLog( "12a2439c79f79c6f" );
+        verifier.executeGoals( Lists.newArrayList( "clean", "deploy" ) );
+        verifier.verifyErrorFreeLog();
+        verifier.verifyTextInLog( "12a2439c79f79c6f" );
 
-        verifier.getVerifier().executeGoal( "nexus-staging:deploy-staged" );
+        verifier.executeGoal( "nexus-staging:deploy-staged" );
 
-        verifier.getVerifier().verifyErrorFreeLog();
+        verifier.verifyErrorFreeLog();
     }
 
     @Test

@@ -148,6 +148,25 @@
               <extraArtifacts>
                 <extraArtifact>org.sonatype.nexus:nexus-maven-plugins:${project.version}:pom</extraArtifact>
                 <extraArtifact>org.sonatype.nexus:nexus-runtime-platform:${nexus-core.version}:pom</extraArtifact>
+                <extraArtifact>org.apache.maven:apache-maven:2.2.1:zip:bin</extraArtifact>
+                <extraArtifact>org.apache.maven:apache-maven:3.0.4:zip:bin</extraArtifact>
+                <extraArtifact>org.apache.maven.plugins:maven-clean-plugin:2.2</extraArtifact>
+                <extraArtifact>org.apache.maven.plugins:maven-clean-plugin:2.4.1</extraArtifact>
+                <extraArtifact>org.apache.maven.plugins:maven-source-plugin:2.1.2</extraArtifact>
+                <extraArtifact>org.apache.maven.plugins:maven-resources-plugin:2.3</extraArtifact>
+                <extraArtifact>org.apache.maven.plugins:maven-resources-plugin:2.5</extraArtifact>
+                <extraArtifact>org.apache.maven.plugins:maven-javadoc-plugin:2.8.1</extraArtifact>
+                <extraArtifact>org.apache.maven.plugins:maven-compiler-plugin:2.0.2</extraArtifact>
+                <extraArtifact>org.apache.maven.plugins:maven-compiler-plugin:2.3.2</extraArtifact>
+                <extraArtifact>org.apache.maven.plugins:maven-deploy-plugin:2.7</extraArtifact>
+                <extraArtifact>org.apache.maven.plugins:maven-surefire-plugin:2.4.3</extraArtifact>
+                <extraArtifact>org.apache.maven.plugins:maven-surefire-plugin:2.10</extraArtifact>
+                <extraArtifact>org.apache.maven.surefire:surefire-junit:2.4.3</extraArtifact>
+                <extraArtifact>org.apache.maven.surefire:surefire-junit3:2.10</extraArtifact>
+                <extraArtifact>org.apache.maven.plugins:maven-jar-plugin:2.2</extraArtifact>
+                <extraArtifact>org.apache.maven.plugins:maven-jar-plugin:2.3.2</extraArtifact>
+                <extraArtifact>org.apache.maven.plugins:maven-install-plugin:2.2</extraArtifact>
+                <extraArtifact>org.apache.maven.plugins:maven-install-plugin:2.3.1</extraArtifact>
               </extraArtifacts>
               <localRepositoryPath>${project.build.directory}/maven-local-repository</localRepositoryPath>
             </configuration>

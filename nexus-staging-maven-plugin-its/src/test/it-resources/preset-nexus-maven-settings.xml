@@ -25,7 +25,8 @@
     <mirror>
       <id>local-nexus</id>
       <mirrorOf>external:*</mirrorOf>
-      <url>http://localhost:${nexus.port}/nexus/content/groups/public</url>
+      <!-- Use a fake repository to not run into situations where local repository is not enough-->
+      <url>http://localhost:${nexus.port}/nexus/content/repository/fake</url>
     </mirror>
   </mirrors>
 </settings>

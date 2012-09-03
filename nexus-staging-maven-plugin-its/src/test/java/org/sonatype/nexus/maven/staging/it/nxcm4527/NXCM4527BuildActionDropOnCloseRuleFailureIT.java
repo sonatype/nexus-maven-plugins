@@ -53,17 +53,17 @@ public class NXCM4527BuildActionDropOnCloseRuleFailureIT
         try
         {
             // we want to test the "close" build action here
-            verifier.getVerifier().addCliOption( "-DskipStagingRepositoryClose=true" );
+            verifier.addCliOption( "-DskipStagingRepositoryClose=true" );
             // skip javadoc, we want failing build
-            verifier.getVerifier().addCliOption( "-Dmaven.javadoc.skip=true" );
+            verifier.addCliOption( "-Dmaven.javadoc.skip=true" );
             // v2 workflow
-            verifier.getVerifier().executeGoals( Arrays.asList( "clean", "deploy" ) );
+            verifier.executeGoals( Arrays.asList( "clean", "deploy" ) );
             // should pass as we skip close
-            verifier.getVerifier().verifyErrorFreeLog();
+            verifier.verifyErrorFreeLog();
             // build action: close, will fail
-            verifier.getVerifier().executeGoals( Arrays.asList( "nexus-staging:close" ) );
+            verifier.executeGoals( Arrays.asList( "nexus-staging:close" ) );
             // should fail
-            verifier.getVerifier().verifyErrorFreeLog();
+            verifier.verifyErrorFreeLog();
             // if no exception, fail the test
             Assert.fail( "We should end up with failed remote staging!" );
         }

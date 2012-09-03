@@ -166,12 +166,13 @@ public abstract class StagingMavenPluginITSupport
             throw new IllegalArgumentException( "Maven version " + mavenVersion + " was not prepared!" );
         }
 
-        final String logname = testId + "-maven-" + mavenVersion + ".log";
+        final String logNameTemplate = testId + "-maven-" + mavenVersion + "-%s.log";
+
         final String localRepoName = "target/maven-local-repository/";
         final File localRepoFile = new File( getBasedir(), localRepoName );
         final File filteredSettings = new File( getBasedir(), "target/settings.xml" );
         tasks().copy().file( file( mavenSettings ) ).filterUsing( "nexus.port",
-            String.valueOf( nexus().getPort() ) ).to().file( file( filteredSettings ) ).run();
+                                                                  String.valueOf( nexus().getPort() ) ).to().file( file( filteredSettings ) ).run();
 
         final String projectGroupId;
         final String projectArtifactId;
@@ -202,9 +203,26 @@ public abstract class StagingMavenPluginITSupport
         }
 
         System.setProperty( "maven.home", mavenHome.getAbsolutePath() );
-        Verifier verifier = new Verifier( baseDir.getAbsolutePath(), false );
+        final PreparedVerifier verifier = new PreparedVerifier(
+            baseDir, projectGroupId, projectArtifactId, projectVersion, logNameTemplate
+        )
+        {
+            @Override
+            public void executeGoals( final List goals )
+                throws VerificationException
+            {
+                try
+                {
+                    super.executeGoals( goals );
+                }
+                finally
+                {
+                    final File mavenLog = new File( baseDir, getLogFileName() );
+                    testIndex().recordLink( "maven.log/" + getNumberOfRuns(), mavenLog );
+                }
+            }
+        };
         verifier.setAutoclean( false ); // no autoclean to be able to simulate multiple invocations
-        verifier.setLogFileName( logname );
         verifier.setLocalRepo( localRepoFile.getAbsolutePath() );
         verifier.setMavenDebug( true );
         verifier.resetStreams();
@@ -213,7 +231,7 @@ public abstract class StagingMavenPluginITSupport
         options.add( "-Dmaven.repo.local=" + localRepoFile.getAbsolutePath() );
         options.add( "-s " + filteredSettings.getAbsolutePath() );
         verifier.setCliOptions( options );
-        return new PreparedVerifier( verifier, baseDir, projectGroupId, projectArtifactId, projectVersion );
+        return verifier;
     }
 
     /**
@@ -297,12 +315,12 @@ public abstract class StagingMavenPluginITSupport
      * 
      * @return
      */
-    protected SearchResponse searchThreeTimesForGAV( final String groupId, final String artifactId,
-                                                     final String version, final String classifier, final String type,
-                                                     final String repositoryId )
+    protected SearchResponse searchWithRetriesForGAV( final String groupId, final String artifactId,
+                                                      final String version, final String classifier, final String type,
+                                                      final String repositoryId )
     {
         SearchResponse response = null;
-        for ( int i = 0; i < 3; i++ )
+        for ( int i = 0; i < 10; i++ )
         {
             response = getMavenIndexer().searchByGAV( groupId, artifactId, version, classifier, type, repositoryId );
             try

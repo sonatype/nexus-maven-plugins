@@ -44,7 +44,7 @@ public class NXCM4527BuildActionDropOnCloseRuleFailureOverrideIT
     protected void invokeMaven( final PreparedVerifier verifier )
         throws VerificationException
     {
-        verifier.getVerifier().addCliOption( "-DkeepStagingRepositoryOnCloseRuleFailure=true" );
+        verifier.addCliOption( "-DkeepStagingRepositoryOnCloseRuleFailure=true" );
         super.invokeMaven( verifier );
     }
 }
