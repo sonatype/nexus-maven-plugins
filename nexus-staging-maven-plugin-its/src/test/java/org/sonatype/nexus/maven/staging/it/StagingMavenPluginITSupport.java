@@ -306,7 +306,7 @@ public abstract class StagingMavenPluginITSupport
 
     /**
      * Performs a "cautious" search for GAV that is somewhat "shielded" against Nexus Indexer asynchronicity. It will
-     * repeat the search 3 times, with 1000 milliseconds pause. The reason to do this, to be "almost sure" it is or it
+     * repeat the search 10 times, with 1000 milliseconds pause. The reason to do this, to be "almost sure" it is or it
      * is not found, as Maven Indexer performs commits every second (hence, search might catch the pre-commit state),
      * but also the execution path as for example a deploy "arrives" to index is itself async too
      * (AsynchronousEventInspector). Hence, this method in short does a GAV search, but is "shielded" with some retries
