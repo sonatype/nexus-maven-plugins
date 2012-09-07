@@ -88,6 +88,9 @@ public class DeployLifecycleParticipantTest
         {
             final MavenProject mockProject = Mockito.mock( MavenProject.class );
             Mockito.when( mockProject.getModel() ).thenReturn( model );
+            Mockito.when( mockProject.getGroupId() ).thenReturn( model.getGroupId() );
+            Mockito.when( mockProject.getArtifactId() ).thenReturn( model.getArtifactId() );
+            Mockito.when( mockProject.getVersion() ).thenReturn( model.getVersion() );
             projects.add( mockProject );
         }
         Mockito.when( mockSession.getProjects() ).thenReturn( projects );
