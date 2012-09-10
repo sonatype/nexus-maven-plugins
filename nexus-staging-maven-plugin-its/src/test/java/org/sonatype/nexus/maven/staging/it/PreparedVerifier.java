@@ -23,7 +23,7 @@ import org.apache.maven.it.Verifier;
 /**
  * A simple "wrapper" class that carried the {@link Verifier} but also some extra data about the project being built by
  * Verifier that makes easier the post-build assertions.
- *
+ * 
  * @author cstamas
  */
 public class PreparedVerifier
@@ -40,9 +40,8 @@ public class PreparedVerifier
 
     private final String logNameTemplate;
 
-    public PreparedVerifier( final File baseDir,
-                             final String projectGroupId, final String projectArtifactId, final String projectVersion,
-                             final String logNameTemplate )
+    public PreparedVerifier( final File baseDir, final String projectGroupId, final String projectArtifactId,
+                             final String projectVersion, final String logNameTemplate )
         throws VerificationException
     {
         super( checkNotNull( baseDir ).getAbsolutePath(), false );
@@ -70,6 +69,7 @@ public class PreparedVerifier
     }
 
     @Override
+    @SuppressWarnings( "rawtypes" )
     public void executeGoals( final List goals )
         throws VerificationException
     {

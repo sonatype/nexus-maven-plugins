@@ -17,19 +17,16 @@ import static org.hamcrest.Matchers.hasSize;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 
-import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.util.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.sonatype.nexus.maven.staging.it.PreparedVerifier;
-import org.sonatype.nexus.maven.staging.it.SimpleRoundtripMatrixBaseTests;
 import org.sonatype.nexus.maven.staging.it.SimpleRoundtripMatrixSupport;
+
+import com.google.common.collect.Lists;
 
 /**
  * Test for 'standalone staging', mvn nexus-staging:deploy-staged

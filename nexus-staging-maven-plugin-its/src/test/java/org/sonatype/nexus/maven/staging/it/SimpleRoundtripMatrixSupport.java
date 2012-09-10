@@ -17,7 +17,7 @@ import static org.sonatype.sisu.filetasks.builder.FileRef.path;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
+
 import javax.inject.Inject;
 
 import org.apache.maven.it.VerificationException;

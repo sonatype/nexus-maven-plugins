@@ -12,7 +12,7 @@
  */
 package org.sonatype.nexus.maven.staging.it;
 
-import static org.sonatype.nexus.testsuite.support.NexusStartAndStopStrategy.Strategy.*;
+import static org.sonatype.nexus.testsuite.support.NexusStartAndStopStrategy.Strategy.EACH_TEST;
 import static org.sonatype.nexus.testsuite.support.ParametersLoaders.firstAvailableTestParameters;
 import static org.sonatype.nexus.testsuite.support.ParametersLoaders.systemTestParameters;
 import static org.sonatype.nexus.testsuite.support.ParametersLoaders.testParameters;
@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.maven.it.VerificationException;
-import org.apache.maven.it.Verifier;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.DefaultModelReader;
 import org.junit.Before;
@@ -66,12 +65,8 @@ public abstract class StagingMavenPluginITSupport
     @Parameterized.Parameters
     public static Collection<Object[]> data()
     {
-        return firstAvailableTestParameters(
-            systemTestParameters(),
-            testParameters(
-                $( "com.sonatype.nexus:nexus-professional:zip:bundle" )
-            )
-        ).load();
+        return firstAvailableTestParameters( systemTestParameters(),
+            testParameters( $( "com.sonatype.nexus:nexus-professional:zip:bundle" ) ) ).load();
     }
 
     protected final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -125,8 +120,8 @@ public abstract class StagingMavenPluginITSupport
             if ( !mavenHome.isDirectory() )
             {
                 logger.info( "  Expanding Maven " + mavenVersion + "..." );
-                final File maven2bundle = artifactResolver().resolveArtifact(
-                    MAVEN_G + ":" + MAVEN_A + ":zip:bin:" + mavenVersion );
+                final File maven2bundle =
+                    artifactResolver().resolveArtifact( MAVEN_G + ":" + MAVEN_A + ":zip:bin:" + mavenVersion );
                 tasks().expand( file( maven2bundle ) ).to().directory( file( mavenHomesBase ) ).run();
                 tasks().chmod( file( new File( mavenHome, "bin" ) ) ).include( "mvn" ).permissions( "755" ).run();
             }
@@ -156,8 +151,61 @@ public abstract class StagingMavenPluginITSupport
         return nexusDeploymentClient.getSubsystem( StagingWorkflowV2Service.class );
     }
 
+    /**
+     * Prepares a verifier to run against a project with following GAV: getClass().getPackage().getName() :
+     * baseDir.getName() + "-" + mavenVersion : "1.0".
+     * 
+     * @param testId
+     * @param mavenVersion
+     * @param mavenSettings
+     * @param baseDir
+     * @return
+     * @throws VerificationException
+     * @throws IOException
+     */
     public PreparedVerifier createMavenVerifier( final String testId, final String mavenVersion,
                                                  final File mavenSettings, final File baseDir )
+        throws VerificationException, IOException
+    {
+        return createMavenVerifier( testId, mavenVersion, mavenSettings, baseDir, "1.0" );
+    }
+
+    /**
+     * Prepares a verifier to run against a project with following GAV: getClass().getPackage().getName() :
+     * baseDir.getName() + "-" + mavenVersion : version.
+     * 
+     * @param testId
+     * @param mavenVersion
+     * @param mavenSettings
+     * @param baseDir
+     * @param version
+     * @return
+     * @throws VerificationException
+     * @throws IOException
+     */
+    public PreparedVerifier createMavenVerifier( final String testId, final String mavenVersion,
+                                                 final File mavenSettings, final File baseDir, final String version )
+        throws VerificationException, IOException
+    {
+        return createMavenVerifier( testId, mavenVersion, mavenSettings, baseDir, getClass().getPackage().getName(),
+            baseDir.getName() + "-" + mavenVersion, version );
+    }
+
+    /**
+     * Creates a project, filters if needed and prepares a Verifier to run against it.
+     * 
+     * @param testId
+     * @param mavenVersion
+     * @param mavenSettings
+     * @param baseDir
+     * @param groupId
+     * @param artifactId
+     * @param version
+     * @return
+     */
+    private PreparedVerifier createMavenVerifier( final String testId, final String mavenVersion,
+                                                  final File mavenSettings, final File baseDir, final String groupId,
+                                                  final String artifactId, final String version )
         throws VerificationException, IOException
     {
         final File mavenHome = mavenHomes.get( mavenVersion );
@@ -171,8 +219,8 @@ public abstract class StagingMavenPluginITSupport
         final String localRepoName = "target/maven-local-repository/";
         final File localRepoFile = new File( getBasedir(), localRepoName );
         final File filteredSettings = new File( getBasedir(), "target/settings.xml" );
-        tasks().copy().file( file( mavenSettings ) ).filterUsing( "nexus.port",
-                                                                  String.valueOf( nexus().getPort() ) ).to().file( file( filteredSettings ) ).run();
+        tasks().copy().file( file( mavenSettings ) ).filterUsing( "nexus.port", String.valueOf( nexus().getPort() ) ).to().file(
+            file( filteredSettings ) ).run();
 
         final String projectGroupId;
         final String projectArtifactId;
@@ -182,9 +230,9 @@ public abstract class StagingMavenPluginITSupport
         final File rawPom = new File( baseDir, "raw-pom.xml" );
         if ( rawPom.isFile() )
         {
-            projectGroupId = getClass().getPackage().getName();
-            projectArtifactId = baseDir.getName() + "-" + mavenVersion;
-            projectVersion = "1.0";
+            projectGroupId = groupId;
+            projectArtifactId = artifactId;
+            projectVersion = version;
             final Properties context = new Properties();
             context.setProperty( "nexus.port", String.valueOf( nexus().getPort() ) );
             context.setProperty( "itproject.groupId", projectGroupId );
@@ -203,25 +251,25 @@ public abstract class StagingMavenPluginITSupport
         }
 
         System.setProperty( "maven.home", mavenHome.getAbsolutePath() );
-        final PreparedVerifier verifier = new PreparedVerifier(
-            baseDir, projectGroupId, projectArtifactId, projectVersion, logNameTemplate
-        )
-        {
-            @Override
-            public void executeGoals( final List goals )
-                throws VerificationException
+        final PreparedVerifier verifier =
+            new PreparedVerifier( baseDir, projectGroupId, projectArtifactId, projectVersion, logNameTemplate )
             {
-                try
+                @Override
+                @SuppressWarnings( "rawtypes" )
+                public void executeGoals( final List goals )
+                    throws VerificationException
                 {
-                    super.executeGoals( goals );
+                    try
+                    {
+                        super.executeGoals( goals );
+                    }
+                    finally
+                    {
+                        final File mavenLog = new File( baseDir, getLogFileName() );
+                        testIndex().recordLink( "maven.log/" + getNumberOfRuns(), mavenLog );
+                    }
                 }
-                finally
-                {
-                    final File mavenLog = new File( baseDir, getLogFileName() );
-                    testIndex().recordLink( "maven.log/" + getNumberOfRuns(), mavenLog );
-                }
-            }
-        };
+            };
         verifier.setAutoclean( false ); // no autoclean to be able to simulate multiple invocations
         verifier.setLocalRepo( localRepoFile.getAbsolutePath() );
         verifier.setMavenDebug( true );

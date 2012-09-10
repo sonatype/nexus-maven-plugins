@@ -12,18 +12,11 @@
  */
 package org.sonatype.nexus.maven.staging.it;
 
-import static org.sonatype.sisu.filetasks.builder.FileRef.file;
-import static org.sonatype.sisu.filetasks.builder.FileRef.path;
-
 import java.io.File;
 import java.io.IOException;
 
-import javax.inject.Inject;
-
 import org.apache.maven.it.VerificationException;
 import org.junit.Test;
-import org.sonatype.nexus.bundle.launcher.NexusBundleConfiguration;
-import org.sonatype.sisu.filetasks.FileTaskBuilder;
 
 /**
  * Basic tests for Staging V2, using maven 2.2.1 and 3.0.4 on projects set up for maven 2 and 3.
