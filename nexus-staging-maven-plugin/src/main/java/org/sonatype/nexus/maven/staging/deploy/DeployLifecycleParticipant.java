@@ -88,7 +88,6 @@ public class DeployLifecycleParticipant
             logger.info( "Inspecting build with total of " + totalModules + " modules..." );
 
             int stagingGoalsFoundInModules = 0;
-            int snapshotModules = 0;
             // check do we need to do anything at all?
             // should not find any nexus-staging-maven-plugin deploy goal executions in any project
             // otherwise, assume it's "manually done"
@@ -112,25 +111,15 @@ public class DeployLifecycleParticipant
                         }
                     }
                 }
-
-                final String projectVersion = project.getVersion();
-                if ( projectVersion.endsWith( "SNAPSHOT" ) )
-                {
-                    snapshotModules++;
-                }
             }
 
-            if ( stagingGoalsFoundInModules > 0 || snapshotModules > 0 )
+            if ( stagingGoalsFoundInModules > 0 )
             {
                 logger.info( "Not installing Nexus Staging features:" );
                 if ( stagingGoalsFoundInModules > 0 )
                 {
                     logger.info( " * Preexisting staging related goal bindings found in " + stagingGoalsFoundInModules
                         + " modules." );
-                }
-                if ( snapshotModules > 0 )
-                {
-                    logger.info( " * Build contains " + snapshotModules + " snapshot versioned modules." );
                 }
                 return;
             }
