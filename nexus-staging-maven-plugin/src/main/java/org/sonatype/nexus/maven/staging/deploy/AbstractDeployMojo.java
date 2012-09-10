@@ -175,6 +175,23 @@ public abstract class AbstractDeployMojo
     // methods
 
     /**
+     * Peforms a direct deploy onto remote location described in {@code deploymentManagement} section of POM of the
+     * current module. Pretty much the same as vanilla {@code maven-deploy-plugin} does.
+     * 
+     * @param source the file to stage
+     * @param artifact the artifact definition
+     * @param localRepository the local repository to install into
+     * @param stagingDirectory the local directory where to locally stage
+     * @throws ArtifactDeploymentException if an error occurred deploying the artifact
+     */
+    protected void directDeploy( final File source, final Artifact artifact, final ArtifactRepository localRepository )
+        throws ArtifactDeploymentException, MojoExecutionException
+    {
+        // doing the same as maven-deploy-plugin would: simply deploy to location described in POM
+        deploy( source, artifact, getDeploymentRepository(), localRepository );
+    }
+
+    /**
      * Stages an artifact from a particular file locally.
      * 
      * @param source the file to stage
@@ -183,11 +200,28 @@ public abstract class AbstractDeployMojo
      * @param stagingDirectory the local directory where to locally stage
      * @throws ArtifactDeploymentException if an error occurred deploying the artifact
      */
-    protected void stageLocally( File source, Artifact artifact, ArtifactRepository localRepository,
-                                 final File stagingDirectory )
+    protected void stageLocally( final File source, final Artifact artifact, final ArtifactRepository localRepository,
+                                 final File stagingDirectory, boolean skipLocalStaging )
         throws ArtifactDeploymentException, MojoExecutionException
     {
-        deployer.deploy( source, artifact, getStagingRepositoryFor( stagingDirectory ), localRepository );
+        deploy( source, artifact, getStagingRepositoryFor( stagingDirectory ), localRepository );
+    }
+
+    /**
+     * Invoked Maven's ArtifactDeployer with provided parameters.
+     * 
+     * @param source
+     * @param artifact
+     * @param localRepository
+     * @param remoteRepository
+     * @throws ArtifactDeploymentException
+     * @throws MojoExecutionException
+     */
+    private void deploy( final File source, final Artifact artifact, final ArtifactRepository remoteRepository,
+                         final ArtifactRepository localRepository )
+        throws ArtifactDeploymentException, MojoExecutionException
+    {
+        deployer.deploy( source, artifact, remoteRepository, localRepository );
     }
 
     /**
@@ -715,5 +749,31 @@ public abstract class AbstractDeployMojo
         {
             throw new MojoExecutionException( "Staging failed: staging directory is null!" );
         }
+    }
+
+    // ==
+    // Code copy pasted and slightly modified (removal of altDeploymentRepository) from
+    // http://svn.apache.org/viewvc/maven/plugins/tags/maven-deploy-plugin-2.7 @ 1160178
+
+    /**
+     * @parameter default-value="${project}"
+     * @required
+     * @readonly
+     */
+    private MavenProject project;
+
+    protected ArtifactRepository getDeploymentRepository()
+        throws MojoExecutionException
+    {
+        final ArtifactRepository repo = project.getDistributionManagementArtifactRepository();
+        if ( repo == null )
+        {
+            String msg =
+                "Deployment failed: repository element was not specified in the POM inside"
+                    + " distributionManagement element or in -DaltDeploymentRepository=id::layout::url parameter";
+
+            throw new MojoExecutionException( msg );
+        }
+        return repo;
     }
 }
