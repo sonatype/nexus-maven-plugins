@@ -316,6 +316,8 @@ public abstract class AbstractStagingMojo
 
     protected static final String DIRECT_UPLOAD = "NONE";
 
+    protected static final String DEFERRED_SNAPSHOT_UPLOAD = "SNAPSHOTS";
+
     protected File getStagingDirectory( final String profileId )
         throws MojoExecutionException
     {
@@ -362,7 +364,6 @@ public abstract class AbstractStagingMojo
                 if ( server != null )
                 {
                     this.server = MavenSettings.decrypt( getSecDispatcher(), server );
-                    getLog().info( "Using server credentials with ID=\"" + getServerId() + "\" from Maven settings." );
                 }
                 else
                 {
@@ -379,9 +380,6 @@ public abstract class AbstractStagingMojo
             if ( proxy != null )
             {
                 this.proxy = MavenSettings.decrypt( getSecDispatcher(), proxy );
-                getLog().info(
-                    "Using " + proxy.getProtocol().toUpperCase() + " Proxy with ID=\"" + proxy.getId()
-                        + "\" from Maven settings." );
             }
         }
         catch ( SecDispatcherException e )
@@ -426,6 +424,7 @@ public abstract class AbstractStagingMojo
 
             if ( server != null && server.getUsername() != null )
             {
+                getLog().info( "Using server credentials with ID=\"" + server.getId() + "\" from Maven settings." );
                 authenticationInfo =
                     new UsernamePasswordAuthenticationInfo( server.getUsername(), server.getPassword() );
             }
@@ -436,6 +435,9 @@ public abstract class AbstractStagingMojo
 
             if ( proxy != null )
             {
+                getLog().info(
+                    "Using " + proxy.getProtocol().toUpperCase() + " Proxy with ID=\"" + proxy.getId()
+                        + "\" from Maven settings." );
                 final UsernamePasswordAuthenticationInfo proxyAuthentication;
                 if ( proxy.getUsername() != null )
                 {

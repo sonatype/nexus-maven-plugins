@@ -34,6 +34,7 @@
       <groupId>org.sonatype.maven</groupId>
       <artifactId>mojo-commons</artifactId>
       <version>1.1</version>
+      <scope>compile</scope>
     </dependency>
 
     <!-- Nexus Client Core. Has to be specified as transitive dependencies of Nexus Staging Client will not be available -->

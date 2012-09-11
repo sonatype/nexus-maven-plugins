@@ -115,8 +115,10 @@ public class DeployMojo
         if ( skipLocalStaging )
         // totally skippd
         {
+            // just to trick profile selection, we will not use it anyway as targetRepo is the remoteRepo
+            setDeployUrl( getDeploymentRepository().getUrl() );
             // does not matter, no staging kicks in
-            profileId = AbstractDeployMojo.DIRECT_UPLOAD;
+            profileId = selectStagingProfile( true );
             // we skip local staging, having no such thing
             stagingDirectory = null;
             // deploys goes directly to remote as with maven-deploy-plugin
@@ -126,23 +128,21 @@ public class DeployMojo
         else if ( artifact.isSnapshot() )
         // locally staging but uploading to deployment repo (no profiles and V2 used at all)
         {
-            // we will perform "plain upload" once done, no staging V2 kicks in
-            setDeployUrl( getDeploymentRepository().getUrl() );
-            // does not matter, no staging kicks in (as deployUrl is set line above)
-            profileId = selectStagingProfile();
+            // does not matter, no staging kicks in (as we set true as parameter)
+            profileId = selectStagingProfile( true );
             // we do local staging but "aggregated" (no profile selection happens, is set above with constant)
             stagingDirectory = getStagingDirectory( profileId );
             // deploys are gathered locally
             targetRepository = getStagingRepositoryFor( stagingDirectory );
             getLog().info(
-                "Performing local snapshot staging for deferred upload (stagingDirectory=\""
+                "Performing local snapshot collection for deferred upload (stagingDirectory=\""
                     + stagingDirectory.getAbsolutePath() + "\")..." );
         }
         else
         // for releases, everything used: profile selection, full V2, etc
         {
             // perform proper profile selection
-            profileId = selectStagingProfile();
+            profileId = selectStagingProfile( false );
             // we do keep locally staged stuff per-profile separated
             stagingDirectory = getStagingDirectory( profileId );
             // deploy are gathered locally and V2 kicks
@@ -167,7 +167,7 @@ public class DeployMojo
         {
             if ( isPomArtifact )
             {
-                doDeploy( pomFile, artifact, targetRepository );
+                doDeploy( pomFile, artifact, targetRepository, stagingDirectory );
             }
             else
             {
@@ -175,7 +175,7 @@ public class DeployMojo
 
                 if ( file != null && file.isFile() )
                 {
-                    doDeploy( file, artifact, targetRepository );
+                    doDeploy( file, artifact, targetRepository, stagingDirectory );
                 }
                 else if ( !attachedArtifacts.isEmpty() )
                 {
@@ -190,7 +190,7 @@ public class DeployMojo
                         pomArtifact.setRelease( true );
                     }
 
-                    doDeploy( pomFile, pomArtifact, targetRepository );
+                    doDeploy( pomFile, pomArtifact, targetRepository, stagingDirectory );
 
                     // propagate the timestamped version to the main artifact for the attached artifacts to pick it up
                     artifact.setResolvedVersion( pomArtifact.getVersion() );
@@ -205,7 +205,7 @@ public class DeployMojo
             for ( Iterator<Artifact> i = attachedArtifacts.iterator(); i.hasNext(); )
             {
                 Artifact attached = i.next();
-                doDeploy( attached.getFile(), attached, targetRepository );
+                doDeploy( attached.getFile(), attached, targetRepository, stagingDirectory );
             }
         }
         catch ( ArtifactDeploymentException e )
@@ -247,9 +247,17 @@ public class DeployMojo
      * @throws ArtifactDeploymentException
      * @throws MojoExecutionException
      */
-    protected void doDeploy( final File source, final Artifact artifact, final ArtifactRepository remoteRepository )
+    protected void doDeploy( final File source, final Artifact artifact, final ArtifactRepository remoteRepository,
+                             final File stagingDirectory )
         throws ArtifactDeploymentException, MojoExecutionException
     {
-        deploy( source, artifact, remoteRepository, getLocalRepository() );
+        if ( artifact.isSnapshot() )
+        {
+            install( source, artifact, remoteRepository, stagingDirectory );
+        }
+        else
+        {
+            deploy( source, artifact, remoteRepository, getLocalRepository() );
+        }
     }
 }

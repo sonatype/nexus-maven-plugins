@@ -13,24 +13,34 @@
 package org.sonatype.nexus.maven.staging.deploy;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.deployer.ArtifactDeployer;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
 import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.artifact.handler.ArtifactHandler;
+import org.apache.maven.artifact.metadata.ArtifactMetadata;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
 import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.artifact.ProjectArtifactMetadata;
 import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Server;
+import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.maven.mojo.logback.LogbackUtils;
@@ -95,6 +105,13 @@ public abstract class AbstractDeployMojo
      * @component role="org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout" hint="default"
      */
     private ArtifactRepositoryLayout defaultArtifactRepositoryLayout;
+
+    /**
+     * Artifact handlers.
+     * 
+     * @component role="org.apache.maven.artifact.handler.ArtifactHandler"
+     */
+    private Map<String, ArtifactHandler> artifactHandlers;
 
     /**
      * Map that contains the layouts.
@@ -183,6 +200,54 @@ public abstract class AbstractDeployMojo
     }
 
     /**
+     * Performs an "install" (not to be confused with "install into local repository!) into the staging repository. It
+     * will retain snapshot versions, and no metadata is created at all. In short: performs a simple file copy.
+     * 
+     * @param source
+     * @param artifact
+     * @param remoteRepository
+     * @param stagingDirectory
+     * @throws ArtifactDeploymentException
+     * @throws MojoExecutionException
+     */
+    protected void install( final File source, final Artifact artifact, final ArtifactRepository remoteRepository,
+                            final File stagingDirectory )
+        throws ArtifactDeploymentException, MojoExecutionException
+    {
+        final String path = remoteRepository.pathOf( artifact );
+        try
+        {
+            FileOutputStream fos = new FileOutputStream( new File( stagingDirectory, ".index" ), true );
+            OutputStreamWriter osw = new OutputStreamWriter( fos, "ISO-8859-1" );
+            PrintWriter pw = new PrintWriter( osw );
+
+            getLog().info( " * Holding " + path );
+            FileUtils.copyFile( source, new File( stagingDirectory, path ) );
+            pw.println( String.format( "%s=%s:%s:%s:%s:%s", path, artifact.getGroupId(), artifact.getArtifactId(),
+                artifact.getVersion(),
+                StringUtils.isBlank( artifact.getClassifier() ) ? "n/a" : artifact.getClassifier(), artifact.getType() ) );
+
+            for ( ArtifactMetadata metadata : artifact.getMetadataList() )
+            {
+                if ( metadata instanceof ProjectArtifactMetadata )
+                {
+                    ProjectArtifactMetadata pam = (ProjectArtifactMetadata) metadata;
+                    final String pomPath = remoteRepository.pathOfRemoteRepositoryMetadata( pam );
+                    getLog().info( " * Holding " + pomPath );
+                    FileUtils.copyFile( pam.getFile(), new File( stagingDirectory, pomPath ) );
+                }
+            }
+
+            pw.flush();
+            pw.close();
+        }
+        catch ( IOException e )
+        {
+            throw new ArtifactDeploymentException( "Cannot locally stage!", e );
+        }
+    }
+
+    /**
      * Invoked Maven's ArtifactDeployer with provided parameters.
      * 
      * @param source
@@ -229,13 +294,34 @@ public abstract class AbstractDeployMojo
             if ( DIRECT_UPLOAD.equals( profileId ) )
             {
                 // we do direct upload
-                getLog().info( "Uploading locally staged directory: " + profileId );
+                getLog().info( "Uploading locally staged directory: " );
                 try
                 {
+                    // prepare the local staging directory
                     // we have normal deploy
-                    getLog().info( " * Uploading locally staged artifacts to URL " + deployUrl );
+                    getLog().info( " * Bulk uploading locally staged artifacts to URL " + deployUrl );
                     zapUp( getStagingDirectory( profileId ), deployUrl );
-                    getLog().info( " * Upload of locally staged artifacts finished." );
+                    getLog().info( " * Bulk upload of locally staged artifacts finished." );
+                }
+                catch ( IOException e )
+                {
+                    getLog().error( "Upload of locally staged directory finished with a failure." );
+                    throw new ArtifactDeploymentException( "Remote staging failed: " + e.getMessage(), e );
+                }
+            }
+            else if ( DEFERRED_SNAPSHOT_UPLOAD.equals( profileId ) )
+            {
+                // we do direct upload
+                getLog().info( "Bulk deploying locally gathered snapshots directory: " );
+                try
+                {
+                    // prepare the local staging directory
+                    // we have normal deploy
+                    getLog().info(
+                        " * Bulk deploying locally gathered snapshot artifacts to URL "
+                            + getDeploymentRepository().getUrl() );
+                    deployUp( getStagingDirectory( profileId ), getDeploymentRepository() );
+                    getLog().info( " * Bulk deploy of locally gathered snapshot artifacts finished." );
                 }
                 catch ( IOException e )
                 {
@@ -289,7 +375,9 @@ public abstract class AbstractDeployMojo
     }
 
     /**
-     * Uploads the {@code sourceDirectory} to the {@code deployUrl}.
+     * Uploads the {@code sourceDirectory} to the {@code deployUrl} as a "whole". This means, that the "image"
+     * (sourceDirectory) should be already prepared, as there will be no transformations applied to them, content and
+     * filenames will be deploy as-is.
      * 
      * @param sourceDirectory
      * @param deployUrl
@@ -330,6 +418,60 @@ public abstract class AbstractDeployMojo
         LogbackUtils.syncLogLevelWithMaven( getLog() );
     }
 
+    private final Pattern indexProps = Pattern.compile( "(.*):(.*):(.*):(.*):(.*)" );
+
+    /**
+     * Performs a bulk upload using {@link ArtifactDeployer}.
+     * 
+     * @param sourceDirectory
+     * @param remoteRepository
+     * @throws ArtifactDeploymentException
+     * @throws IOException
+     */
+    protected void deployUp( final File sourceDirectory, final ArtifactRepository remoteRepository )
+        throws ArtifactDeploymentException, IOException
+    {
+        // I'd need Aether RepoSystem and create one huge DeployRequest will _all_ artifacts (would be FAST as it would
+        // go parallel), but we need to work in Maven2 too, so old compat and slow method remains: deploy one by one...
+        final FileInputStream fis = new FileInputStream( new File( sourceDirectory, ".index" ) );
+        final Properties index = new Properties();
+        try
+        {
+            index.load( fis );
+        }
+        finally
+        {
+            IOUtil.close( fis );
+        }
+
+        for ( String includedFilePath : index.stringPropertyNames() )
+        {
+            final File includedFile = new File( sourceDirectory, includedFilePath );
+            final String includedFileProps = index.getProperty( includedFilePath );
+            final Matcher matcher = indexProps.matcher( includedFileProps );
+            if ( !matcher.matches() )
+            {
+                throw new ArtifactDeploymentException( "Internal error! Line \"" + includedFileProps
+                    + "\" does not match pattern \"" + indexProps.toString() + "\"?" );
+            }
+
+            final String groupId = matcher.group( 1 );
+            final String artifactId = matcher.group( 2 );
+            final String version = matcher.group( 3 );
+            final String classifier = "n/a".equals( matcher.group( 4 ) ) ? null : matcher.group( 4 );
+            final String packaging = matcher.group( 5 );
+
+            ArtifactHandler artifactHandler = artifactHandlers.get( "default" );
+            if ( artifactHandlers.containsKey( packaging ) )
+            {
+                artifactHandler = artifactHandlers.get( packaging );
+            }
+            final DefaultArtifact artifact =
+                new DefaultArtifact( groupId, artifactId, version, null, packaging, classifier, artifactHandler );
+            deployer.deploy( includedFile, artifact, remoteRepository, getLocalRepository() );
+        }
+    }
+
     // ==
 
     /**
@@ -338,14 +480,20 @@ public abstract class AbstractDeployMojo
      * @return the profileID selected or a special {@link AbstractStagingMojo#DIRECT_UPLOAD} constant.
      * @throws MojoExecutionException
      */
-    protected String selectStagingProfile()
+    protected String selectStagingProfile( final boolean snapshots )
         throws MojoExecutionException
     {
         if ( deployUrl != null )
         {
-            getLog().info( "Preparing deferred deploy against URL: " + deployUrl );
+            getLog().info( "Gathering deferred deployables for URL: " + deployUrl );
             createTransport( deployUrl );
             return DIRECT_UPLOAD;
+        }
+        else if ( snapshots )
+        {
+            getLog().info( "Gathering deferred deployable snapshots for URL: " + getDeploymentRepository().getUrl() );
+            createTransport( getDeploymentRepository().getUrl() );
+            return DEFERRED_SNAPSHOT_UPLOAD;
         }
         else if ( getNexusUrl() != null )
         {
