@@ -31,7 +31,7 @@ import org.sonatype.spice.zapper.fs.DirectoryIOSource;
  * Default imple of Zapper encapsulating component.
  * 
  * @author cstamas
- * @since 2.1
+ * @since 1.0
  */
 @Component( role = Zapper.class )
 public class ZapperImpl

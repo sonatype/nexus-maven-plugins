@@ -22,7 +22,7 @@ import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
  * Promotes a closed Nexus staging repository into a Nexus Build Promotion Profile.
  * 
  * @author cstamas
- * @since 2.1
+ * @since 1.0
  * @goal promote
  */
 public class PromoteToStageProfileMojo

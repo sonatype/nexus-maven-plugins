@@ -53,7 +53,7 @@ import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
  * Abstract class for deploy related mojos.
  * 
  * @author cstamas
- * @since 2.1
+ * @since 1.0
  */
 public abstract class AbstractDeployMojo
     extends AbstractStagingMojo
@@ -172,39 +172,14 @@ public abstract class AbstractDeployMojo
         return artifactFactory;
     }
 
-    // methods
-
-    /**
-     * Peforms a direct deploy onto remote location described in {@code deploymentManagement} section of POM of the
-     * current module. Pretty much the same as vanilla {@code maven-deploy-plugin} does.
-     * 
-     * @param source the file to stage
-     * @param artifact the artifact definition
-     * @param localRepository the local repository to install into
-     * @param stagingDirectory the local directory where to locally stage
-     * @throws ArtifactDeploymentException if an error occurred deploying the artifact
-     */
-    protected void directDeploy( final File source, final Artifact artifact, final ArtifactRepository localRepository )
-        throws ArtifactDeploymentException, MojoExecutionException
+    protected String getDeployUrl()
     {
-        // doing the same as maven-deploy-plugin would: simply deploy to location described in POM
-        deploy( source, artifact, getDeploymentRepository(), localRepository );
+        return deployUrl;
     }
 
-    /**
-     * Stages an artifact from a particular file locally.
-     * 
-     * @param source the file to stage
-     * @param artifact the artifact definition
-     * @param localRepository the local repository to install into
-     * @param stagingDirectory the local directory where to locally stage
-     * @throws ArtifactDeploymentException if an error occurred deploying the artifact
-     */
-    protected void stageLocally( final File source, final Artifact artifact, final ArtifactRepository localRepository,
-                                 final File stagingDirectory, boolean skipLocalStaging )
-        throws ArtifactDeploymentException, MojoExecutionException
+    protected void setDeployUrl( String deployUrl )
     {
-        deploy( source, artifact, getStagingRepositoryFor( stagingDirectory ), localRepository );
+        this.deployUrl = deployUrl;
     }
 
     /**
@@ -217,8 +192,8 @@ public abstract class AbstractDeployMojo
      * @throws ArtifactDeploymentException
      * @throws MojoExecutionException
      */
-    private void deploy( final File source, final Artifact artifact, final ArtifactRepository remoteRepository,
-                         final ArtifactRepository localRepository )
+    protected void deploy( final File source, final Artifact artifact, final ArtifactRepository remoteRepository,
+                           final ArtifactRepository localRepository )
         throws ArtifactDeploymentException, MojoExecutionException
     {
         deployer.deploy( source, artifact, remoteRepository, localRepository );
@@ -242,7 +217,6 @@ public abstract class AbstractDeployMojo
             return;
         }
         final List<StagingRepository> zappedStagingRepositories = new ArrayList<StagingRepository>();
-        Throwable problem = null;
         for ( File profileDirectory : localStageRepositories )
         {
             if ( !profileDirectory.isDirectory() )
@@ -252,23 +226,28 @@ public abstract class AbstractDeployMojo
 
             final String profileId = profileDirectory.getName();
 
-            getLog().info( "Uploading locally staged directory: " + profileId );
-
             if ( DIRECT_UPLOAD.equals( profileId ) )
             {
+                // we do direct upload
+                getLog().info( "Uploading locally staged directory: " + profileId );
                 try
                 {
                     // we have normal deploy
+                    getLog().info( " * Uploading locally staged artifacts to URL " + deployUrl );
                     zapUp( getStagingDirectory( profileId ), deployUrl );
+                    getLog().info( " * Upload of locally staged artifacts finished." );
                 }
                 catch ( IOException e )
                 {
-                    throw new ArtifactDeploymentException( "Cannot deploy!", e );
+                    getLog().error( "Upload of locally staged directory finished with a failure." );
+                    throw new ArtifactDeploymentException( "Remote staging failed: " + e.getMessage(), e );
                 }
             }
             else
             {
                 // we do staging
+                getLog().info( "Remote staging locally staged directory: " + profileId );
+
                 if ( getNexusClient() == null )
                 {
                     createTransport( getNexusUrl() );
@@ -287,32 +266,26 @@ public abstract class AbstractDeployMojo
                 try
                 {
                     final String deployUrl = calculateUploadUrl( stagingRepository );
+                    getLog().info( " * Uploading locally staged artifacts to profile " + stagingProfile.getName() );
                     zapUp( getStagingDirectory( profileId ), deployUrl );
+                    getLog().info( " * Upload of locally staged artifacts finished." );
                     afterUpload( stagingRepository, skipStagingRepositoryClose );
                 }
                 catch ( IOException e )
                 {
-                    problem = e;
-                    break;
+                    afterUploadFailure( zappedStagingRepositories, e );
+                    getLog().error( "Remote staging finished with a failure." );
+                    throw new ArtifactDeploymentException( "Remote staging failed: " + e.getMessage(), e );
                 }
                 catch ( StagingRuleFailuresException e )
                 {
-                    problem = e;
-                    break;
+                    afterUploadFailure( zappedStagingRepositories, e );
+                    getLog().error( "Remote staging finished with a failure." );
+                    throw new ArtifactDeploymentException( "Remote staging failed: " + e.getMessage(), e );
                 }
             }
         }
-        if ( problem != null )
-        {
-            afterUploadFailure( zappedStagingRepositories, problem );
-            getLog().error( "Remote staging finished with a failure." );
-            throw new ArtifactDeploymentException( "Remote staging failed: " + problem.getMessage(), problem );
-        }
-        else
-        {
-            getLog().info( "Remote staging finished with success." );
-        }
-
+        getLog().info( "Remote staging finished with success." );
     }
 
     /**
@@ -344,7 +317,6 @@ public abstract class AbstractDeployMojo
             request.setProxyPassword( proxy.getPassword() );
         }
 
-        getLog().info( " * Uploading locally staged artifacts to: " + deployUrl );
         // Zapper is a bit "chatty", if no Maven debug session is ongoing, then up logback to WARN
         if ( getLog().isDebugEnabled() )
         {
@@ -356,7 +328,6 @@ public abstract class AbstractDeployMojo
         }
         zapper.deployDirectory( request );
         LogbackUtils.syncLogLevelWithMaven( getLog() );
-        getLog().info( " * Upload of locally staged artifacts finished." );
     }
 
     // ==
@@ -372,7 +343,7 @@ public abstract class AbstractDeployMojo
     {
         if ( deployUrl != null )
         {
-            getLog().info( "Preparing normal deploy against URL: " + deployUrl );
+            getLog().info( "Preparing deferred deploy against URL: " + deployUrl );
             createTransport( deployUrl );
             return DIRECT_UPLOAD;
         }

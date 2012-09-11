@@ -21,6 +21,8 @@ import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 /**
  * Releases a single closed Nexus staging repository into a permanent Nexus repository for general consumption.
  * 
+ * @author cstamas
+ * @since 1.0
  * @goal rc-release
  * @requiresProject false
  * @requiresDirectInvocation true

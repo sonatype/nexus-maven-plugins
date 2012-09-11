@@ -21,6 +21,8 @@ import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 /**
  * Promotes a closed Nexus staging repository into a Nexus Build Promotion Profile.
  * 
+ * @author cstamas
+ * @since 1.0
  * @goal rc-promote
  * @requiresProject false
  * @requiresDirectInvocation true

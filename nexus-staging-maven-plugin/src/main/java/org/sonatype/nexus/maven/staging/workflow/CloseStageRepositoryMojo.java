@@ -28,7 +28,7 @@ import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
  * Closes a Nexus staging repository.
  * 
  * @author cstamas
- * @since 2.1
+ * @since 1.0
  * @goal close
  */
 public class CloseStageRepositoryMojo

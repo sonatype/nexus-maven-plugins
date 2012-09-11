@@ -18,7 +18,7 @@ import java.io.IOException;
  * Zapper encapsulating component.
  * 
  * @author cstamas
- * @since 2.1
+ * @since 1.0
  */
 public interface Zapper
 {

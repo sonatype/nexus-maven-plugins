@@ -22,7 +22,7 @@ import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
  * Drops a Nexus staging repository that is either open or closed.
  * 
  * @author cstamas
- * @since 2.1
+ * @since 1.0
  * @goal drop
  */
 public class DropStageRepositoryMojo

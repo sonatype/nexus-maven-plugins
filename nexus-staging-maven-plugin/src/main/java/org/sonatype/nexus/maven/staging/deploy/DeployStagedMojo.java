@@ -20,7 +20,7 @@ import org.apache.maven.plugin.MojoFailureException;
  * Deploys the (previously) locally staged artifacts.
  * 
  * @author cstamas
- * @since 2.1
+ * @since 1.0
  * @goal deploy-staged
  */
 public class DeployStagedMojo
@@ -36,7 +36,6 @@ public class DeployStagedMojo
         {
             try
             {
-                getLog().info( "Staging remotely..." );
                 stageRemotely();
             }
             catch ( ArtifactDeploymentException e )

@@ -18,7 +18,7 @@ import java.io.File;
  * A "zap" request.
  * 
  * @author cstamas
- * @since 2.1
+ * @since 1.0
  */
 public class ZapperRequest
 {
