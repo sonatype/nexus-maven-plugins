@@ -37,16 +37,16 @@ public class Nxcm4548StandaloneDeployStagedIT
 
     private File tmpDir;
 
-    public Nxcm4548StandaloneDeployStagedIT(final String nexusBundleCoordinates)
+    public Nxcm4548StandaloneDeployStagedIT( final String nexusBundleCoordinates )
     {
-        super(nexusBundleCoordinates);
+        super( nexusBundleCoordinates );
     }
 
     @Before
     public void setupTmpDir()
         throws IOException
     {
-        tmpDir = new File(util.getTmpDir(), String.valueOf(hashCode()));
+        tmpDir = new File( util.getTmpDir(), String.valueOf( hashCode() ) );
         tmpDir.mkdirs();
     }
 
@@ -75,22 +75,23 @@ public class Nxcm4548StandaloneDeployStagedIT
     {
         final File localStagingDir = new File( tmpDir, "12a2439c79f79c6f" );
 
-        verifier.addCliOption( "-DaltStagingDirectory=" + tmpDir.getAbsolutePath() );
-        verifier.addCliOption( "-DserverId=local-nexus" );
+        // for m-d-p to deploy the "image" here
         verifier.addCliOption( "-DaltDeploymentRepository=dummy::default::" + localStagingDir.toURI() );
+        // for n-s-m-p
+        verifier.addCliOption( "-DserverId=local-nexus" );
+        verifier.addCliOption( "-DnexusUrl=" + nexus().getUrl().toExternalForm()
+        // verifier replaces "//" with "/", which will make nexus-client unable to parse the URL
+        .replace( "http://", "http:///" ) );
+        verifier.addCliOption( "-DrepositoryDirectory=" + tmpDir.getAbsolutePath() );
+        verifier.addCliOption( "-DstagingProfileId=12a2439c79f79c6f" );
 
-        verifier.addCliOption(
-            "-DnexusUrl=" + nexus().getUrl().toExternalForm()
-                    // verifier replaces "//" with "/", which will make nexus-client unable to parse the URL
-                    .replace( "http://", "http:///" )
-        );
-
-
+        // this deploys to aldDeploymentRepository using vanilla m-d-p, no n-s-m-p invoked (is not bound in POM)
         verifier.executeGoals( Lists.newArrayList( "clean", "deploy" ) );
         verifier.verifyErrorFreeLog();
         verifier.verifyTextInLog( "12a2439c79f79c6f" );
 
-        verifier.executeGoal( "nexus-staging:deploy-staged" );
+        // this stages the repository using n-s-m-p's new goal
+        verifier.executeGoal( "nexus-staging:deploy-staged-repository" );
 
         verifier.verifyErrorFreeLog();
     }

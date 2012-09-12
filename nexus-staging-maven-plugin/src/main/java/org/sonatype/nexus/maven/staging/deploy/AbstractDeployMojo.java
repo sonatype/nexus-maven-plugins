@@ -710,6 +710,14 @@ public abstract class AbstractDeployMojo
         final File stagingPropertiesFile =
             new File( getStagingDirectoryRoot(), stagingRepository.getProfile().getId()
                 + STAGING_REPOSITORY_PROPERTY_FILE_NAME_SUFFIX );
+
+        // this below is the case with DeployRepositoryMojo, where we have no folder created
+        // as we remotely staged something completely different
+        if ( !stagingPropertiesFile.getParentFile().isDirectory() )
+        {
+            stagingPropertiesFile.getParentFile().mkdirs();
+        }
+
         FileOutputStream fout = null;
         try
         {
