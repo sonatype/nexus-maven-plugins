@@ -56,7 +56,6 @@ public class ZapperImpl
                     UsernamePasswordCredentials proxyCredentials =
                         new UsernamePasswordCredentials( zapperRequest.getProxyUsername(),
                             zapperRequest.getProxyPassword() );
-
                     credentialsProvider = new BasicCredentialsProvider();
                     credentialsProvider.setCredentials( new AuthScope( proxyServer.getHostName(),
                         proxyServer.getPort(), AuthScope.ANY_REALM, proxyServer.getSchemeName() ), proxyCredentials );

@@ -314,10 +314,6 @@ public abstract class AbstractStagingMojo
         }
     }
 
-    protected static final String DIRECT_UPLOAD = "NONE";
-
-    protected static final String DEFERRED_SNAPSHOT_UPLOAD = "SNAPSHOTS";
-
     protected File getStagingDirectory( final String profileId )
         throws MojoExecutionException
     {

@@ -17,7 +17,8 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 
 /**
- * Deploys the (previously) locally staged artifacts.
+ * Deploys the (previously) locally staged artifacts from nexus-staging repository, that were staged using
+ * {@link DeployMojo} and having the {@link skipRemoteStaging} flag set to {@code true}.
  * 
  * @author cstamas
  * @since 1.0
