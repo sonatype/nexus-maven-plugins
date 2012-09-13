@@ -13,15 +13,23 @@
 package org.sonatype.nexus.maven.staging.deploy;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
+import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.installer.ArtifactInstallationException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.artifact.ProjectArtifactMetadata;
+import org.sonatype.nexus.maven.staging.deploy.strategy.DeployPerModuleRequest;
+import org.sonatype.nexus.maven.staging.deploy.strategy.DeployStrategy;
+import org.sonatype.nexus.maven.staging.deploy.strategy.FinalizeDeployRequest;
+import org.sonatype.nexus.maven.staging.deploy.strategy.Parameters;
+import org.sonatype.nexus.maven.staging.deploy.strategy.ParametersImpl;
+import org.sonatype.nexus.maven.staging.deploy.strategy.Strategies;
 
 /**
  * Alternative deploy plugin, that for all except last module actually "stages" to a location on local disk, and on last
@@ -35,6 +43,13 @@ import org.apache.maven.project.artifact.ProjectArtifactMetadata;
 public class DeployMojo
     extends AbstractDeployMojo
 {
+    /**
+     * Component used to create an artifact.
+     * 
+     * @component
+     */
+    private ArtifactFactory artifactFactory;
+
     /**
      * @parameter default-value="${project.artifact}"
      * @required
@@ -78,13 +93,6 @@ public class DeployMojo
     private boolean skipNexusStagingDeployMojo = false;
 
     /**
-     * Set this to {@code true} to bypass staging features, and use deferred depoy features only.
-     * 
-     * @parameter expression="${deferredDeployOnly}"
-     */
-    private boolean deferredDeployOnly = false;
-
-    /**
      * Set this to {@code true} to bypass staging features completely, and make this plugin behave in exact way as
      * "maven-deploy-plugin" would, such as deploying at "deploy" phase in every module build to remote. In this case,
      * the repository deployment goes against is taken in from Dependency Management section, again, same as in case of
@@ -116,38 +124,26 @@ public class DeployMojo
         // matching, etc.
         failIfOffline();
 
-        final WorkflowType workflowType;
-        final String profileId;
-        final File stagingDirectory;
+        final Parameters parameters = buildParameters();
+        final DeployStrategy deployStrategy;
         if ( skipLocalStaging )
         // totally skipped
         {
-            workflowType = WorkflowType.DIRECT_DEPLOY;
-            profileId = selectStagingProfile( workflowType );
-            stagingDirectory = null;
-            getLog().info( "Performing direct deploys (maven-deploy-plugin like)..." );
+            deployStrategy = getDeployStrategy( Strategies.DIRECT );
         }
-        else if ( deferredDeployOnly || artifact.isSnapshot() )
+        else if ( isDeferredDeployOnly() || artifact.isSnapshot() )
         // locally staging but uploading to deployment repo (no profiles and V2 used at all)
         {
-            workflowType = WorkflowType.DEFERRED_DEPLOY;
-            profileId = selectStagingProfile( workflowType );
-            stagingDirectory = getStagingDirectory( profileId );
-            getLog().info(
-                "Performing deferred deploys (local stagingDirectory=\"" + stagingDirectory.getAbsolutePath()
-                    + "\")..." );
+            deployStrategy = getDeployStrategy( Strategies.DEFERRED );
         }
         else
         // for releases, everything used: profile selection, full V2, etc
         {
-            workflowType = WorkflowType.STAGING_DEPLOY;
-            profileId = selectStagingProfile( workflowType );
-            stagingDirectory = getStagingDirectory( profileId );
-            getLog().info(
-                "Performing staging (local stagingDirectory=\"" + stagingDirectory.getAbsolutePath() + "\")..." );
+            deployStrategy = getDeployStrategy( Strategies.STAGING );
         }
 
         // DEPLOY
+        final ArrayList<DeployableArtifact> deployables = new ArrayList<DeployableArtifact>( 2 );
 
         // Deploy the POM
         boolean isPomArtifact = "pom".equals( packaging );
@@ -165,7 +161,7 @@ public class DeployMojo
         {
             if ( isPomArtifact )
             {
-                doDeploy( workflowType, pomFile, artifact, stagingDirectory );
+                deployables.add( new DeployableArtifact( pomFile, artifact ) );
             }
             else
             {
@@ -173,14 +169,14 @@ public class DeployMojo
 
                 if ( file != null && file.isFile() )
                 {
-                    doDeploy( workflowType, file, artifact, stagingDirectory );
+                    deployables.add( new DeployableArtifact( file, artifact ) );
                 }
                 else if ( !attachedArtifacts.isEmpty() )
                 {
                     getLog().info( "No primary artifact to deploy, deploying attached artifacts instead." );
 
                     final Artifact pomArtifact =
-                        getArtifactFactory().createProjectArtifact( artifact.getGroupId(), artifact.getArtifactId(),
+                        artifactFactory.createProjectArtifact( artifact.getGroupId(), artifact.getArtifactId(),
                             artifact.getBaseVersion() );
                     pomArtifact.setFile( pomFile );
                     if ( updateReleaseInfo )
@@ -188,7 +184,7 @@ public class DeployMojo
                         pomArtifact.setRelease( true );
                     }
 
-                    doDeploy( workflowType, pomFile, pomArtifact, stagingDirectory );
+                    deployables.add( new DeployableArtifact( pomFile, pomArtifact ) );
 
                     // propagate the timestamped version to the main artifact for the attached artifacts to pick it up
                     artifact.setResolvedVersion( pomArtifact.getVersion() );
@@ -203,8 +199,12 @@ public class DeployMojo
             for ( Iterator<Artifact> i = attachedArtifacts.iterator(); i.hasNext(); )
             {
                 Artifact attached = i.next();
-                doDeploy( workflowType, attached.getFile(), attached, stagingDirectory );
+                deployables.add( new DeployableArtifact( attached.getFile(), attached ) );
             }
+
+            final DeployPerModuleRequest request =
+                new DeployPerModuleRequest( getMavenSession(), parameters, deployables );
+            deployStrategy.deployPerModule( request );
         }
         catch ( ArtifactInstallationException e )
         {
@@ -216,49 +216,45 @@ public class DeployMojo
         }
 
         // if local staging skipped, we even can't do remote staging at all (as nothing is staged locally)
-        if ( !WorkflowType.DIRECT_DEPLOY.equals( workflowType ) && isThisLastProjectWithThisMojoInExecution() )
+        if ( isThisLastProjectWithThisMojoInExecution() )
         {
-            if ( !skipRemoteStaging )
-            {
-                try
-                {
-                    stageRemotely();
-                }
-                catch ( ArtifactDeploymentException e )
-                {
-                    throw new MojoExecutionException( e.getMessage(), e );
-                }
-            }
-            else
+            if ( skipRemoteStaging )
             {
                 getLog().info(
-                    "Artifacts locally staged in directory " + stagingDirectory.getAbsolutePath()
+                    "Artifacts locally staged in directory " + parameters.getStagingDirectoryRoot().getAbsolutePath()
                         + ", skipping remote staging at user's demand." );
+                return;
+            }
+
+            try
+            {
+                final FinalizeDeployRequest request = new FinalizeDeployRequest( getMavenSession(), parameters );
+                deployStrategy.finalizeDeploy( request );
+            }
+            catch ( ArtifactDeploymentException e )
+            {
+                throw new MojoExecutionException( e.getMessage(), e );
             }
         }
     }
 
-    /**
-     * A simple indirection that call the proper underlying methods to either do direct deploy or local staging.
-     * 
-     * @param workflow type
-     * @param source
-     * @param artifact
-     * @param stagingDirectory
-     * @throws ArtifactDeploymentException
-     * @throws MojoExecutionException
-     */
-    protected void doDeploy( final WorkflowType workflowType, final File source, final Artifact artifact,
-                             final File stagingDirectory )
-        throws ArtifactInstallationException, ArtifactDeploymentException, MojoExecutionException
+    @Override
+    protected Parameters buildParameters()
+        throws MojoExecutionException
     {
-        if ( WorkflowType.DIRECT_DEPLOY.equals( workflowType ) )
+        try
         {
-            deploy( source, artifact, getTargetRepository( workflowType, stagingDirectory ) );
+            final Parameters parameters =
+                new ParametersImpl( getPluginGav(), getNexusUrl(), getServerId(), getStagingDirectoryRoot(),
+                    isKeepStagingRepositoryOnCloseRuleFailure(), isKeepStagingRepositoryOnFailure(),
+                    isSkipStagingRepositoryClose(), getStagingProfileId(), getStagingRepositoryId(), getDescription(),
+                    getTags() );
+
+            return parameters;
         }
-        else
+        catch ( NullPointerException e )
         {
-            install( source, artifact, getTargetRepository( workflowType, stagingDirectory ), stagingDirectory );
+            throw new MojoExecutionException( "Bad config and/or validation!", e );
         }
     }
 }

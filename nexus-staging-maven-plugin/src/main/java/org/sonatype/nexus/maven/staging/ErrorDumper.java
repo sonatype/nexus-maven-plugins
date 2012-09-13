@@ -15,46 +15,74 @@ package org.sonatype.nexus.maven.staging;
 import java.util.Map;
 
 import org.apache.maven.plugin.logging.Log;
+import org.codehaus.plexus.logging.Logger;
 import org.sonatype.nexus.client.core.NexusErrorMessageException;
 
 import com.sonatype.nexus.staging.client.StagingRuleFailures;
 import com.sonatype.nexus.staging.client.StagingRuleFailures.RuleFailure;
 import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
 
+/**
+ * A simple helper class to "dump" meaningful console error messages.
+ * 
+ * @author cstamas
+ */
 public class ErrorDumper
 {
+    public static void dumpErrors( final Logger log, final StagingRuleFailuresException e )
+    {
+        dumpErrors( new PlexusLoggerWriter( log ), e );
+    }
+
+    public static void dumpErrors( final Logger log, final NexusErrorMessageException e )
+    {
+        dumpErrors( new PlexusLoggerWriter( log ), e );
+    }
+
     public static void dumpErrors( final Log log, final StagingRuleFailuresException e )
     {
-        log.error( "" );
-        log.error( "Nexus Staging Rules Failure Report" );
-        log.error( "==================================" );
-        log.error( "" );
-        for ( StagingRuleFailures failure : e.getFailures() )
-        {
-            log.error( String.format( "Repository \"%s\" (id=%s) failures", failure.getRepositoryName(),
-                failure.getRepositoryId() ) );
-            for ( RuleFailure ruleFailure : failure.getFailures() )
-            {
-                log.error( String.format( "  Rule \"%s\" failures", ruleFailure.getRuleName() ) );
-                for ( String message : ruleFailure.getMessages() )
-                {
-                    log.error( String.format( "    * %s", unfick( message ) ) );
-                }
-            }
-            log.error( "" );
-        }
-        log.error( "" );
+        dumpErrors( new MojoLoggerWriter( log ), e );
     }
 
     public static void dumpErrors( final Log log, final NexusErrorMessageException e )
     {
-        log.error( "" );
-        log.error( String.format( "Nexus Error Response: %s - %s", e.getStatusCode(), e.getStatusMessage() ) );
+        dumpErrors( new MojoLoggerWriter( log ), e );
+    }
+
+    // ==
+
+    public static void dumpErrors( final Writer writer, final StagingRuleFailuresException e )
+    {
+        writer.writeln( "" );
+        writer.writeln( "Nexus Staging Rules Failure Report" );
+        writer.writeln( "==================================" );
+        writer.writeln( "" );
+        for ( StagingRuleFailures failure : e.getFailures() )
+        {
+            writer.writeln( String.format( "Repository \"%s\" (id=%s) failures", failure.getRepositoryName(),
+                failure.getRepositoryId() ) );
+            for ( RuleFailure ruleFailure : failure.getFailures() )
+            {
+                writer.writeln( String.format( "  Rule \"%s\" failures", ruleFailure.getRuleName() ) );
+                for ( String message : ruleFailure.getMessages() )
+                {
+                    writer.writeln( String.format( "    * %s", unfick( message ) ) );
+                }
+            }
+            writer.writeln( "" );
+        }
+        writer.writeln( "" );
+    }
+
+    public static void dumpErrors( final Writer writer, final NexusErrorMessageException e )
+    {
+        writer.writeln( "" );
+        writer.writeln( String.format( "Nexus Error Response: %s - %s", e.getStatusCode(), e.getStatusMessage() ) );
         for ( Map.Entry<String, String> errorEntry : e.getErrors().entrySet() )
         {
-            log.error( String.format( "  %s - %s", unfick( errorEntry.getKey() ), unfick( errorEntry.getValue() ) ) );
+            writer.writeln( String.format( "  %s - %s", unfick( errorEntry.getKey() ), unfick( errorEntry.getValue() ) ) );
         }
-        log.error( "" );
+        writer.writeln( "" );
     }
 
     // ==
@@ -66,5 +94,46 @@ public class ErrorDumper
             return str.replace( "&quot;", "" ).replace( "&lt;b&gt;", "" ).replace( "&lt;/b&gt;", "" );
         }
         return str;
+    }
+
+    // ==
+
+    public static interface Writer
+    {
+        void writeln( final String string );
+    }
+
+    public static class PlexusLoggerWriter
+        implements Writer
+    {
+        private final Logger logger;
+
+        public PlexusLoggerWriter( final Logger logger )
+        {
+            this.logger = logger;
+        }
+
+        @Override
+        public void writeln( final String string )
+        {
+            logger.error( string );
+        }
+    }
+
+    public static class MojoLoggerWriter
+        implements Writer
+    {
+        private final Log logger;
+
+        public MojoLoggerWriter( final Log logger )
+        {
+            this.logger = logger;
+        }
+
+        @Override
+        public void writeln( final String string )
+        {
+            logger.error( string );
+        }
     }
 }

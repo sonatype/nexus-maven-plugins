@@ -10,7 +10,7 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.nexus.maven.staging.deploy;
+package org.sonatype.nexus.maven.staging.zapper;
 
 import java.io.File;
 
@@ -46,82 +46,82 @@ public class ZapperRequest
         this.remoteUrl = remoteUrl.endsWith( "/" ) ? remoteUrl : remoteUrl + "/";
     }
 
-    protected String getRemoteUsername()
+    public String getRemoteUsername()
     {
         return remoteUsername;
     }
 
-    protected void setRemoteUsername( String remoteUsername )
+    public void setRemoteUsername( String remoteUsername )
     {
         this.remoteUsername = remoteUsername;
     }
 
-    protected String getRemotePassword()
+    public String getRemotePassword()
     {
         return remotePassword;
     }
 
-    protected void setRemotePassword( String remotePassword )
+    public void setRemotePassword( String remotePassword )
     {
         this.remotePassword = remotePassword;
     }
 
-    protected String getProxyProtocol()
+    public String getProxyProtocol()
     {
         return proxyProtocol;
     }
 
-    protected void setProxyProtocol( String proxyProtocol )
+    public void setProxyProtocol( String proxyProtocol )
     {
         this.proxyProtocol = proxyProtocol;
     }
 
-    protected String getProxyHost()
+    public String getProxyHost()
     {
         return proxyHost;
     }
 
-    protected void setProxyHost( String proxyHost )
+    public void setProxyHost( String proxyHost )
     {
         this.proxyHost = proxyHost;
     }
 
-    protected int getProxyPort()
+    public int getProxyPort()
     {
         return proxyPort;
     }
 
-    protected void setProxyPort( int proxyPort )
+    public void setProxyPort( int proxyPort )
     {
         this.proxyPort = proxyPort;
     }
 
-    protected String getProxyUsername()
+    public String getProxyUsername()
     {
         return proxyUsername;
     }
 
-    protected void setProxyUsername( String proxyUsername )
+    public void setProxyUsername( String proxyUsername )
     {
         this.proxyUsername = proxyUsername;
     }
 
-    protected String getProxyPassword()
+    public String getProxyPassword()
     {
         return proxyPassword;
     }
 
-    protected void setProxyPassword( String proxyPassword )
+    public void setProxyPassword( String proxyPassword )
     {
         this.proxyPassword = proxyPassword;
     }
 
-    protected File getStageRepository()
+    public File getStageRepository()
     {
         return stageRepository;
     }
 
-    protected String getRemoteUrl()
+    public String getRemoteUrl()
     {
         return remoteUrl;
     }

@@ -15,6 +15,11 @@ package org.sonatype.nexus.maven.staging.deploy;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.sonatype.nexus.maven.staging.deploy.strategy.DeployStrategy;
+import org.sonatype.nexus.maven.staging.deploy.strategy.FinalizeDeployRequest;
+import org.sonatype.nexus.maven.staging.deploy.strategy.Parameters;
+import org.sonatype.nexus.maven.staging.deploy.strategy.ParametersImpl;
+import org.sonatype.nexus.maven.staging.deploy.strategy.Strategies;
 
 /**
  * Deploys the (previously) locally staged artifacts from nexus-staging repository, that were staged using
@@ -37,7 +42,20 @@ public class DeployStagedMojo
         {
             try
             {
-                stageRemotely();
+                final DeployStrategy deployStrategy;
+                if ( getMavenSession().getCurrentProject().getArtifact().isSnapshot() )
+                {
+                    deployStrategy = getDeployStrategy( Strategies.DEFERRED );
+                }
+                else
+                {
+                    deployStrategy = getDeployStrategy( Strategies.STAGING );
+                }
+
+                final Parameters parameters = buildParameters();
+                final FinalizeDeployRequest request = new FinalizeDeployRequest( getMavenSession(), parameters );
+
+                deployStrategy.finalizeDeploy( request );
             }
             catch ( ArtifactDeploymentException e )
             {
@@ -47,6 +65,26 @@ public class DeployStagedMojo
         else
         {
             getLog().info( "Execution skipped to the last project..." );
+        }
+    }
+
+    @Override
+    protected Parameters buildParameters()
+        throws MojoExecutionException
+    {
+        try
+        {
+            final Parameters parameters =
+                new ParametersImpl( getPluginGav(), getNexusUrl(), getServerId(), getStagingDirectoryRoot(),
+                    isKeepStagingRepositoryOnCloseRuleFailure(), isKeepStagingRepositoryOnFailure(),
+                    isSkipStagingRepositoryClose(), getStagingProfileId(), getStagingRepositoryId(), getDescription(),
+                    getTags() );
+
+            return parameters;
+        }
+        catch ( NullPointerException e )
+        {
+            throw new MojoExecutionException( "Bad config and/or validation!", e );
         }
     }
 }

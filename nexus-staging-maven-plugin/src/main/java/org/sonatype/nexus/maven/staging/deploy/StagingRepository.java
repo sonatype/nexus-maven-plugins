@@ -12,6 +12,7 @@
  */
 package org.sonatype.nexus.maven.staging.deploy;
 
+import com.google.common.base.Preconditions;
 import com.sonatype.nexus.staging.client.Profile;
 
 public class StagingRepository
@@ -20,26 +21,34 @@ public class StagingRepository
 
     private final String repositoryId;
 
+    private final String url;
+
     private final boolean managed;
 
-    public StagingRepository( final Profile profile, final String repositoryId, final boolean managed )
+    public StagingRepository( final Profile profile, final String repositoryId, final String url, final boolean managed )
     {
-        this.profile = profile;
-        this.repositoryId = repositoryId;
+        this.profile = Preconditions.checkNotNull( profile );
+        this.repositoryId = Preconditions.checkNotNull( repositoryId );
+        this.url = Preconditions.checkNotNull( url );
         this.managed = managed;
     }
 
-    protected Profile getProfile()
+    public Profile getProfile()
     {
         return profile;
     }
 
-    protected String getRepositoryId()
+    public String getRepositoryId()
     {
         return repositoryId;
     }
 
-    protected boolean isManaged()
+    public String getUrl()
+    {
+        return url;
+    }
+
+    public boolean isManaged()
     {
         return managed;
     }

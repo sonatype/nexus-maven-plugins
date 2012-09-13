@@ -18,6 +18,11 @@ import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.codehaus.plexus.util.StringUtils;
+import org.sonatype.nexus.maven.staging.deploy.strategy.DeployStrategy;
+import org.sonatype.nexus.maven.staging.deploy.strategy.FinalizeDeployRequest;
+import org.sonatype.nexus.maven.staging.deploy.strategy.Parameters;
+import org.sonatype.nexus.maven.staging.deploy.strategy.ParametersImpl;
+import org.sonatype.nexus.maven.staging.deploy.strategy.Strategies;
 
 /**
  * Deploys the (previously) staged artifacts from some local repository, that were staged using
@@ -75,7 +80,12 @@ public class DeployRepositoryMojo
         {
             try
             {
-                stageRepositoryRemotely( repositoryDirectory );
+                final DeployStrategy deployStrategy = getDeployStrategy( Strategies.IMAGE );
+
+                final Parameters parameters = buildParameters();
+                final FinalizeDeployRequest request = new FinalizeDeployRequest( getMavenSession(), parameters );
+
+                deployStrategy.finalizeDeploy( request );
             }
             catch ( ArtifactDeploymentException e )
             {
@@ -85,6 +95,26 @@ public class DeployRepositoryMojo
         else
         {
             getLog().info( "Execution skipped to the last project..." );
+        }
+    }
+
+    @Override
+    protected Parameters buildParameters()
+        throws MojoExecutionException
+    {
+        try
+        {
+            final Parameters parameters =
+                new ParametersImpl( getPluginGav(), getNexusUrl(), getServerId(), repositoryDirectory,
+                    isKeepStagingRepositoryOnCloseRuleFailure(), isKeepStagingRepositoryOnFailure(),
+                    isSkipStagingRepositoryClose(), getStagingProfileId(), getStagingRepositoryId(), getDescription(),
+                    getTags() );
+
+            return parameters;
+        }
+        catch ( NullPointerException e )
+        {
+            throw new MojoExecutionException( "Bad config and/or validation!", e );
         }
     }
 }

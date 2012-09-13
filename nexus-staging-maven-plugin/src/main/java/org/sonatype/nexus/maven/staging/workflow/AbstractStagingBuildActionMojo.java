@@ -20,8 +20,8 @@ import java.util.Properties;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.util.StringUtils;
-import org.sonatype.nexus.maven.staging.deploy.AbstractDeployMojo;
 import org.sonatype.nexus.maven.staging.deploy.DeployMojo;
+import org.sonatype.nexus.maven.staging.deploy.strategy.AbstractStagingDeployStrategy;
 
 /**
  * Super class for "non RC" mojos, that are usable from within the build (if you want more than default V2 actions to
@@ -68,7 +68,7 @@ public abstract class AbstractStagingBuildActionMojo
                 for ( File profileDirectory : localStageRepositories )
                 {
                     if ( !( profileDirectory.isFile() && profileDirectory.getName().endsWith(
-                        AbstractDeployMojo.STAGING_REPOSITORY_PROPERTY_FILE_NAME_SUFFIX ) ) )
+                        AbstractStagingDeployStrategy.STAGING_REPOSITORY_PROPERTY_FILE_NAME_SUFFIX ) ) )
                     {
                         continue;
                     }
@@ -105,10 +105,10 @@ public abstract class AbstractStagingBuildActionMojo
                 fis = new FileInputStream( stagingRepositoryPropertiesFile );
                 stagingRepositoryProperties.load( fis );
                 final boolean managed =
-                    Boolean.valueOf( stagingRepositoryProperties.getProperty( AbstractDeployMojo.STAGING_REPOSITORY_MANAGED ) );
+                    Boolean.valueOf( stagingRepositoryProperties.getProperty( AbstractStagingDeployStrategy.STAGING_REPOSITORY_MANAGED ) );
                 if ( managed )
                 {
-                    return stagingRepositoryProperties.getProperty( AbstractDeployMojo.STAGING_REPOSITORY_ID );
+                    return stagingRepositoryProperties.getProperty( AbstractStagingDeployStrategy.STAGING_REPOSITORY_ID );
                 }
                 else
                 {
