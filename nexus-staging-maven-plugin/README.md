@@ -361,40 +361,54 @@ On successful remote staging, this goal (and the next two) creates a small Java 
 
 Keys and their meanings:
 
- * `managed` - if `true`, it means that nexus-staging-maven-plugin did create the repository in the build from where it was remotely staged.
+ * `managed` - if `true`, it means that nexus-staging-maven-plugin did create the repository in the build from where it was remotely staged. Also, it will "manage" it (close or drop), unless explicitly configured to not do so (see plugin flags).
  * `profileId` - shows the Staging Profile ID against which staging happened (it was either matched by Nexus or preset in plugin configuration).
  * `id` - the staging repository ID that remote staging happened against.
  * `url` - the direct URL (the repository might be accessible over some group too!) to access the staged repository.
 
 #### `deploy-staged`
 
-This goal performs the "staging workflow" only for previously ran local staging.
+This goal performs the "staging workflow" only for previously ran local staging (ie. `mvn clean deploy -DskipRemoteStaging=true`).
 
 #### `deploy-staged-repository`
 
-This goal is meant to be used in cases when you want to stage a complete repository, _locally deployed by maven-deploy-plugin and the "-DaltDeploymentRepository" switch_. Typical use case is when you check out a tag from a "foreign" project (not managed by you, otherwise you'd edit POMs and simply apply nexus-staging-maven-plugin to the build) to build and stage it. In this case, you perform `mvn clean deploy -DaltDeploymentRepository=local::default::file://some/path` as first step, and then using this goal you stage the complete locally deployed repository to Nexus.
+This goal is meant to be used in cases when you want to stage a complete locally deployed repository, like _locally deployed using maven-deploy-plugin and it's "altDeploymentRepository" switch pointing to local filesystem_. 
 
-For this goal, a _mandatory_ parameter is `repositoryDirectory`, that accepts the _FS directory, the root of locally deployed repository_. Example invocation `mvn nexus-staging:deploy-staged-repository -DrepositoryDirectory=/some/path`.
+Typical use case is when you check out a tag from a "foreign" project (not managed by you, otherwise you'd edit POMs and simply apply nexus-staging-maven-plugin) to build and stage it. In this case, you perform `mvn clean deploy -DaltDeploymentRepository=local::default::file://some/path` as first step, and then using this goal you stage the complete locally deployed repository to Nexus. For this goal, a _mandatory_ parameter is `repositoryDirectory`, that accepts the _FS directory, the root of locally deployed repository_. Example invocation `mvn nexus-staging:deploy-staged-repository -DrepositoryDirectory=/some/path`.
+
+This goal, as is meant to be run "outside" of a project, does not need one, but in turn, it needs to be fully configured (as there is no POM to source value). It has to have following parameters passed in (on CLI, using "-D..."):
+
+ * `repositoryDirectory` - the existing directory where the locally deployed repository (the "image") exists.
+ * `nexusUrl` - the baseUrl of the Nexus instance you want to stage to.
+ * `serverId` - the ID of the server entry from Maven Settings to get authentication information from.
+ * `stagingProfileId` - the Staging Profile ID to stage against
+
+and optionally:
+ 
+ * `stagingRepositoryId` - the (existing) staging repository to stage into, if needed. If not given, staging will happen against newly created empty staging repository, as usual.
+ 
 
 #### `close`
 
-Closes the staging repository. For advanced use only.
+Closes the staging repository. After successful remote staging, it will pick up defaults from the create properties file, so if you mean "close staging repository created by the build of this project", no need for any extra parameters.
 
 #### `drop`
 
-Drops the staging repository. For advanced use only.
+Drops the staging repository. After successful remote staging, it will pick up defaults from the create properties file, so if you mean "drop staging repository created by the build of this project", no need for any extra parameters.
 
 #### `release`
 
-Releases the staging repository. For advanced use only.
+Releases the staging repository. After successful remote staging, it will pick up defaults from the create properties file, so if you mean "release staging repository created by the build of this project", no need for any extra parameters.
 
 #### `promote`
 
-Promotes the staging repository. For advanced use only. It needs extra parameter: `buildPromotionProfileId`
+Promotes the staging repository. For advanced use only. After successful remote staging, it will pick up defaults from the create properties file, so if you mean "promote staging repository created by the build of this project", no need for any extra parameters, except for the needed one.
+
+It needs _extra mandatory parameter_: `buildPromotionProfileId`
 
 ### RC Action goals
 
-These goals are remote controlling goals, and they *do not need a project to be executed*, and can be *directly invoked from CLI only*.
+These goals are "remote controlling" (RC) goals, and they *do not need a project to be executed*, and can be *directly invoked from CLI only*.
 
 Hence, they are "RC" (as "remote control") goals, made for convenience only to perform some Staging
 Workflow operations using your favorite tool (Maven) running it from a CLI (just for fun, or
