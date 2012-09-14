@@ -35,7 +35,8 @@ This mode is new in version 1.1.
 
 This mode performs "local staging" to a local staging repository that is within the build (and is cleaned by `mvn clean`, but
 the location of it might be explicitly configured too, see `altStagingDirectory` plugin flag). Actual remote deployment 
-happens at the end of the build, in one-shot.
+happens at the end of the build, in one-shot. The deployment repository is "sourced" as for maven-deploy-plugin, 
+from POMs `distributionManagement` entry (which node is used, depends is the project being built a release or snapshot naturally).
 
 This mode is _automatically used_ for snapshot builds (unless overridden by configuration 
 to perform"direct" deploys). Same "known issues" stands for concurrent deploys as they stand for
@@ -48,7 +49,8 @@ This mode is new in version 1.1.
 ### Staging
 
 This mode is present since version 1.0. It is _automatically used_ for release builds (unless overridden by configuration 
-to perform "deferred" or "direct" deploys).
+to perform "deferred" or "direct" deploys). Staging happens against a staging directory created on Nexus instance
+that's baseURL is set plugin configuration.
 
 This mode performs full staging workflow, from repository creation to closing it in case of success or dropping the repository
 in case of (transport or staging rule) failure.
@@ -58,7 +60,8 @@ in case of (transport or staging rule) failure.
 This mode performs full staging workflow, from repository creation to closing it in case of success or dropping the repository
 in case of (transport or staging rule) failure. But in contrary to all modes above, it transfers the source in _unmodified form_,
 where it is expected that you stage the "exact image" of the source to the staging repository, like some locally deployed
-repository produced by maven-deploy-plugin + altDeploymentRepository switch.
+repository produced by maven-deploy-plugin + altDeploymentRepository switch. Staging happens against a staging directory created 
+on Nexus instance that's baseURL is set plugin configuration.
 
 This mode is new in version 1.1.
 
