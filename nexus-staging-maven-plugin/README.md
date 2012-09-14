@@ -1,12 +1,16 @@
-# Nexus Staging Maven Plugin
+# Nexus Staging Maven Plugin (for version 1.1)
 
 Maven Plugin to control Nexus Staging workflow. While the maven plugin ("staging client") part is OSS, to use staging features it need a Sonatype Nexus Professional instance 2.1+ on the server side!
 Plugin is compatible with Maven 2.2.1 and Maven 3.0.x.
 
-Documentation for version 1.1 of the plugin.
-
-Note: to _build this plugin_ from sources you need access to Sonatype commercial components!
-Note: to _use this plugin_ in your build, access to Central only is enough!
+Features:
+ * it is meant to _completely replace_ (or buy out) the maven-deploy-plugin
+ * since version 1.1, it _transparently supports_ release and snapshot builds
+ * supports multiple operation modes: _direct deploy_, _deferred deploy_, _staging_ and _image upload_ (see below).
+ 
+Notes:
+ * to _build this plugin_ from sources you need access to Sonatype commercial components!
+ * to _use this plugin_ in your build, access to Central only is enough!
 
 # Documentation
 
@@ -14,6 +18,49 @@ Nexus Staging V2 focuses more on client-server automated interaction.
 Hence, the `nexus-staging-maven-plugin` is introduced, with vastly enhanced support.
 
 *Warning: the "artifactId" of the plugin is newly introduced! The old nexus-maven-plugin is deprecated!*
+
+## Operating modes
+
+Nexus Staging Maven plugin automatically (or explicitly configured) chooses the "mode" of operation.
+
+### Direct deploy
+
+Basically, this mode is 100% same as maven-deploy-plugin works. Remote deploys happens at `deploy` phase of each module,
+and the deployment repository is "sourced" in same way, from POMs `distributionManagement` entry (which node is used, 
+depends is the project being built a release or snapshot naturally).
+
+This mode is new in version 1.1.
+
+### Deferred deploy
+
+This mode performs "local staging" to a local staging repository that is within the build (and is cleaned by `mvn clean`, but
+the location of it might be explicitly configured too, see `altStagingDirectory` plugin flag). Actual remote deployment 
+happens at the end of the build, in one-shot.
+
+This mode is _automatically used_ for snapshot builds (unless overridden by configuration 
+to perform"direct" deploys). Same "known issues" stands for concurrent deploys as they stand for
+maven-deploy-plugin, except that the "window" to hit deploy clashes is way less, as the actual deploy happens at the very
+end (literally last moments) of your build, instead "throughout" the build (where the clash window pretty much equals
+the duration of the build).
+
+This mode is new in version 1.1.
+
+### Staging
+
+This mode is present since version 1.0. It is _automatically used_ for release builds (unless overridden by configuration 
+to perform "deferred" or "direct" deploys).
+
+This mode performs full staging workflow, from repository creation to closing it in case of success or dropping the repository
+in case of (transport or staging rule) failure.
+
+### Image upload
+
+This mode performs full staging workflow, from repository creation to closing it in case of success or dropping the repository
+in case of (transport or staging rule) failure. But in contrary to all modes above, it transfers the source in _unmodified form_,
+where it is expected that you stage the "exact image" of the source to the staging repository, like some locally deployed
+repository produced by maven-deploy-plugin + altDeploymentRepository switch.
+
+This mode is new in version 1.1.
 
 ## Adding the plugin to your build
 
