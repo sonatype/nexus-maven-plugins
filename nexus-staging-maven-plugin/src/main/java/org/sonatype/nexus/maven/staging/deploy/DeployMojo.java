@@ -131,7 +131,7 @@ public class DeployMojo
         {
             deployStrategy = getDeployStrategy( Strategies.DIRECT );
         }
-        else if ( isDeferredDeployOnly() || artifact.isSnapshot() )
+        else if ( isSkipStaging() || artifact.isSnapshot() )
         // locally staging but uploading to deployment repo (no profiles and V2 used at all)
         {
             deployStrategy = getDeployStrategy( Strategies.DEFERRED );

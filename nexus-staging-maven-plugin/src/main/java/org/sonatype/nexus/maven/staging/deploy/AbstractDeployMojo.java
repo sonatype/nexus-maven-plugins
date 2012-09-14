@@ -81,9 +81,9 @@ public abstract class AbstractDeployMojo
     /**
      * Set this to {@code true} to bypass staging features, and use deferred deploy features only.
      * 
-     * @parameter expression="${deferredDeployOnly}"
+     * @parameter expression="${skipStaging}"
      */
-    private boolean deferredDeployOnly = false;
+    private boolean skipStaging = false;
 
     // ==
 
@@ -128,8 +128,8 @@ public abstract class AbstractDeployMojo
         return skipStagingRepositoryClose;
     }
 
-    protected boolean isDeferredDeployOnly()
+    protected boolean isSkipStaging()
     {
-        return deferredDeployOnly;
+        return skipStaging;
     }
 }
