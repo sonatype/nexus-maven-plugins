@@ -1,18 +1,83 @@
 # Nexus Staging Maven Plugin
 
-Maven Plugin to control Nexus Staging workflow. While the maven plugin ("staging client") part is OSS, it need a Sonatype Nexus Professional instance 2.1+ on the server side!
+Maven Plugin to control Nexus Staging workflow. While the maven plugin ("staging client") part is OSS, to use staging features it need a Sonatype Nexus Professional instance 2.1+ on the server side!
+Plugin is compatible with Maven 2.2.1 and Maven 3.0.x.
+
+Documentation for version 1.1 of the plugin.
+
+Note: to _build this plugin_ from sources you need access to Sonatype commercial components!
+Note: to _use this plugin_ in your build, access to Central only is enough!
 
 # Documentation
 
 Nexus Staging V2 focuses more on client-server automated interaction.
 Hence, the `nexus-staging-maven-plugin` is introduced, with vastly enhanced support.
+
 *Warning: the "artifactId" of the plugin is newly introduced! The old nexus-maven-plugin is deprecated!*
 
 ## Adding the plugin to your build
 
+Using this plugin in build might be done in multiple ways, depending what version of Maven you use.
+
+### Maven3 Only
+
+In Maven3, the simplest needed to be done is to add the plugin to the build, and define it as
+extension and add wanted configuration. Plugin's `LifecycleParticipant` (a new Maven3 feature) will "automagically" do everything for you:
+it will _disable_ `maven-deploy-plugin:deploy` executions, _inject_ `nexus-staging-maven-plugin:deploy` executions instead.
+This is the simplest way to use the plugin, but in case more control is needed, even in Maven3 it is possible to use the
+plugin in Maven2-way (manually configure all the binding).
+
+Example snippet of plugin entry with minimal required configuration in build:
+
+		<build>
+			<plugins>
+				<plugin>
+					<groupId>org.sonatype.plugins</groupId>
+					<artifactId>nexus-staging-maven-plugin</artifactId>
+					<version>1.1</version>
+					<extensions>true</extensions>
+					<configuration>
+  					<!-- The Base URL of Nexus instance where we want to stage -->
+						<nexusUrl>http://localhost:8081/nexus/</nexusUrl>
+						<!-- The server "id" element from settings to use authentication from -->
+						<serverId>local-nexus</serverId>
+					</configuration>
+				</plugin>
+			</plugins>
+			...
+		</build>
+
+The lifecycle participant will kick in *only when no binding is detected in modules for `nexus-staging-maven-plugin`*,
+hence, in latter case, it will remain dormant (as it will assume you "manually bound it", see below). 
+Example log outputs when plugin kicks in:
+
+		[cstamas@marvin sisu-goodies (master)]$ mvn clean deploy
+		[INFO] Scanning for projects...
+		[INFO] Installing Nexus Staging features:
+		[INFO] ... total of 8 executions of maven-deploy-plugin replaced with nexus-staging-maven-plugin.
+		[INFO] ------------------------------------------------------------------------
+		[INFO] Reactor Build Order:
+		[INFO]
+		[INFO] Goodies
+		...
+
+Plugin not kicking in:
+
+		cstamas@marvin sisu-goodies (master)]$ mvn clean -Pstaging-test
+		[INFO] Scanning for projects...
+		[INFO] Not installing Nexus Staging features, some Staging related goal bindings already present.
+		[INFO] ------------------------------------------------------------------------
+		[INFO] Reactor Build Order:
+		[INFO]
+		[INFO] Goodies
+		...
+
+Above, in both cases Maven3 is used (as lifecycle participant works with it only). In first case,
+lifecycle participant activated itself, and performed 8 "swaps" on the fly. In second case, it
+found `nexus-staging-maven-plugin` bindings already present (hence, the Maven2-way of configuration was applied), and it just stay put.
+
 ### Maven 2 + 3 Living Together
 
-Configuring the plugin in Maven is different depending on whether Maven 2 or 3 is used.
 Fortunately there is a simple approach ( with one caveat ) that will allow a parent pom to
 define the configuration for both scenarios using profiles that are automatically activated.
 
@@ -38,7 +103,7 @@ Add the following to any parent pom ( not aggregator ) of your project to be bui
           <plugin>
             <groupId>org.sonatype.plugins</groupId>
             <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.1</version>
             <executions>
               <execution>
                 <id>default-deploy</id>
@@ -51,12 +116,10 @@ Add the following to any parent pom ( not aggregator ) of your project to be bui
             <configuration>
               <serverId>local-nexus</serverId>
               <nexusUrl>http://localhost:8081/nexus/</nexusUrl>
-                     <!-- Deploy URL overrides all, so not Staging happens at all -->
-                     <!--deployUrl>http://localhost:8081/nexus/content/repositories/snapshots/</deployUrl-->
-                     <!-- Profile Id override profile matching -->
-                     <!--stagingProfileId></stagingProfileId-->
-                     <!-- By having none of those above, we actually use Staging V2 in "auto" mode, profile will be matched server side -->
-                     <!-- Tags -->
+              <!-- Profile Id override profile matching -->
+              <!--stagingProfileId></stagingProfileId-->
+              <!-- By having none of those above, we actually use Staging V2 in "auto" mode, profile will be matched server side -->
+              <!-- Tags -->
               <tags>
                 <localUsername>${env.USER}</localUsername>
                 <javaVersion>${java.version}</javaVersion>
@@ -78,17 +141,15 @@ Add the following to any parent pom ( not aggregator ) of your project to be bui
           <plugin>
             <groupId>org.sonatype.plugins</groupId>
             <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.1</version>
             <extensions>true</extensions>
             <configuration>
               <serverId>local-nexus</serverId>
               <nexusUrl>http://localhost:8081/nexus/</nexusUrl>
-                     <!-- Deploy URL overrides all, so not Staging happens at all -->
-                     <!--deployUrl>http://localhost:8081/nexus/content/repositories/snapshots/</deployUrl-->
-                     <!-- Profile Id override profile matching -->
-                     <!--stagingProfileId></stagingProfileId-->
-                     <!-- By having none of those above, we actually use Staging V2 in "auto" mode, profile will be matched server side -->
-                     <!-- Tags -->
+              <!-- Profile Id override profile matching -->
+              <!--stagingProfileId></stagingProfileId-->
+              <!-- By having none of those above, we actually use Staging V2 in "auto" mode, profile will be matched server side -->
+              <!-- Tags -->
               <tags>
                 <localUsername>${env.USER}</localUsername>
                 <javaVersion>${java.version}</javaVersion>
@@ -107,114 +168,51 @@ one of these profiles for staging will override the default profile.
 
 Depending, is it used in Maven3 or Maven2, it almost needs same configuration applied, but Maven2 needs more labour.
 
-### Maven3 Only
+### Maven2 Only (or "explicit" Maven3 mode)
 
-In Maven3, the simplest needed to be done is to add the plugin to the build, and define it as
-extension and add wanted configuration. Plugin's `LifecycleParticipant` will "automagically" do everything for you:
-it will _disable_ `maven-deploy-plugin:deploy` executions, _inject_ `nexus-staging-maven-plugin:deploy` executions instead.
-This is the simplest way to use the plugin, but in case more control is needed, even in Maven3 it is possible to use the
-plugin in Maven2-way (manually configure all the binding).
-
-Example snippet of having the plugin in a Profile:
-
-		<profile>
-			<id>nexus-staging</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.sonatype.plugins</groupId>
-						<artifactId>nexus-staging-maven-plugin</artifactId>
-						<version>1.0-SNAPSHOT</version>
-						<extensions>true</extensions>
-						<configuration>
-							<nexusUrl>http://localhost:8081/nexus/</nexusUrl>
-							<!-- The Base URL of Nexus instance where we want to stage -->
-							<serverId>local-nexus</serverId>
-							<!-- The server "id" element from settings to use authentication from -->
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-
-
-The plugin will activate whenever you pass the `-Pnexus-staging` switch on the CLI (activate the "nexus-staging" profile).
-
-The lifecycle participant will kick in *only when no binding is detected in modules for `nexus-staging-maven-plugin`*,
-hence, in latter case, it will remain dormant. Example log outputs when plugin kicks in:
-
-		[cstamas@marvin sisu-goodies (master)]$ mvn clean -Pstaging-test
-		[INFO] Scanning for projects...
-		[INFO] Installing Nexus Staging features:
-		[INFO] ... total of 8 executions of maven-deploy-plugin replaced with nexus-staging-maven-plugin.
-		[INFO] ------------------------------------------------------------------------
-		[INFO] Reactor Build Order:
-		[INFO]
-		[INFO] Goodies
-		...
-
-Plugin not kicking in:
-
-		cstamas@marvin sisu-goodies (master)]$ mvn clean -Pstaging-test
-		[INFO] Scanning for projects...
-		[INFO] Not installing Nexus Staging features, some Staging related goal bindings already present.
-		[INFO] ------------------------------------------------------------------------
-		[INFO] Reactor Build Order:
-		[INFO]
-		[INFO] Goodies
-		...
-
-Above, in both cases Maven3 is used (as lifecycle participant works with it only). In first case,
-lifecycle participant activated itself, and performed 8 "swaps" on the fly. In second case, it
-found `nexus-staging-maven-plugin` bindings already present (hence, the Maven2-way of configuration was applied), and it just stay put.
-
-### Maven2 Only (or "Pro" Maven3 mode)
-
-In Maven2, or even with Maven3 if you want more control, explicit configuration is needed.
+In Maven2, or even with Maven3 if you want more control (for example to bind goals to different phases), 
+explicit configuration is needed.
 First, you would want to `skip=true` of "vanilla" `maven-deploy-plugin` or even the best, completely remove
 it from the build (Note: skip parameter is present since version 2.4). Second, you'd want
-to add the plugin `org.sonatype.plugins:nexus-staging-maven-plugin:2.1-SNAPSHOT` to the build.
+to add the plugin `org.sonatype.plugins:nexus-staging-maven-plugin:1.1` to the build.
 
-Example snippet of having the plugin in a Profile:
+Example snippet of having the plugin in the build bound explicitly:
 
-		<profile>
-			<id>nexus-staging</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-deploy-plugin</artifactId>
-						<configuration>
-							<skip>true</skip>
-						</configuration>
-					</plugin>
-					<plugin>
-						<groupId>org.sonatype.plugins</groupId>
-						<artifactId>nexus-staging-maven-plugin</artifactId>
-						<version>1.0-SNAPSHOT</version>
-						<executions>
-							<execution>
-								<id>default-deploy</id>
-								<phase>deploy</phase>
-								<!-- By default, this is the phase deploy goal will bind to -->
-								<goals>
-									<goal>deploy</goal>
-								</goals>
-							</execution>
-						</executions>
-						<configuration>
-							<nexusUrl>http://localhost:8081/nexus/</nexusUrl>
-							<!-- The Base URL of Nexus instance where we want to stage -->
-							<serverId>local-nexus</serverId>
-							<!-- The server "id" element from settings to use authentication from -->
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+		<build>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-deploy-plugin</artifactId>
+					<configuration>
+						<skip>true</skip>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.sonatype.plugins</groupId>
+					<artifactId>nexus-staging-maven-plugin</artifactId>
+					<version>1.1</version>
+					<executions>
+						<execution>
+							<id>default-deploy</id>
+							<phase>deploy</phase>
+							<!-- By default, this is the phase deploy goal will bind to -->
+							<goals>
+								<goal>deploy</goal>
+							</goals>
+						</execution>
+					</executions>
+					<configuration>
+  					<!-- The Base URL of Nexus instance where we want to stage -->
+						<nexusUrl>http://localhost:8081/nexus/</nexusUrl>
+						<!-- The server "id" element from settings to use authentication from -->
+						<serverId>local-nexus</serverId>
+					</configuration>
+				</plugin>
+			</plugins>
+		</build>
 
 
-This above is "minimum" configuration of Nexus, and it will trigger the use of "V2 implicit" mode.
+This above is "minimum" configuration of Nexus, and it will trigger the use of "Staging V2 implicit" mode.
 
 ## Configuring the plugin
 
@@ -225,18 +223,19 @@ Minimal requirement for configuration are two entries: `nexusUrl` and `serverId`
 | `nexusUrl` | *Mandatory*. Has to point to the *base URL of target Nexus*. |
 | `serverId` | *Mandatory*. Has to hold an ID of a `<server>` section from Maven's `settings.xml` to pick authentication information from. |
 
-With configuration as above, if you have suitable profile in Nexus that will be matched, everything should work. If not profile match possible, upload will fail.
+With configuration as above, if you have suitable profile in Nexus that will be matched, everything should work. If not profile match possible, staging will fail naturally.
 
-Still, you can narrow configuration.
+### Staging workflow related flags
+
+As noted above, with "minimal configuration" you are all set, but many implicit things will happen on server side: the profile will be "matched" for you on server side (similarly as it happens in "old" V1 staging, but a big difference is that matching of a profile in V2 happens per-module, while V1 did per-deploy request, hence, sub-artifacts of same module theoretically might end up in different profiles in case of misconfiguration). Also, a staging repository will be created (visible and usable only by you, so no more "overlapping deploys" are possible). Still, you can narrow configuration (profile selection or repository selection) by following staging workflow flags:
 
 |Configuration (additional to mandatory ones)|Performs staging?|Profile matching happens?|Staging repository created?|Post-staging repository management (close/drop)?|Remarks|
 |--------------------------------------------|-----------------|-------------------------|---------------------------|------------------------------------------------|-------|
 | nothing more than mandatory ones | Yes | Yes | Yes | Yes | This is the "V2 implicit" way of using Staging V2. Matches the profile once, and manages the staging repository from it's creation to it's end (close or drop) |
 | `stagingProfileId` | Yes | No | Yes | Yes | This is the "V2 explicit" way of using Staging V2: targeted profile, so no match is done. Naturally, the repository type of the profile should match of that being deployed. Manages the staging repository from it's creation to it's end (close or drop) |
 | `stagingProfileId` and `stagingRepositoryId` | Yes | No | No | No | Advanced V2 usage. This is usable when some "external component" (script? CI?) performs V2 actions of repository creation etc, and only "targeted" deploy happens against given (open) staging repository. Since repository is created by some other entity, it will be NOT managed by client (the one creating it should close it too). For example: multi machine build should end up in _same staging repository_ (not doable with V1, see "Oracle problem"). |
-| `deployUrl` | No | No | No | No | Here, a simple "atomic deploy" happens against given `deployUrl`. The only difference between "vanilla" deploy (performed by disabled `deploy-maven-plugin` and this, is that "local staging" would still happen, and atomic upload will be used to upload all the artifacts. This is logically equivalent to using plain "deploy" plugin. In contrary to `nexusUrl`, this value has to point to the *base URL of a Nexus repository, not the Nexus base!*|
 
-This table also presents the "order" how configuration is interpreted: last wins. For example, if all `stagingProfileId`, `stagingRepositoryId` and `deployUrl` is present, `deployUrl` wins, "plain" deploy will happen without using any of the V2 Staging features on server side.
+This table also presents the "order" how configuration is interpreted: last wins. For example, if both `stagingProfileId` and `stagingRepositoryId` is present, `stagingRepositoryId` wins. With `stagingRepositoryId` being present, this plugin _will not manage that repository_ (to close it in case of success, or drop it in case of failure) as it is assumed that some "external component" is managing that staging repository! This makes possible to stage _multiple unrelated builds_ into same staging repository, if needed.
 
 ### Plugin flags
 
@@ -244,11 +243,15 @@ These "flags" are usually passed in from CLI (`-D...`).
 
 |Flag type|CLI (`-D`)|configuration|Default value|Meaning|
 |---------|----------|-------------|-------------|-------|
-| Alternate local staging directory (FS directory path) | `altStagingDirectory` | n/a | `null` | Possibility to _explicitly_ define a directory on local FS to use for local staging. Passing in this flag will prevent the "logic" of proper `target` folder selection |
-| Description (plain text)| `description` | `<description>` | `null` | Free text, message or explanation to be added for staging operations like when staging repository is created or closed (as part of whole V2 process) |
-| Keep staging repository in case of failure (boolean) | `keepStagingRepositoryOnFailure` | `< keepStagingRepositoryOnFailure >` | `false` | Nexus Maven Plugin always tries to "clean up" after itself, hence, in case of upload failure (and potentially having "partially uploaded" artifacts to staging repository) it always tries to drop that same repository. Will not, if this flag is set to `true` |
-| Skip whole plugin (boolean) | `skipStaging` | `<skipStaging>` | `false` | Completely skips the `deploy` Mojo (similar as `maven.deploy.skip`) |
-| Skip the upload step (boolean) | `skipRemoteStaging` | `<skipRemoteStaging>` | `false` | Performs "local staging" only, skips the upload. Hence, no stage repository created, nor deployed to Nexus (if `deployUrl` specified).|
+| Alternate local staging directory (FS directory path) | `altStagingDirectory` | `null` | Possibility to _explicitly_ define a directory on local FS to use for local staging. Passing in this flag will prevent the "logic" of proper `target` folder selection |
+| Description (plain text)| `description` | `null` | Free text, message or explanation to be added for staging operations like when staging repository is created or closed (as part of whole V2 process) |
+| Keep staging repository in case of failure (boolean) | `keepStagingRepositoryOnFailure` | `false` | Nexus Maven Plugin always tries to "clean up" after itself, hence, in case of _upload failure_ (and potentially having "partially uploaded" artifacts to staging repository) it always tries to drop that same repository. f this flag is set to `true`, it will not drop it. |
+| Keep staging repository in case of a rule failure (boolean) | `keepStagingRepositoryOnCloseRuleFailure` | `false` | Nexus Maven Plugin will close the staging repository for you at the end of the build (no need even to "visit" Nexus UI to do that anymore!). By default, in case of repository close failure due to failing Staging Rule, it will drop that same failed repository. If this flag is set to `true`, it will not drop it, letting you to inspect the binaries figure out why did a rule fail. |
+| Skip whole Deploy mojo (boolean) | `skipNexusStagingDeployMojo` | `false` | Completely skips the `deploy` Mojo (similar as `maven.deploy.skip`) |
+| Skip local staging (boolean) | `skipLocalStaging` | `false` | If true, will not locally stage. This triggers basically equivalent behaviour to maven-deploy-plugin, each deploy will happen "directly", at the end of the each module build.|
+| Skip remote staging (boolean) | `skipRemoteStaging` | `false` | If true, performs "local staging" only, and skips the remote deploy. Hence, no stage repository created, nor deployed to Nexus (if `deployUrl` specified).|
+| Skip closing of staging repository (boolean) | `skipStagingRepositoryClose` | `false` | If true, the plugin _will not close_ the staging repository even after a successful staging. It makes you able to continue to deploy to same repository (see `stagingRepositoryId` workflow flag), or simply use the UI to do the same. |
+| Skip use of staging features (boolean) | `skipStaging` | `false` | If true, plugin will skip staging features completely, and will operate in "deferred deploy" mode.|
 
 ### Tagging staging repositories
 
@@ -300,6 +303,12 @@ With this goal, the user has no need for the other ones. It might "skip" the rem
 #### `deploy-staged`
 
 This goal performs the "staging workflow" only for previously ran local staging.
+
+### `deploy-staged-repository`
+
+This goal is meant to be used in cases when you want to stage a complete repository, _locally deployed by maven-deploy-plugin and the "-DaltDeploymentRepository" switch_. Typical use case is when you check out a tag from a "foreign" (not managed by you, otherwise you'd edit POMs and simply apply nexus-staging-maven-plugin to the build) to build and stage it. In this case, you perform `mvn clean deploy -DaltDeploymentRepository=local::default::file://some/path` as first step, and then using this goal you stage the complete locally deployed repository to Nexus.
+
+For this goal, a _mandatory_ parameter is `repositoryDirectory`, that accepts the _FS directory, the root of locally deployed repository_. Example invocation `mvn nexus-staging:deploy-staged-repository -DrepositoryDirectory=/some/path`.
 
 #### `close`
 
