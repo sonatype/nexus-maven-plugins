@@ -28,7 +28,7 @@ public class StagingDeployStrategy
     public void deployPerModule( final DeployPerModuleRequest request )
         throws ArtifactInstallationException, ArtifactDeploymentException, MojoExecutionException
     {
-        getLog().info(
+        getLogger().info(
             "Performing local staging (local stagingDirectory=\""
                 + request.getParameters().getStagingDirectoryRoot().getAbsolutePath() + "\")..." );
         initRemoting( request.getMavenSession(), request.getParameters() );
@@ -49,7 +49,7 @@ public class StagingDeployStrategy
         }
         else
         {
-            getLog().info( "Nothing to locally stage?" );
+            getLogger().info( "Nothing to locally stage?" );
         }
     }
 
@@ -57,13 +57,13 @@ public class StagingDeployStrategy
     public void finalizeDeploy( final FinalizeDeployRequest request )
         throws ArtifactDeploymentException, MojoExecutionException
     {
-        getLog().info( "Performing remote staging..." );
+        getLogger().info( "Performing remote staging..." );
         initRemoting( request.getMavenSession(), request.getParameters() );
         final File stageRoot = request.getParameters().getStagingDirectoryRoot();
         final File[] localStageRepositories = stageRoot.listFiles();
         if ( localStageRepositories == null )
         {
-            getLog().info( "We have nothing locally staged, bailing out." );
+            getLogger().info( "We have nothing locally staged, bailing out." );
             return;
         }
         final List<StagingRepository> zappedStagingRepositories = new ArrayList<StagingRepository>();
@@ -76,13 +76,13 @@ public class StagingDeployStrategy
 
             // we do staging
             final String profileId = profileDirectory.getName();
-            getLog().info( "Remote staging locally staged directory: " + profileId );
+            getLogger().info( "Remote staging locally staged directory: " + profileId );
 
             final NexusClient nexusClient = getRemoting().getNexusClient();
 
-            getLog().info( " * Connecting to Nexus on URL " + nexusClient.getConnectionInfo().getBaseUrl() );
+            getLogger().info( " * Connecting to Nexus on URL " + nexusClient.getConnectionInfo().getBaseUrl() );
             final NexusStatus nexusStatus = nexusClient.getNexusStatus();
-            getLog().info(
+            getLogger().info(
                 String.format( " * Remote Nexus reported itself as version %s and edition \"%s\"",
                     nexusStatus.getVersion(), nexusStatus.getEditionLong() ) );
 
@@ -91,32 +91,32 @@ public class StagingDeployStrategy
             zappedStagingRepositories.add( stagingRepository );
             try
             {
-                getLog().info( " * Uploading locally staged artifacts to profile " + stagingProfile.getName() );
+                getLogger().info( " * Uploading locally staged artifacts to profile " + stagingProfile.getName() );
                 deployUp( request.getMavenSession(),
                     getStagingDirectory( request.getParameters().getStagingDirectoryRoot(), profileId ),
                     getArtifactRepositoryForNexus( stagingRepository ) );
-                getLog().info( " * Upload of locally staged artifacts finished." );
+                getLogger().info( " * Upload of locally staged artifacts finished." );
                 afterUpload( request.getParameters(), stagingRepository );
             }
             catch ( StagingRuleFailuresException e )
             {
                 afterUploadFailure( request.getParameters(), zappedStagingRepositories, e );
-                getLog().error( "Remote staging finished with a failure." );
+                getLogger().error( "Remote staging finished with a failure." );
                 throw new ArtifactDeploymentException( "Remote staging failed: " + e.getMessage(), e );
             }
             catch ( InvalidRepositoryException e )
             {
                 afterUploadFailure( request.getParameters(), zappedStagingRepositories, e );
-                getLog().error( "Remote staging finished with a failure." );
+                getLogger().error( "Remote staging finished with a failure." );
                 throw new ArtifactDeploymentException( "Remote staging failed: " + e.getMessage(), e );
             }
             catch ( IOException e )
             {
                 afterUploadFailure( request.getParameters(), zappedStagingRepositories, e );
-                getLog().error( "Remote staging finished with a failure." );
+                getLogger().error( "Remote staging finished with a failure." );
                 throw new ArtifactDeploymentException( "Remote staging failed: " + e.getMessage(), e );
             }
         }
-        getLog().info( "Remote staged " + zappedStagingRepositories.size() + " repositories, finished with success." );
+        getLogger().info( "Remote staged " + zappedStagingRepositories.size() + " repositories, finished with success." );
     }
 }

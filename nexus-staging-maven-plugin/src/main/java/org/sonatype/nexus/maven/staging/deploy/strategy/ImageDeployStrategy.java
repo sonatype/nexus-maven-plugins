@@ -45,14 +45,14 @@ public class ImageDeployStrategy
     public void finalizeDeploy( final FinalizeDeployRequest request )
         throws ArtifactDeploymentException, MojoExecutionException
     {
-        getLog().info( "Staging remotely locally deployed repository..." );
+        getLogger().info( "Staging remotely locally deployed repository..." );
         initRemoting( request.getMavenSession(), request.getParameters() );
 
         final NexusClient nexusClient = getRemoting().getNexusClient();
 
-        getLog().info( " * Connecting to Nexus on URL " + nexusClient.getConnectionInfo().getBaseUrl() );
+        getLogger().info( " * Connecting to Nexus on URL " + nexusClient.getConnectionInfo().getBaseUrl() );
         final NexusStatus nexusStatus = nexusClient.getNexusStatus();
-        getLog().info(
+        getLogger().info(
             String.format( " * Remote Nexus reported itself as version %s and edition \"%s\"",
                 nexusStatus.getVersion(), nexusStatus.getEditionLong() ) );
 
@@ -61,24 +61,24 @@ public class ImageDeployStrategy
         final StagingRepository stagingRepository = beforeUpload( request.getParameters(), stagingProfile );
         try
         {
-            getLog().info( " * Uploading locally staged artifacts to profile " + stagingProfile.getName() );
+            getLogger().info( " * Uploading locally staged artifacts to profile " + stagingProfile.getName() );
             zapUp( request.getParameters().getStagingDirectoryRoot(), stagingRepository.getUrl() );
-            getLog().info( " * Upload of locally staged artifacts finished." );
+            getLogger().info( " * Upload of locally staged artifacts finished." );
             afterUpload( request.getParameters(), stagingRepository );
         }
         catch ( StagingRuleFailuresException e )
         {
             afterUploadFailure( request.getParameters(), Collections.singletonList( stagingRepository ), e );
-            getLog().error( "Remote staging finished with a failure." );
+            getLogger().error( "Remote staging finished with a failure." );
             throw new ArtifactDeploymentException( "Remote staging failed: " + e.getMessage(), e );
         }
         catch ( IOException e )
         {
             afterUploadFailure( request.getParameters(), Collections.singletonList( stagingRepository ), e );
-            getLog().error( "Remote staging finished with a failure." );
+            getLogger().error( "Remote staging finished with a failure." );
             throw new ArtifactDeploymentException( "Remote staging failed: " + e.getMessage(), e );
         }
-        getLog().info( "Remote staging finished with success." );
+        getLogger().info( "Remote staging finished with success." );
     }
 
     /**
@@ -113,7 +113,7 @@ public class ImageDeployStrategy
         }
 
         // Zapper is a bit "chatty", if no Maven debug session is ongoing, then up logback to WARN
-        if ( getLog().isDebugEnabled() )
+        if ( getLogger().isDebugEnabled() )
         {
             LogbackUtils.syncLogLevelWithLevel( Level.DEBUG );
         }
@@ -124,7 +124,7 @@ public class ImageDeployStrategy
 
         zapper.deployDirectory( request );
 
-        if ( getLog().isDebugEnabled() )
+        if ( getLogger().isDebugEnabled() )
         {
             LogbackUtils.syncLogLevelWithLevel( Level.DEBUG );
         }

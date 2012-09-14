@@ -33,7 +33,7 @@ public abstract class AbstractDeployMojo
     /**
      * Deploy strategies.
      * 
-     * @component
+     * @component role="org.sonatype.nexus.maven.staging.deploy.strategy.DeployStrategy"
      */
     private Map<String, DeployStrategy> deployStrategies;
 

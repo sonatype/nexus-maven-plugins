@@ -21,7 +21,7 @@ public class DeferredDeployStrategy
     public void deployPerModule( final DeployPerModuleRequest request )
         throws ArtifactInstallationException, ArtifactDeploymentException, MojoExecutionException
     {
-        getLog().info(
+        getLogger().info(
             "Performing deferred deploys (local stagingDirectory=\""
                 + request.getParameters().getStagingDirectoryRoot().getAbsolutePath() + "\")..." );
         if ( !request.getDeployableArtifacts().isEmpty() )
@@ -38,7 +38,7 @@ public class DeferredDeployStrategy
         }
         else
         {
-            getLog().info( "Nothing to locally stage?" );
+            getLogger().info( "Nothing to locally stage?" );
         }
     }
 
@@ -46,34 +46,34 @@ public class DeferredDeployStrategy
     public void finalizeDeploy( final FinalizeDeployRequest request )
         throws ArtifactDeploymentException, MojoExecutionException
     {
-        getLog().info( "Deploying remotely..." );
+        getLogger().info( "Deploying remotely..." );
         final File stagingDirectory =
             getStagingDirectory( request.getParameters().getStagingDirectoryRoot(), DEFERRED_UPLOAD );
         if ( !stagingDirectory.isDirectory() )
         {
-            getLog().warn(
+            getLogger().warn(
                 "Nothing to deploy, directory \"" + stagingDirectory.getAbsolutePath() + "\" does not exists!" );
             return;
         }
 
         // we do direct upload
-        getLog().info( "Bulk deploying locally gathered artifacts from directory: " );
+        getLogger().info( "Bulk deploying locally gathered artifacts from directory: " );
         try
         {
             // prepare the local staging directory
             // we have normal deploy
             final ArtifactRepository deploymentRepository = getDeploymentRepository( request.getMavenSession() );
-            getLog().info(
+            getLogger().info(
                 " * Bulk deploying locally gathered snapshot artifacts to URL " + deploymentRepository.getUrl() );
             deployUp( request.getMavenSession(), stagingDirectory, deploymentRepository );
-            getLog().info( " * Bulk deploy of locally gathered snapshot artifacts finished." );
+            getLogger().info( " * Bulk deploy of locally gathered snapshot artifacts finished." );
         }
         catch ( IOException e )
         {
-            getLog().error( "Upload of locally staged directory finished with a failure." );
+            getLogger().error( "Upload of locally staged directory finished with a failure." );
             throw new ArtifactDeploymentException( "Remote staging failed: " + e.getMessage(), e );
         }
 
-        getLog().info( "Remote deploy finished with success." );
+        getLogger().info( "Remote deploy finished with success." );
     }
 }

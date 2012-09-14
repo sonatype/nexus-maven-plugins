@@ -21,7 +21,7 @@ public class DirectDeployStrategy
     public void deployPerModule( final DeployPerModuleRequest request )
         throws ArtifactInstallationException, ArtifactDeploymentException, MojoExecutionException
     {
-        getLog().info( "Performing direct deploys (maven-deploy-plugin like)..." );
+        getLogger().info( "Performing direct deploys (maven-deploy-plugin like)..." );
         final ArtifactRepository deploymentRepository = getDeploymentRepository( request.getMavenSession() );
         final ArtifactRepository localRepository = request.getMavenSession().getLocalRepository();
         for ( DeployableArtifact deployableArtifact : request.getDeployableArtifacts() )

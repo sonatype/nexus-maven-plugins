@@ -3,19 +3,11 @@ package org.sonatype.nexus.maven.staging.deploy.strategy;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.codehaus.plexus.component.annotations.Requirement;
-import org.codehaus.plexus.logging.Logger;
+import org.codehaus.plexus.logging.AbstractLogEnabled;
 
 public abstract class AbstractDeployStrategy
+    extends AbstractLogEnabled
 {
-    @Requirement
-    private Logger logger;
-
-    protected Logger getLog()
-    {
-        return logger;
-    }
-
     /**
      * Returns the ArtifactRepository created from passed in maven session's current project's distribution management.
      * 
