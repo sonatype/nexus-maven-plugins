@@ -15,6 +15,11 @@ package org.sonatype.nexus.maven.staging.deploy.strategy;
 import java.io.File;
 import java.util.Map;
 
+/**
+ * Execution parameters, mostly coming from Mojo parameters.
+ * 
+ * @author cstamas
+ */
 public interface Parameters
 {
     String getPluginGav();
@@ -24,7 +29,7 @@ public interface Parameters
     String getServerId();
 
     File getStagingDirectoryRoot();
-    
+
     boolean isKeepStagingRepositoryOnCloseRuleFailure();
 
     boolean isKeepStagingRepositoryOnFailure();

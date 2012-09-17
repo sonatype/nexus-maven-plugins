@@ -23,7 +23,7 @@ import com.sonatype.nexus.staging.client.StagingRuleFailures.RuleFailure;
 import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
 
 /**
- * A simple helper class to "dump" meaningful console error messages.
+ * A simple helper class to "dump" meaningful console error messages using various output methods.
  * 
  * @author cstamas
  */

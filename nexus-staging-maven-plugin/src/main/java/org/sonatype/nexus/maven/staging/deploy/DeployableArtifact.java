@@ -18,6 +18,12 @@ import org.apache.maven.artifact.Artifact;
 
 import com.google.common.base.Preconditions;
 
+/**
+ * Encapsulation of a deployable "pair": the {@link File} and the {@link Artifact}.
+ * 
+ * @author cstamas
+ * @since 1.1
+ */
 public class DeployableArtifact
 {
     private final File file;

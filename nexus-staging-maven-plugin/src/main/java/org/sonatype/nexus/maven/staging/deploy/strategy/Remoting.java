@@ -19,6 +19,12 @@ import org.sonatype.nexus.client.core.NexusClient;
 
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
+/**
+ * Remoting needed in deploy strategies.
+ * 
+ * @author cstamas
+ * @since 1.1
+ */
 public interface Remoting
 {
     Server getServer();

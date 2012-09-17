@@ -31,11 +31,22 @@ import org.sonatype.nexus.maven.staging.deploy.StagingRepository;
 import com.sonatype.nexus.staging.client.Profile;
 import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
 
+/**
+ * Full staging V2 deploy strategy. It perform local staging and remote staging (on remote Nexus).
+ * 
+ * @author cstamas
+ * @since 1.1
+ */
 @Component( role = DeployStrategy.class, hint = Strategies.STAGING )
 public class StagingDeployStrategy
     extends AbstractStagingDeployStrategy
     implements DeployStrategy
 {
+    /**
+     * Performs local staging, but obeying the matched staging profile (to keep locally staged artifacts separated, as
+     * they will end up in Nexus). For this, several REST calls are made against Nexus, to perform staging profile match
+     * if needed.
+     */
     @Override
     public void deployPerModule( final DeployPerModuleRequest request )
         throws ArtifactInstallationException, ArtifactDeploymentException, MojoExecutionException
@@ -65,6 +76,9 @@ public class StagingDeployStrategy
         }
     }
 
+    /**
+     * Performs Nexus staging of locally staged artifacts.
+     */
     @Override
     public void finalizeDeploy( final FinalizeDeployRequest request )
         throws ArtifactDeploymentException, MojoExecutionException

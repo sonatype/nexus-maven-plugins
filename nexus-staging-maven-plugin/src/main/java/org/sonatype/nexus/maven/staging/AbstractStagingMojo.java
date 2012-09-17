@@ -23,6 +23,11 @@ import org.sonatype.nexus.maven.staging.deploy.DeployMojo;
 import org.sonatype.nexus.maven.staging.workflow.CloseStageRepositoryMojo;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 
+/**
+ * Base class for nexus-staging-maven-plugin mojos, gathering the most common parameters.
+ * 
+ * @author cstamas
+ */
 public abstract class AbstractStagingMojo
     extends AbstractMojo
 {
@@ -175,7 +180,7 @@ public abstract class AbstractStagingMojo
     // == common methods
 
     /**
-     * Fails if Maven is invoked offline.
+     * Throws {@link MojoFailureException} if Maven is invoked offline, as nexus-staging-maven-plugin MUST WORK online.
      * 
      * @throws MojoFailureException if Maven is invoked offline.
      */
@@ -184,7 +189,8 @@ public abstract class AbstractStagingMojo
     {
         if ( offline )
         {
-            throw new MojoFailureException( "Cannot use Staging features in Offline mode, as REST Requests are needed to be made against Nexus even while locally staging only." );
+            throw new MojoFailureException(
+                "Cannot use Staging features in Offline mode, as REST Requests are needed to be made against Nexus even while locally staging only." );
         }
     }
 
@@ -199,9 +205,9 @@ public abstract class AbstractStagingMojo
     }
 
     /**
-     * In case of ordinary build, it returns {@code true} if the current project is the last one being executed in this
-     * build that has this Mojo defined. In case of direct invocation of this Mojo over CLI, it returns {@code true} if
-     * the current project is the last one being executed in this build.
+     * In case of "ordinary" (reactor) build, it returns {@code true} if the current project is the last one being
+     * executed in this build that has this Mojo defined. In case of direct invocation of this Mojo over CLI, it returns
+     * {@code true} if the current project is the last one being executed in this build.
      * 
      * @return true if last project is being built.
      */
@@ -230,6 +236,13 @@ public abstract class AbstractStagingMojo
             goal );
     }
 
+    /**
+     * Returns the staging directory root, that is either set explictly by user in plugin configuration (see
+     * {@link #altStagingDirectory} parameter), or it's location is calculated taking as base the first project in this
+     * reactor that will/was executing this plugin.
+     * 
+     * @return
+     */
     protected File getStagingDirectoryRoot()
     {
         if ( altStagingDirectory != null )

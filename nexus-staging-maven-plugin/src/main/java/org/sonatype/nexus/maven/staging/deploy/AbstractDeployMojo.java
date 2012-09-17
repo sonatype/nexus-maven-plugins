@@ -19,8 +19,6 @@ import org.sonatype.nexus.maven.staging.AbstractStagingMojo;
 import org.sonatype.nexus.maven.staging.deploy.strategy.DeployStrategy;
 import org.sonatype.nexus.maven.staging.deploy.strategy.Parameters;
 
-//import com.sun.jersey.api.client.UniformInterfaceException;
-
 /**
  * Abstract class for deploy related mojos.
  * 
@@ -87,6 +85,14 @@ public abstract class AbstractDeployMojo
 
     // ==
 
+    /**
+     * Returns the deploy strategy by key (plexus component hint). If no given strategy found,
+     * {@link MojoExecutionException} is thrown.
+     * 
+     * @param key
+     * @return
+     * @throws MojoExecutionException
+     */
     protected DeployStrategy getDeployStrategy( final String key )
         throws MojoExecutionException
     {
@@ -98,6 +104,13 @@ public abstract class AbstractDeployMojo
         return deployStrategy;
     }
 
+    /**
+     * Builds the parameters instance to pass to the {@link DeployStrategy}. This is mostly built from Mojo parameters,
+     * but some strategies might have different input.
+     * 
+     * @return
+     * @throws MojoExecutionException
+     */
     protected abstract Parameters buildParameters()
         throws MojoExecutionException;
 

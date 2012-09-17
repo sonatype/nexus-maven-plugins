@@ -15,6 +15,11 @@ package org.sonatype.nexus.maven.staging.deploy;
 import com.google.common.base.Preconditions;
 import com.sonatype.nexus.staging.client.Profile;
 
+/**
+ * Encapsulation of Nexus side staging repository.
+ * 
+ * @author cstamas
+ */
 public class StagingRepository
 {
     private final Profile profile;

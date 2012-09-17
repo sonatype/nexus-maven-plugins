@@ -35,6 +35,12 @@ import ch.qos.logback.classic.Level;
 import com.sonatype.nexus.staging.client.Profile;
 import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
 
+/**
+ * Image deploy strategy, that deploys the locally present directory structure to remote in "as is" form.
+ * 
+ * @author cstamas
+ * @since 1.1
+ */
 @Component( role = DeployStrategy.class, hint = Strategies.IMAGE )
 public class ImageDeployStrategy
     extends AbstractStagingDeployStrategy
@@ -46,6 +52,11 @@ public class ImageDeployStrategy
     @Requirement
     private Zapper zapper;
 
+    /**
+     * This method is actually unused in this strategy, as the "image" to be deployed is prepared by something else. For
+     * example, it might be prepared with maven-deploy-plugin using altDeploymentRepository switch pointing to local
+     * file system.
+     */
     @Override
     public void deployPerModule( final DeployPerModuleRequest request )
         throws ArtifactInstallationException, ArtifactDeploymentException, MojoExecutionException
@@ -53,6 +64,9 @@ public class ImageDeployStrategy
         // nothing
     }
 
+    /**
+     * Remote deploys the "image", using {@link #zapUp(File, String)}.
+     */
     @Override
     public void finalizeDeploy( final FinalizeDeployRequest request )
         throws ArtifactDeploymentException, MojoExecutionException

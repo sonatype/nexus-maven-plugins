@@ -22,6 +22,13 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.component.annotations.Component;
 import org.sonatype.nexus.maven.staging.deploy.DeployableArtifact;
 
+/**
+ * Deferred deploy strategy, that locally installs the stuff to be deployed (together with maintaining an "index" of
+ * deployable artifacts). At the reactor build end, remote deploys happens driven by "index".
+ * 
+ * @author cstamas
+ * @since 1.1
+ */
 @Component( role = DeployStrategy.class, hint = Strategies.DEFERRED )
 public class DeferredDeployStrategy
     extends AbstractStagingDeployStrategy
@@ -29,6 +36,10 @@ public class DeferredDeployStrategy
 {
     private static final String DEFERRED_UPLOAD = "deferred";
 
+    /**
+     * Performs local install plus maintains the index file, that contains needed informations needed to perform remote
+     * deploys.
+     */
     @Override
     public void deployPerModule( final DeployPerModuleRequest request )
         throws ArtifactInstallationException, ArtifactDeploymentException, MojoExecutionException
@@ -54,6 +65,9 @@ public class DeferredDeployStrategy
         }
     }
 
+    /**
+     * Performs "bulk" remote deploy, or locally installed artifacts, and is driven by "index" file.
+     */
     @Override
     public void finalizeDeploy( final FinalizeDeployRequest request )
         throws ArtifactDeploymentException, MojoExecutionException

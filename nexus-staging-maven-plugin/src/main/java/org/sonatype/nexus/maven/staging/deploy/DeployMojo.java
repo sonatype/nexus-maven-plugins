@@ -32,8 +32,8 @@ import org.sonatype.nexus.maven.staging.deploy.strategy.ParametersImpl;
 import org.sonatype.nexus.maven.staging.deploy.strategy.Strategies;
 
 /**
- * Alternative deploy plugin, that for all except last module actually "stages" to a location on local disk, and on last
- * module does the actual deploy.
+ * Alternative deploy mojo, that will select proper {@link DeployStrategy} to perform deploys. Hence, this mojo might
+ * function in same was as maven-deploy-plugin's deploy mojo, but also might do deferred deploy or staging.
  * 
  * @author cstamas
  * @since 1.0

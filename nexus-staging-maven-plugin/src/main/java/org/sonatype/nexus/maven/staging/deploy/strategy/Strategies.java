@@ -13,9 +13,10 @@
 package org.sonatype.nexus.maven.staging.deploy.strategy;
 
 /**
- * "Registry" of known, default strategies.
+ * "Registry" of default strategies.
  * 
  * @author cstamas
+ * @since 1.1
  */
 public interface Strategies
 {

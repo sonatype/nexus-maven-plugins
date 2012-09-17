@@ -21,6 +21,12 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.nexus.maven.staging.deploy.DeployableArtifact;
 
+/**
+ * Direct deploy strategy, one that totally mimics the "vanilla" maven-deploy-plugin behaviour.
+ * 
+ * @author cstamas
+ * @since 1.1
+ */
 @Component( role = DeployStrategy.class, hint = Strategies.DIRECT )
 public class DirectDeployStrategy
     extends AbstractDeployStrategy
@@ -29,6 +35,9 @@ public class DirectDeployStrategy
     @Requirement
     private ArtifactDeployer artifactDeployer;
 
+    /**
+     * Remote deploy immediately all we have, at the end of the module build.
+     */
     @Override
     public void deployPerModule( final DeployPerModuleRequest request )
         throws ArtifactInstallationException, ArtifactDeploymentException, MojoExecutionException
@@ -43,6 +52,9 @@ public class DirectDeployStrategy
         }
     }
 
+    /**
+     * Doing nothing in this method, as everything is already remotely deployed.
+     */
     @Override
     public void finalizeDeploy( final FinalizeDeployRequest request )
         throws ArtifactDeploymentException, MojoExecutionException
