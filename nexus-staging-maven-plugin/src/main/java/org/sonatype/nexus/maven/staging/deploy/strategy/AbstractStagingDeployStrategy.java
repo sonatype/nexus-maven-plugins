@@ -244,7 +244,8 @@ public abstract class AbstractStagingDeployStrategy
             else
             {
                 stagingProfile = stagingService.selectProfile( parameters.getStagingProfileId() );
-                getLogger().info( " * Using staging profile ID \"" + stagingProfile.getId() + "\" (configured by user)." );
+                getLogger().info(
+                    " * Using staging profile ID \"" + stagingProfile.getId() + "\" (configured by user)." );
             }
             return stagingProfile.getId();
         }
@@ -553,12 +554,12 @@ public abstract class AbstractStagingDeployStrategy
         }
     }
 
-    protected ArtifactRepository getArtifactRepositoryForNexus( final StagingRepository stagingRepository )
+    protected ArtifactRepository getDeploymentArtifactRepositoryForNexusStagingRepository( final StagingRepository stagingRepository )
         throws InvalidRepositoryException
     {
         final ArtifactRepository result =
-            artifactRepositoryFactory.createArtifactRepository( getRemoting().getServer().getId(),
-                stagingRepository.getUrl(), artifactRepositoryLayout, null, null );
+            artifactRepositoryFactory.createDeploymentArtifactRepository( getRemoting().getServer().getId(),
+                stagingRepository.getUrl(), artifactRepositoryLayout, true );
         return result;
     }
 }
