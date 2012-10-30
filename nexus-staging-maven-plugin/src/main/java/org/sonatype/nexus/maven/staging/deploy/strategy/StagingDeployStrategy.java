@@ -120,7 +120,7 @@ public class StagingDeployStrategy
                 getLogger().info( " * Uploading locally staged artifacts to profile " + stagingProfile.getName() );
                 deployUp( request.getMavenSession(),
                     getStagingDirectory( request.getParameters().getStagingDirectoryRoot(), profileId ),
-                    getArtifactRepositoryForNexus( stagingRepository ) );
+                    getDeploymentArtifactRepositoryForNexusStagingRepository( stagingRepository ) );
                 getLogger().info( " * Upload of locally staged artifacts finished." );
                 afterUpload( request.getParameters(), stagingRepository );
             }
