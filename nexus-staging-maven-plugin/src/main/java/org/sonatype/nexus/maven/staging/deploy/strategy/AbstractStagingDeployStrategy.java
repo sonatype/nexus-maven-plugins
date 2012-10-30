@@ -29,8 +29,7 @@ import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.InvalidRepositoryException;
 import org.apache.maven.artifact.deployer.ArtifactDeployer;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
-import org.apache.maven.artifact.handler.ArtifactHandler;
-import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.installer.ArtifactInstallationException;
 import org.apache.maven.artifact.installer.ArtifactInstaller;
 import org.apache.maven.artifact.metadata.ArtifactMetadata;
@@ -55,6 +54,7 @@ import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 
 import ch.qos.logback.classic.Level;
 
+import com.google.common.base.Preconditions;
 import com.sonatype.nexus.staging.client.Profile;
 import com.sonatype.nexus.staging.client.ProfileMatchingParameters;
 import com.sonatype.nexus.staging.client.StagingRuleFailures;
@@ -69,9 +69,6 @@ public abstract class AbstractStagingDeployStrategy
 
     @Requirement
     private ArtifactDeployer artifactDeployer;
-
-    @Requirement
-    private ArtifactHandlerManager artifactHandlerManager;
 
     @Requirement
     private ArtifactRepositoryFactory artifactRepositoryFactory;
@@ -146,10 +143,10 @@ public abstract class AbstractStagingDeployStrategy
                     pomFileName = ( (ProjectArtifactMetadata) artifactMetadata ).getLocalFilename( stagingRepository );
                 }
             }
-            pw.println( String.format( "%s=%s:%s:%s:%s:%s:%s", path, artifact.getGroupId(), artifact.getArtifactId(),
-                artifact.getVersion(),
+            pw.println( String.format( "%s=%s:%s:%s:%s:%s:%s:%s", path, artifact.getGroupId(),
+                artifact.getArtifactId(), artifact.getVersion(),
                 StringUtils.isBlank( artifact.getClassifier() ) ? "n/a" : artifact.getClassifier(), artifact.getType(),
-                StringUtils.isBlank( pomFileName ) ? "n/a" : pomFileName ) );
+                artifact.getArtifactHandler().getExtension(), StringUtils.isBlank( pomFileName ) ? "n/a" : pomFileName ) );
             pw.flush();
             pw.close();
         }
@@ -159,8 +156,8 @@ public abstract class AbstractStagingDeployStrategy
         }
     }
 
-    // G:A:V:C:P:PomFileName
-    private final Pattern indexProps = Pattern.compile( "(.*):(.*):(.*):(.*):(.*):(.*)" );
+    // G:A:V:C:P:Ext:PomFileName
+    private final Pattern indexProps = Pattern.compile( "(.*):(.*):(.*):(.*):(.*):(.*):(.*)" );
 
     protected void deployUp( final MavenSession mavenSession, final File sourceDirectory,
                              final ArtifactRepository remoteRepository )
@@ -195,9 +192,12 @@ public abstract class AbstractStagingDeployStrategy
             final String version = matcher.group( 3 );
             final String classifier = "n/a".equals( matcher.group( 4 ) ) ? null : matcher.group( 4 );
             final String packaging = matcher.group( 5 );
-            final String pomFileName = "n/a".equals( matcher.group( 6 ) ) ? null : matcher.group( 6 );
+            final String extension = matcher.group( 6 );
+            final String pomFileName = "n/a".equals( matcher.group( 7 ) ) ? null : matcher.group( 7 );
 
-            final ArtifactHandler artifactHandler = artifactHandlerManager.getArtifactHandler( packaging );
+            // just a synthetic one, to properly set extension
+            final FakeArtifactHandler artifactHandler = new FakeArtifactHandler( packaging, extension );
+
             final DefaultArtifact artifact =
                 new DefaultArtifact( groupId, artifactId, VersionRange.createFromVersion( version ), null, packaging,
                     classifier, artifactHandler );
@@ -210,6 +210,38 @@ public abstract class AbstractStagingDeployStrategy
             artifactDeployer.deploy( includedFile, artifact, remoteRepository, mavenSession.getLocalRepository() );
         }
     }
+
+    // ==
+
+    /**
+     * Just a "fake" synthetic handler, to overcome Maven2/3 differences (no extension setter in M2 but there is in M3
+     * on {@link DefaultArtifactHandler}.
+     */
+    public static class FakeArtifactHandler
+        extends DefaultArtifactHandler
+    {
+        private final String extension;
+
+        /**
+         * Constructor.
+         * 
+         * @param type
+         * @param extension
+         */
+        public FakeArtifactHandler( final String type, final String extension )
+        {
+            super( Preconditions.checkNotNull( type ) );
+            this.extension = Preconditions.checkNotNull( extension );
+        }
+
+        @Override
+        public String getExtension()
+        {
+            return extension;
+        }
+    }
+
+    // ==
 
     /**
      * Selects a staging profile based on informations given (configured) to Mojo.
