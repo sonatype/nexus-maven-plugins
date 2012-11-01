@@ -79,7 +79,7 @@
     <dependency>
       <groupId>org.sonatype.spice.zapper</groupId>
       <artifactId>spice-zapper</artifactId>
-      <version>1.2-SNAPSHOT</version>
+      <version>1.2</version>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
