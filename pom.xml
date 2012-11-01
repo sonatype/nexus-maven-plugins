@@ -108,8 +108,8 @@
     <slf4j.version>1.6.4</slf4j.version>
     <logback.version>1.0.5</logback.version>
     <maven.version>3.0.4</maven.version>
-    <nexus-core.version>2.2</nexus-core.version>
-    <nexus-pro.version>2.2-SNAPSHOT</nexus-pro.version>
+    <nexus-core.version>2.2-01</nexus-core.version>
+    <nexus-pro.version>2.2-01</nexus-pro.version>
 
     <!-- This below is needed to "default" maven-release-plugin (see pluginMgt section) to empty string -->
     <arguments />
