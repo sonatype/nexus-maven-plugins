@@ -13,22 +13,23 @@
 package org.sonatype.nexus.maven.staging.workflow;
 
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.codehaus.plexus.util.StringUtils;
 
 /**
  * Super class for "RC" mojos, that are always configured from CLI, as none of them requires project.
- * 
+ *
  * @author cstamas
  */
 public abstract class AbstractStagingRcActionMojo
     extends AbstractStagingActionMojo
 {
+
     /**
      * Specifies the (opened) staging repository ID (or multiple ones comma separated) on remote Nexus against which RC
      * staging action should happen. If not given, mojo will fail.
-     * 
-     * @parameter expression="${stagingRepositoryId}"
      */
+    @Parameter( required = true )
     private String stagingRepositoryId;
 
     protected String[] getStagingRepositoryIds()

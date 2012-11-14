@@ -16,24 +16,26 @@ import java.util.Arrays;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
 /**
  * Promotes a closed Nexus staging repository into a Nexus Build Promotion Profile.
- * 
+ *
  * @author cstamas
  * @since 1.0
- * @goal promote
  */
+@Mojo( name = "promote", requiresOnline = true )
 public class PromoteToStageProfileMojo
     extends AbstractStagingBuildActionMojo
 {
+
     /**
      * Specifies the staging build promotion profile ID on remote Nexus where to promotion happens. If not specified,
      * goal will fail.
-     * 
-     * @parameter expression="${buildPromotionProfileId}"
      */
+    @Parameter( required = true )
     private String buildPromotionProfileId;
 
     protected String getBuildPromotionProfileId()
@@ -56,6 +58,6 @@ public class PromoteToStageProfileMojo
             "Promoting staging repository with IDs=" + Arrays.toString( getStagingRepositoryIds() )
                 + " to build profile ID=\"" + getBuildPromotionProfileId() + "\"" );
         stagingWorkflow.promoteStagingRepositories( getDescriptionWithDefaultsForAction( "Promoted" ),
-            getBuildPromotionProfileId(), getStagingRepositoryIds() );
+                                                    getBuildPromotionProfileId(), getStagingRepositoryIds() );
     }
 }

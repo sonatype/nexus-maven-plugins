@@ -16,26 +16,26 @@ import java.util.Arrays;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Mojo;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
 /**
  * Releases a single closed Nexus staging repository into a permanent Nexus repository for general consumption.
- * 
+ *
  * @author cstamas
  * @since 1.0
- * @goal rc-release
- * @requiresProject false
- * @requiresDirectInvocation true
  */
+@Mojo( name = "rc-release", requiresProject = false, requiresDirectInvocation = true, requiresOnline = true )
 public class RcReleaseStageRepositoryMojo
     extends AbstractStagingRcActionMojo
 {
+
     @Override
     public void doExecute( final StagingWorkflowV2Service stagingWorkflow )
         throws MojoExecutionException, MojoFailureException
     {
         getLog().info( "RC-Releasing staging repository with IDs=" + Arrays.toString( getStagingRepositoryIds() ) );
         stagingWorkflow.releaseStagingRepositories( getDescriptionWithDefaultsForAction( "RC-Released" ),
-            getStagingRepositoryIds() );
+                                                    getStagingRepositoryIds() );
     }
 }

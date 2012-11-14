@@ -16,26 +16,26 @@ import java.util.Arrays;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
 /**
  * Promotes a closed Nexus staging repository into a Nexus Build Promotion Profile.
- * 
+ *
  * @author cstamas
  * @since 1.0
- * @goal rc-promote
- * @requiresProject false
- * @requiresDirectInvocation true
  */
+@Mojo( name = "rc-promote", requiresProject = false, requiresDirectInvocation = true, requiresOnline = true )
 public class RcPromoteToStageProfileMojo
     extends AbstractStagingRcActionMojo
 {
+
     /**
      * Specifies the staging build promotion profile ID on remote Nexus where to promotion happens. If not specified,
      * goal will fail.
-     * 
-     * @parameter expression="${buildPromotionProfileId}"
      */
+    @Parameter( required = true )
     private String buildPromotionProfileId;
 
     protected String getBuildPromotionProfileId()
@@ -55,9 +55,10 @@ public class RcPromoteToStageProfileMojo
         throws MojoExecutionException, MojoFailureException
     {
         getLog().info(
-            "RC-Promoting staging repository with IDs=" + Arrays.toString( getStagingRepositoryIds() ) + " to build profile ID=\""
+            "RC-Promoting staging repository with IDs=" + Arrays.toString( getStagingRepositoryIds() )
+                + " to build profile ID=\""
                 + getBuildPromotionProfileId() + "\"" );
         stagingWorkflow.promoteStagingRepositories( getDescriptionWithDefaultsForAction( "RC-Promoted" ),
-            getBuildPromotionProfileId(), getStagingRepositoryIds() );
+                                                    getBuildPromotionProfileId(), getStagingRepositoryIds() );
     }
 }
