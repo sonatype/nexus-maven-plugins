@@ -276,6 +276,7 @@ public abstract class StagingMavenPluginITSupport
         verifier.resetStreams();
         List<String> options = new ArrayList<String>();
         // options.add( "-X" );
+        options.add( "-Djava.awt.headless=true" ); // on Mac+OracleJdk7 a Dock icon bumps on ever Verifier invocation
         options.add( "-Dmaven.repo.local=" + localRepoFile.getAbsolutePath() );
         options.add( "-s " + filteredSettings.getAbsolutePath() );
         verifier.setCliOptions( options );
