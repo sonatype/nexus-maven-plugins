@@ -12,12 +12,9 @@
  */
 package org.sonatype.nexus.maven.staging;
 
-import java.util.Map;
-
 import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.logging.Logger;
-import org.sonatype.nexus.client.core.NexusErrorMessageException;
-
+import org.sonatype.nexus.client.core.exception.NexusClientErrorResponseException;
 import com.sonatype.nexus.staging.client.StagingRuleFailures;
 import com.sonatype.nexus.staging.client.StagingRuleFailures.RuleFailure;
 import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
@@ -34,7 +31,7 @@ public class ErrorDumper
         dumpErrors( new PlexusLoggerWriter( log ), e );
     }
 
-    public static void dumpErrors( final Logger log, final NexusErrorMessageException e )
+    public static void dumpErrors( final Logger log, final NexusClientErrorResponseException e )
     {
         dumpErrors( new PlexusLoggerWriter( log ), e );
     }
@@ -44,7 +41,7 @@ public class ErrorDumper
         dumpErrors( new MojoLoggerWriter( log ), e );
     }
 
-    public static void dumpErrors( final Log log, final NexusErrorMessageException e )
+    public static void dumpErrors( final Log log, final NexusClientErrorResponseException e )
     {
         dumpErrors( new MojoLoggerWriter( log ), e );
     }
@@ -74,13 +71,14 @@ public class ErrorDumper
         writer.writeln( "" );
     }
 
-    public static void dumpErrors( final Writer writer, final NexusErrorMessageException e )
+    public static void dumpErrors( final Writer writer, final NexusClientErrorResponseException e )
     {
         writer.writeln( "" );
-        writer.writeln( String.format( "Nexus Error Response: %s - %s", e.getStatusCode(), e.getStatusMessage() ) );
-        for ( Map.Entry<String, String> errorEntry : e.getErrors().entrySet() )
+        writer.writeln( String.format( "Nexus Error Response: %s - %s", e.getResponseCode(), e.getReasonPhrase() ) );
+        for ( NexusClientErrorResponseException.ErrorMessage errorEntry : e.errors() )
         {
-            writer.writeln( String.format( "  %s - %s", unfick( errorEntry.getKey() ), unfick( errorEntry.getValue() ) ) );
+            writer.writeln( String.format( "  %s - %s", unfick( errorEntry.getId() ),
+                                           unfick( errorEntry.getMessage() ) ) );
         }
         writer.writeln( "" );
     }
