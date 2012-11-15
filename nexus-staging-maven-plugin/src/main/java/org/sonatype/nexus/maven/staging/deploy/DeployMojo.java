@@ -23,6 +23,10 @@ import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.installer.ArtifactInstallationException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.artifact.ProjectArtifactMetadata;
 import org.sonatype.nexus.maven.staging.deploy.strategy.DeployPerModuleRequest;
 import org.sonatype.nexus.maven.staging.deploy.strategy.DeployStrategy;
@@ -34,81 +38,72 @@ import org.sonatype.nexus.maven.staging.deploy.strategy.Strategies;
 /**
  * Alternative deploy mojo, that will select proper {@link DeployStrategy} to perform deploys. Hence, this mojo might
  * function in same was as maven-deploy-plugin's deploy mojo, but also might do deferred deploy or staging.
- * 
+ *
  * @author cstamas
  * @since 1.0
- * @goal deploy
- * @phase deploy
  */
+@Mojo( name = "deploy", defaultPhase = LifecyclePhase.DEPLOY, requiresOnline = true )
 public class DeployMojo
     extends AbstractDeployMojo
 {
+
     /**
      * Component used to create an artifact.
-     * 
-     * @component
      */
+    @Component
     private ArtifactFactory artifactFactory;
 
     /**
-     * @parameter default-value="${project.artifact}"
-     * @required
-     * @readonly
+     * Project Artifact.
      */
+    @Parameter( defaultValue = "${project.artifact}", readonly = true, required = true )
     private Artifact artifact;
 
     /**
-     * @parameter default-value="${project.packaging}"
-     * @required
-     * @readonly
+     * Project packaging.
      */
+    @Parameter( defaultValue = "${project.packaging}", readonly = true, required = true )
     private String packaging;
 
     /**
-     * @parameter default-value="${project.file}"
-     * @required
-     * @readonly
+     * Project POM file.
      */
+    @Parameter( defaultValue = "${project.file}", readonly = true, required = true )
     private File pomFile;
 
     /**
-     * @parameter default-value="${project.attachedArtifacts}
-     * @required
-     * @readonly
+     * Project's attached artifacts.
      */
+    @Parameter( defaultValue = "${project.attachedArtifacts}", readonly = true, required = true )
     private List<Artifact> attachedArtifacts;
 
     /**
      * Parameter used to update the metadata to make the artifact as release.
-     * 
-     * @parameter expression="${updateReleaseInfo}" default-value="false"
      */
+    @Parameter
     protected boolean updateReleaseInfo;
 
     /**
      * Set this to {@code true} to bypass this mojo altogether (skip complete Mojo execution).
-     * 
-     * @parameter expression="${skipNexusStagingDeployMojo}"
      */
-    private boolean skipNexusStagingDeployMojo = false;
+    @Parameter
+    private boolean skipNexusStagingDeployMojo;
 
     /**
      * Set this to {@code true} to bypass staging features completely, and make this plugin behave in exact way as
      * "maven-deploy-plugin" would, such as deploying at "deploy" phase in every module build to remote. In this case,
      * the repository deployment goes against is taken in from Dependency Management section, again, same as in case of
      * "maven-deploy-plugin".
-     * 
-     * @parameter expression="${skipLocalStaging}"
      */
-    private boolean skipLocalStaging = false;
+    @Parameter
+    private boolean skipLocalStaging;
 
     /**
      * Set this to {@code true} to bypass remote staging (upload of locally staged artifacts) that would happen once
      * last project is being locally staged.
-     * 
-     * @parameter expression="${skipRemoteStaging}"
      */
-    private boolean skipRemoteStaging = false;
+    @Parameter
+    private boolean skipRemoteStaging;
 
     public void execute()
         throws MojoExecutionException, MojoFailureException
@@ -177,7 +172,7 @@ public class DeployMojo
 
                     final Artifact pomArtifact =
                         artifactFactory.createProjectArtifact( artifact.getGroupId(), artifact.getArtifactId(),
-                            artifact.getBaseVersion() );
+                                                               artifact.getBaseVersion() );
                     pomArtifact.setFile( pomFile );
                     if ( updateReleaseInfo )
                     {
@@ -246,9 +241,10 @@ public class DeployMojo
         {
             final Parameters parameters =
                 new ParametersImpl( getPluginGav(), getNexusUrl(), getServerId(), getStagingDirectoryRoot(),
-                    isKeepStagingRepositoryOnCloseRuleFailure(), isKeepStagingRepositoryOnFailure(),
-                    isSkipStagingRepositoryClose(), getStagingProfileId(), getStagingRepositoryId(), getDescription(),
-                    getTags() );
+                                    isKeepStagingRepositoryOnCloseRuleFailure(), isKeepStagingRepositoryOnFailure(),
+                                    isSkipStagingRepositoryClose(), getStagingProfileId(), getStagingRepositoryId(),
+                                    getDescription(),
+                                    getTags() );
 
             return parameters;
         }

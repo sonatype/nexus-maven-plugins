@@ -45,7 +45,7 @@ import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.maven.mojo.logback.LogbackUtils;
 import org.sonatype.nexus.client.core.NexusClient;
-import org.sonatype.nexus.client.core.NexusErrorMessageException;
+import org.sonatype.nexus.client.core.exception.NexusClientErrorResponseException;
 import org.sonatype.nexus.client.core.NexusStatus;
 import org.sonatype.nexus.maven.staging.AbstractStagingMojo;
 import org.sonatype.nexus.maven.staging.ErrorDumper;
@@ -246,8 +246,9 @@ public abstract class AbstractStagingDeployStrategy
     /**
      * Selects a staging profile based on informations given (configured) to Mojo.
      * 
-     * @param the workflow type we do
-     * @return the profileID selected or a special {@link AbstractStagingMojo#DIRECT_UPLOAD} constant.
+     * @param parameters to perform matching
+     * @param artifact the artifact for we match
+     * @return the profileID selected
      * @throws MojoExecutionException
      */
     protected String selectStagingProfile( final Parameters parameters, final Artifact artifact )
@@ -281,7 +282,7 @@ public abstract class AbstractStagingDeployStrategy
             }
             return stagingProfile.getId();
         }
-        catch ( NexusErrorMessageException e )
+        catch ( NexusClientErrorResponseException e )
         {
             ErrorDumper.dumpErrors( getLogger(), e );
             // fail the build
@@ -326,7 +327,7 @@ public abstract class AbstractStagingDeployStrategy
                 return new StagingRepository( stagingProfile, parameters.getStagingRepositoryId(), url, false );
             }
         }
-        catch ( NexusErrorMessageException e )
+        catch ( NexusClientErrorResponseException e )
         {
             ErrorDumper.dumpErrors( getLogger(), e );
             // fail the build
@@ -424,7 +425,7 @@ public abstract class AbstractStagingDeployStrategy
                         " * Not closing staging repository with ID \"" + stagingRepository.getRepositoryId() + "\"." );
                 }
             }
-            catch ( NexusErrorMessageException e )
+            catch ( NexusClientErrorResponseException e )
             {
                 getLogger().error(
                     "Error while trying to close staging repository with ID \"" + stagingRepository.getRepositoryId()

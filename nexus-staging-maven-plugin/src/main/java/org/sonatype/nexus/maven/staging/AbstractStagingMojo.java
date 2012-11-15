@@ -17,6 +17,8 @@ import java.io.File;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.sonatype.maven.mojo.execution.MojoExecution;
 import org.sonatype.nexus.maven.staging.deploy.DeployMojo;
@@ -25,7 +27,7 @@ import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 
 /**
  * Base class for nexus-staging-maven-plugin mojos, gathering the most common parameters.
- * 
+ *
  * @author cstamas
  */
 public abstract class AbstractStagingMojo
@@ -35,65 +37,48 @@ public abstract class AbstractStagingMojo
 
     /**
      * Maven Session.
-     * 
-     * @parameter default-value="${session}"
-     * @required
-     * @readonly
      */
+    @Parameter( defaultValue = "${session}", readonly = true, required = true )
     private MavenSession mavenSession;
 
     /**
      * Plugin groupId. While these are accessible from {@link #mojoExecution}, the methods are present only in Maven 3+.
      * Requirement is to work in Maven2 also, hence, we use a "compatible way" to obtain these values instead.
-     * 
-     * @parameter default-value="${plugin.groupId}"
-     * @readonly
      */
+    @Parameter( defaultValue = "${plugin.groupId}", readonly = true, required = true )
     private String pluginGroupId;
 
     /**
      * Plugin artifactId. While these are accessible from {@link #mojoExecution}, the methods are present only in Maven
      * 3+. Requirement is to work in Maven2 also, hence, we use a "compatible way" to obtain these values instead.
-     * 
-     * @parameter default-value="${plugin.artifactId}"
-     * @readonly
      */
+    @Parameter( defaultValue = "${plugin.artifactId}", readonly = true, required = true )
     private String pluginArtifactId;
 
     /**
      * Plugin version. While these are accessible from {@link #mojoExecution}, the methods are present only in Maven 3+.
      * Requirement is to work in Maven2 also, hence, we use a "compatible way" to obtain these values instead.
-     * 
-     * @parameter default-value="${plugin.version}"
-     * @readonly
      */
+    @Parameter( defaultValue = "${plugin.version}", readonly = true, required = true )
     private String pluginVersion;
 
     /**
      * Mojo execution.
-     * 
-     * @parameter default-value="${mojoExecution}"
-     * @required
-     * @readonly
      */
+    @Parameter( defaultValue = "${mojoExecution}", readonly = true, required = true )
     private org.apache.maven.plugin.MojoExecution mojoExecution;
 
     /**
-     * Sec Dispatcher.
-     * 
-     * @component role="org.sonatype.plexus.components.sec.dispatcher.SecDispatcher" hint="default"
+     * Flag whether Maven is currently in online/offline mode.
      */
-    private SecDispatcher secDispatcher;
-
-    // user supplied parameters (from maven)
+    @Parameter( defaultValue = "${settings.offline}", readonly = true, required = true )
+    private boolean offline;
 
     /**
-     * Flag whether Maven is currently in online/offline mode.
-     * 
-     * @parameter default-value="${settings.offline}"
-     * @readonly
+     * Sec Dispatcher.
      */
-    private boolean offline;
+    @Component
+    private SecDispatcher secDispatcher;
 
     // user supplied parameters (staging related)
 
@@ -102,43 +87,36 @@ public abstract class AbstractStagingMojo
      * staging directory will be looked for under {@code $}{{@code project.build.directory} {@code /nexus-staging}
      * folder of the first encountered module that has this Mojo defined for execution (Warning: this means, if top
      * level POM is an aggregator, it will be NOT in top level!).
-     * 
-     * @parameter expression="${altStagingDirectory}"
      */
+    @Parameter
     private File altStagingDirectory;
 
     /**
      * The base URL for a Nexus Professional instance that includes the nexus-staging-plugin.
-     * 
-     * @parameter expression="${nexusUrl}"
-     * @required
      */
+    @Parameter( required = true )
     private String nexusUrl;
 
     /**
      * The ID of the server entry in the Maven settings.xml from which to pick credentials to contact remote Nexus.
-     * 
-     * @parameter expression="${serverId}"
-     * @required
      */
-    private String serverId = "nexus";
+    @Parameter( required = true )
+    private String serverId;
 
     /**
      * The repository "description" to pass to Nexus when repository staging workflow step is made. If none passed in,
      * plugin defaults are applied.
-     * 
-     * @parameter expression="${description}"
      */
+    @Parameter
     private String description;
 
     /**
      * Controls whether the staging repository is kept or not (it will be dropped) in case of staging rule failure when
      * "close" action is performed against it. This is applied in both cases, {@link DeployMojo} and
      * {@link CloseStageRepositoryMojo} invocations.
-     * 
-     * @parameter expression="${keepStagingRepositoryOnCloseRuleFailure}"
      */
-    private boolean keepStagingRepositoryOnCloseRuleFailure = false;
+    @Parameter
+    private boolean keepStagingRepositoryOnCloseRuleFailure;
 
     // == getters for stuff above
 
@@ -181,7 +159,7 @@ public abstract class AbstractStagingMojo
 
     /**
      * Throws {@link MojoFailureException} if Maven is invoked offline, as nexus-staging-maven-plugin MUST WORK online.
-     * 
+     *
      * @throws MojoFailureException if Maven is invoked offline.
      */
     protected void failIfOffline()
@@ -196,7 +174,7 @@ public abstract class AbstractStagingMojo
 
     /**
      * Returns the first project in reactor that has this plugin defined.
-     * 
+     *
      * @return
      */
     protected MavenProject getFirstProjectWithThisPluginDefined()
@@ -208,7 +186,7 @@ public abstract class AbstractStagingMojo
      * In case of "ordinary" (reactor) build, it returns {@code true} if the current project is the last one being
      * executed in this build that has this Mojo defined. In case of direct invocation of this Mojo over CLI, it returns
      * {@code true} if the current project is the last one being executed in this build.
-     * 
+     *
      * @return true if last project is being built.
      */
     protected boolean isThisLastProjectWithThisMojoInExecution()
@@ -227,20 +205,20 @@ public abstract class AbstractStagingMojo
     /**
      * Returns true if the current project is the last one being executed in this build that has passed in goal
      * execution defined.
-     * 
+     *
      * @return true if last project is being built.
      */
     protected boolean isThisLastProjectWithMojoInExecution( final String goal )
     {
         return MojoExecution.isCurrentTheLastProjectWithMojoInExecution( mavenSession, pluginGroupId, pluginArtifactId,
-            goal );
+                                                                         goal );
     }
 
     /**
      * Returns the staging directory root, that is either set explictly by user in plugin configuration (see
      * {@link #altStagingDirectory} parameter), or it's location is calculated taking as base the first project in this
      * reactor that will/was executing this plugin.
-     * 
+     *
      * @return
      */
     protected File getStagingDirectoryRoot()
