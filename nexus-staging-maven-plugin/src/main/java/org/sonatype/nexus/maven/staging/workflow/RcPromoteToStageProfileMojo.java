@@ -35,7 +35,7 @@ public class RcPromoteToStageProfileMojo
      * Specifies the staging build promotion profile ID on remote Nexus where to promotion happens. If not specified,
      * goal will fail.
      */
-    @Parameter( required = true )
+    @Parameter( property = "buildPromotionProfileId", required = true )
     private String buildPromotionProfileId;
 
     protected String getBuildPromotionProfileId()

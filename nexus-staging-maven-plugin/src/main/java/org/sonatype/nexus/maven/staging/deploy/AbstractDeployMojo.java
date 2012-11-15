@@ -43,14 +43,14 @@ public abstract class AbstractDeployMojo
      * Specifies the profile ID on remote Nexus against which staging should happen. If not given, Nexus will be asked
      * to perform a "match" and that profile will be used.
      */
-    @Parameter
+    @Parameter( property = "stagingProfileId" )
     private String stagingProfileId;
 
     /**
      * Specifies the (opened) staging repository ID on remote Nexus against which staging should happen. If not given,
      * Nexus will be asked to create one for us and that will be used.
      */
-    @Parameter
+    @Parameter( property = "stagingRepositoryId" )
     private String stagingRepositoryId;
 
     /**
@@ -64,19 +64,19 @@ public abstract class AbstractDeployMojo
      * hence, it's contents are partial Defaults to {{false}}. If {{true}}, even in case of upload failure, the staging
      * repository (with partial content) will be left as is, left to the user to do whatever he wants.
      */
-    @Parameter
+    @Parameter( property = "keepStagingRepositoryOnFailure" )
     private boolean keepStagingRepositoryOnFailure;
 
     /**
      * Set this to {@code true} to bypass staging repository closing at the workflow end.
      */
-    @Parameter
+    @Parameter( property = "skipStagingRepositoryClose" )
     private boolean skipStagingRepositoryClose;
 
     /**
      * Set this to {@code true} to bypass staging features, and use deferred deploy features only.
      */
-    @Parameter
+    @Parameter( property = "skipStaging" )
     private boolean skipStaging;
 
     // ==

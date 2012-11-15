@@ -88,26 +88,26 @@ public abstract class AbstractStagingMojo
      * folder of the first encountered module that has this Mojo defined for execution (Warning: this means, if top
      * level POM is an aggregator, it will be NOT in top level!).
      */
-    @Parameter
+    @Parameter( property = "altStagingDirectory" )
     private File altStagingDirectory;
 
     /**
      * The base URL for a Nexus Professional instance that includes the nexus-staging-plugin.
      */
-    @Parameter( required = true )
+    @Parameter( property = "nexusUrl", required = true )
     private String nexusUrl;
 
     /**
      * The ID of the server entry in the Maven settings.xml from which to pick credentials to contact remote Nexus.
      */
-    @Parameter( required = true )
+    @Parameter( property = "serverId", required = true )
     private String serverId;
 
     /**
      * The repository "description" to pass to Nexus when repository staging workflow step is made. If none passed in,
      * plugin defaults are applied.
      */
-    @Parameter
+    @Parameter( property = "description" )
     private String description;
 
     /**
@@ -115,7 +115,7 @@ public abstract class AbstractStagingMojo
      * "close" action is performed against it. This is applied in both cases, {@link DeployMojo} and
      * {@link CloseStageRepositoryMojo} invocations.
      */
-    @Parameter
+    @Parameter( property = "keepStagingRepositoryOnCloseRuleFailure" )
     private boolean keepStagingRepositoryOnCloseRuleFailure;
 
     // == getters for stuff above

@@ -137,4 +137,22 @@ public class ParametersImpl
         }
         return result;
     }
+
+    @Override
+    public String toString()
+    {
+        return "ParametersImpl{" +
+            "pluginGav='" + pluginGav + '\'' +
+            ", nexusUrl='" + nexusUrl + '\'' +
+            ", serverId='" + serverId + '\'' +
+            ", stagingDirectoryRoot=" + stagingDirectoryRoot +
+            ", keepStagingRepositoryOnCloseRuleFailure=" + keepStagingRepositoryOnCloseRuleFailure +
+            ", keepStagingRepositoryOnFailure=" + keepStagingRepositoryOnFailure +
+            ", skipStagingRepositoryClose=" + skipStagingRepositoryClose +
+            ", stagingProfileId='" + stagingProfileId + '\'' +
+            ", stagingRepositoryId='" + stagingRepositoryId + '\'' +
+            ", userDescriptionOfAction='" + userDescriptionOfAction + '\'' +
+            ", tags=" + tags +
+            '}';
+    }
 }

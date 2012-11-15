@@ -50,7 +50,7 @@ public class DeployRepositoryMojo
      * {@code maven-deploy-plugin} together with switch {@code altDeploymentRepository}. Note: this parameters if of
      * type {@link java.io.File}, it has to point to an existend FS directory!
      */
-    @Parameter( required = true )
+    @Parameter( property = "repositoryDirectory", required = true )
     private File repositoryDirectory;
 
     @Override
@@ -111,6 +111,7 @@ public class DeployRepositoryMojo
                                     getDescription(),
                                     getTags() );
 
+            getLog().debug( parameters.toString() );
             return parameters;
         }
         catch ( NullPointerException e )

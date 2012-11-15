@@ -41,7 +41,7 @@ public abstract class AbstractStagingBuildActionMojo
      * Specifies the staging repository ID on remote Nexus against which staging action should happen. If not given,
      * mojo will fail. If not given, the properties file from local staging repository will be consulted.
      */
-    @Parameter
+    @Parameter( property = "stagingRepositoryId" )
     private String stagingRepositoryId;
 
     protected String[] getStagingRepositoryIds()

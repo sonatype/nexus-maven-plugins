@@ -80,13 +80,13 @@ public class DeployMojo
     /**
      * Parameter used to update the metadata to make the artifact as release.
      */
-    @Parameter
-    protected boolean updateReleaseInfo;
+    @Parameter( property = "updateReleaseInfo" )
+    private boolean updateReleaseInfo;
 
     /**
      * Set this to {@code true} to bypass this mojo altogether (skip complete Mojo execution).
      */
-    @Parameter
+    @Parameter( property = "skipNexusStagingDeployMojo" )
     private boolean skipNexusStagingDeployMojo;
 
     /**
@@ -95,14 +95,14 @@ public class DeployMojo
      * the repository deployment goes against is taken in from Dependency Management section, again, same as in case of
      * "maven-deploy-plugin".
      */
-    @Parameter
+    @Parameter( property = "skipLocalStaging" )
     private boolean skipLocalStaging;
 
     /**
      * Set this to {@code true} to bypass remote staging (upload of locally staged artifacts) that would happen once
      * last project is being locally staged.
      */
-    @Parameter
+    @Parameter( property = "skipRemoteStaging" )
     private boolean skipRemoteStaging;
 
     public void execute()
@@ -246,6 +246,7 @@ public class DeployMojo
                                     getDescription(),
                                     getTags() );
 
+            getLog().debug( parameters.toString() );
             return parameters;
         }
         catch ( NullPointerException e )

@@ -29,7 +29,7 @@ public abstract class AbstractStagingRcActionMojo
      * Specifies the (opened) staging repository ID (or multiple ones comma separated) on remote Nexus against which RC
      * staging action should happen. If not given, mojo will fail.
      */
-    @Parameter( required = true )
+    @Parameter( property = "stagingRepositoryId", required = true )
     private String stagingRepositoryId;
 
     protected String[] getStagingRepositoryIds()

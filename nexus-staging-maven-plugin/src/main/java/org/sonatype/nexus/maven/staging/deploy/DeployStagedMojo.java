@@ -24,7 +24,7 @@ import org.sonatype.nexus.maven.staging.deploy.strategy.Strategies;
 
 /**
  * Deploys the (previously) locally staged artifacts from nexus-staging repository, that were staged using
- * {@link DeployMojo} and having the {@link skipRemoteStaging} flag set to {@code true}.
+ * {@link DeployMojo} and having the {@link DeployMojo#skipRemoteStaging} flag set to {@code true}.
  * 
  * @author cstamas
  * @since 1.0
@@ -81,6 +81,7 @@ public class DeployStagedMojo
                     isSkipStagingRepositoryClose(), getStagingProfileId(), getStagingRepositoryId(), getDescription(),
                     getTags() );
 
+            getLog().debug( parameters.toString() );
             return parameters;
         }
         catch ( NullPointerException e )
