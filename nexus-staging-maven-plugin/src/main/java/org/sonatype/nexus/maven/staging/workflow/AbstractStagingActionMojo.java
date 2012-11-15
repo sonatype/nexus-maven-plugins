@@ -25,7 +25,7 @@ import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.maven.mojo.logback.LogbackUtils;
 import org.sonatype.maven.mojo.settings.MavenSettings;
 import org.sonatype.nexus.client.core.NexusClient;
-import org.sonatype.nexus.client.core.NexusErrorMessageException;
+import org.sonatype.nexus.client.core.exception.NexusClientErrorResponseException;
 import org.sonatype.nexus.client.rest.BaseUrl;
 import org.sonatype.nexus.client.rest.ConnectionInfo;
 import org.sonatype.nexus.client.rest.Protocol;
@@ -73,7 +73,7 @@ public abstract class AbstractStagingActionMojo
             {
                 doExecute( stagingWorkflow );
             }
-            catch ( NexusErrorMessageException e )
+            catch ( NexusClientErrorResponseException e )
             {
                 ErrorDumper.dumpErrors( getLog(), e );
                 // fail the build

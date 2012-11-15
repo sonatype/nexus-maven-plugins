@@ -15,24 +15,26 @@ package org.sonatype.nexus.maven.staging.deploy;
 import java.util.Map;
 
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.sonatype.nexus.maven.staging.AbstractStagingMojo;
 import org.sonatype.nexus.maven.staging.deploy.strategy.DeployStrategy;
 import org.sonatype.nexus.maven.staging.deploy.strategy.Parameters;
 
 /**
  * Abstract class for deploy related mojos.
- * 
+ *
  * @author cstamas
  * @since 1.0
  */
 public abstract class AbstractDeployMojo
     extends AbstractStagingMojo
 {
+
     /**
      * Deploy strategies.
-     * 
-     * @component role="org.sonatype.nexus.maven.staging.deploy.strategy.DeployStrategy"
      */
+    @Component( role = DeployStrategy.class )
     private Map<String, DeployStrategy> deployStrategies;
 
     // User configurable parameters
@@ -40,55 +42,49 @@ public abstract class AbstractDeployMojo
     /**
      * Specifies the profile ID on remote Nexus against which staging should happen. If not given, Nexus will be asked
      * to perform a "match" and that profile will be used.
-     * 
-     * @parameter expression="${stagingProfileId}"
      */
+    @Parameter
     private String stagingProfileId;
 
     /**
      * Specifies the (opened) staging repository ID on remote Nexus against which staging should happen. If not given,
      * Nexus will be asked to create one for us and that will be used.
-     * 
-     * @parameter expression="${stagingRepositoryId}"
      */
+    @Parameter
     private String stagingRepositoryId;
 
     /**
      * The key-value pairs to "tag" the staging repository.
-     * 
-     * @parameter
      */
+    @Parameter
     private Map<String, String> tags;
 
     /**
      * Controls whether the plugin remove or keep the staging repository that performed an IO exception during upload,
      * hence, it's contents are partial Defaults to {{false}}. If {{true}}, even in case of upload failure, the staging
      * repository (with partial content) will be left as is, left to the user to do whatever he wants.
-     * 
-     * @parameter expression="${keepStagingRepositoryOnFailure}"
      */
-    private boolean keepStagingRepositoryOnFailure = false;
+    @Parameter
+    private boolean keepStagingRepositoryOnFailure;
 
     /**
      * Set this to {@code true} to bypass staging repository closing at the workflow end.
-     * 
-     * @parameter expression="${skipStagingRepositoryClose}"
      */
-    private boolean skipStagingRepositoryClose = false;
+    @Parameter
+    private boolean skipStagingRepositoryClose;
 
     /**
      * Set this to {@code true} to bypass staging features, and use deferred deploy features only.
-     * 
-     * @parameter expression="${skipStaging}"
      */
-    private boolean skipStaging = false;
+    @Parameter
+    private boolean skipStaging;
 
     // ==
 
     /**
      * Returns the deploy strategy by key (plexus component hint). If no given strategy found,
      * {@link MojoExecutionException} is thrown.
-     * 
+     *
      * @param key
      * @return
      * @throws MojoExecutionException
@@ -107,7 +103,7 @@ public abstract class AbstractDeployMojo
     /**
      * Builds the parameters instance to pass to the {@link DeployStrategy}. This is mostly built from Mojo parameters,
      * but some strategies might have different input.
-     * 
+     *
      * @return
      * @throws MojoExecutionException
      */

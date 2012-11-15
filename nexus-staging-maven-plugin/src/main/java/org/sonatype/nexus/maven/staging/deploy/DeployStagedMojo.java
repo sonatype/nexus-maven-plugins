@@ -15,6 +15,7 @@ package org.sonatype.nexus.maven.staging.deploy;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Mojo;
 import org.sonatype.nexus.maven.staging.deploy.strategy.DeployStrategy;
 import org.sonatype.nexus.maven.staging.deploy.strategy.FinalizeDeployRequest;
 import org.sonatype.nexus.maven.staging.deploy.strategy.Parameters;
@@ -27,8 +28,8 @@ import org.sonatype.nexus.maven.staging.deploy.strategy.Strategies;
  * 
  * @author cstamas
  * @since 1.0
- * @goal deploy-staged
  */
+@Mojo( name = "deploy-staged", requiresOnline = true )
 public class DeployStagedMojo
     extends AbstractDeployMojo
 {

@@ -26,7 +26,7 @@
 
   <groupId>org.sonatype.nexus</groupId>
   <artifactId>nexus-maven-plugins</artifactId>
-  <version>1.2.1-SNAPSHOT</version>
+  <version>1.3-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Nexus Maven Plugins : Parent</name>
@@ -104,12 +104,13 @@
   <properties>
     <forgeSiteUrl>dav:https://sites.sonatype.com/plugins/nexus-maven-plugins</forgeSiteUrl>
 
-    <sisu-inject.version>2.3.0</sisu-inject.version>
-    <slf4j.version>1.6.4</slf4j.version>
-    <logback.version>1.0.5</logback.version>
+    <sisu-inject.version>2.3.1</sisu-inject.version>
+    <slf4j.version>1.7.2</slf4j.version>
+    <logback.version>1.0.7</logback.version>
     <maven.version>3.0.4</maven.version>
-    <nexus-core.version>2.2-01</nexus-core.version>
-    <nexus-pro.version>2.2-01</nexus-pro.version>
+    <nexus-core.version>2.3-SNAPSHOT</nexus-core.version>
+    <nexus-pro.version>2.3-SNAPSHOT</nexus-pro.version>
+    <staging-client.version>2.2-SNAPSHOT</staging-client.version>
 
     <!-- This below is needed to "default" maven-release-plugin (see pluginMgt section) to empty string -->
     <arguments />
@@ -117,7 +118,6 @@
 
   <modules>
     <module>nexus-staging-maven-plugin</module>
-    <module>nexus-staging-maven-plugin-its</module>
     <!--module>nexus-settings-maven-plugin</module -->
   </modules>
 
@@ -136,14 +136,14 @@
       <dependency>
         <groupId>org.sonatype.sisu</groupId>
         <artifactId>sisu-guice</artifactId>
-        <version>3.1.1</version>
+        <version>3.1.2</version>
         <classifier>no_aop</classifier>
         <scope>runtime</scope>
       </dependency>
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>10.0.1</version>
+        <version>13.0.1</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -176,8 +176,74 @@
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-utils</artifactId>
-        <version>3.0</version>
+        <version>3.0.8</version>
         <scope>compile</scope>
+      </dependency>
+
+      <!-- Maven and Maven plugin related stuff -->
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-plugin-api</artifactId>
+        <version>${maven.version}</version>
+        <scope>provided</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-container-default</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.plugin-tools</groupId>
+        <artifactId>maven-plugin-annotations</artifactId>
+        <version>3.2</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-core</artifactId>
+        <version>${maven.version}</version>
+        <scope>provided</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.maven.wagon</groupId>
+            <artifactId>wagon-http</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.maven.wagon</groupId>
+            <artifactId>wagon-http-lightweight</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.maven.wagon</groupId>
+            <artifactId>wagon-webdav-jackrabbit</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-container-default</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-compat</artifactId>
+        <version>${maven.version}</version>
+        <scope>provided</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-container-default</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.sonatype.aether</groupId>
+        <artifactId>aether-api</artifactId>
+        <version>1.13.1</version>
+        <scope>runtime</scope>
       </dependency>
 
       <!-- SLF4J Logging -->
@@ -205,13 +271,6 @@
         <scope>runtime</scope>
       </dependency>
       <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-simple</artifactId>
-        <version>${slf4j.version}</version>
-        <type>jar</type>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-core</artifactId>
         <version>${logback.version}</version>
@@ -230,7 +289,7 @@
       <dependency>
         <groupId>org.sonatype.sisu.litmus</groupId>
         <artifactId>litmus-testsupport</artifactId>
-        <version>1.4</version>
+        <version>1.5-SNAPSHOT</version>
         <scope>test</scope>
       </dependency>
 
@@ -263,7 +322,7 @@
             <autoVersionSubmodules>true</autoVersionSubmodules>
             <useReleaseProfile>false</useReleaseProfile>
             <goals>deploy</goals>
-            <arguments>-Prelease -Pnoit ${arguments}</arguments>
+            <arguments>-Prelease ${arguments}</arguments>
           </configuration>
         </plugin>
         <plugin>
@@ -274,8 +333,9 @@
             <redirectTestOutputToFile>${maven.test.redirectTestOutputToFile}</redirectTestOutputToFile>
             <!-- force use of property -->
             <forkMode>once</forkMode>
-            <argLine>-ea</argLine>
+            <argLine>-ea -XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError -Djava.awt.headless=true</argLine>
             <workingDirectory>${project.build.directory}</workingDirectory>
+            <failIfNoTests>false</failIfNoTests>
             <systemPropertyVariables>
               <java.awt.headless>true</java.awt.headless>
               <h2.check>false</h2.check><!-- workaround for H2 deadlock -->
@@ -306,8 +366,9 @@
             <redirectTestOutputToFile>${maven.test.redirectTestOutputToFile}</redirectTestOutputToFile>
             <!-- force use of property -->
             <forkMode>always</forkMode>
-            <argLine>-ea</argLine>
+            <argLine>-ea -XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError -Djava.awt.headless=true</argLine>
             <workingDirectory>${project.build.directory}</workingDirectory>
+            <failIfNoTests>false</failIfNoTests>
             <systemPropertyVariables>
               <java.awt.headless>true</java.awt.headless>
               <h2.check>false</h2.check><!-- workaround for H2 deadlock -->
@@ -334,24 +395,34 @@
           </executions>
         </plugin>
         <plugin>
-          <groupId>org.codehaus.plexus</groupId>
-          <artifactId>plexus-maven-plugin</artifactId>
-          <version>1.3.8</version>
-          <executions>
-            <execution>
-              <goals>
-                <goal>descriptor</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
-        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
+          <version>2.5.1</version>
           <configuration>
             <source>1.6</source>
             <target>1.6</target>
           </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-plugin-plugin</artifactId>
+          <version>3.2</version>
+          <executions>
+            <execution>
+              <id>default-descriptor</id>
+              <phase>process-classes</phase>
+              <goals>
+                <goal>descriptor</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>help-goal</id>
+              <phase>process-classes</phase>
+              <goals>
+                <goal>helpmojo</goal>
+              </goals>
+            </execution>
+          </executions>
         </plugin>
         <!-- Manually run with: mvn clean com.mycila.maven-license-plugin:maven-license-plugin:1.9.0:format -->
         <plugin>
@@ -401,22 +472,20 @@
   </build>
 
   <profiles>
+
     <profile>
-      <id>noit</id>
-      <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-failsafe-plugin</artifactId>
-              <configuration>
-                <skipITs>true</skipITs>
-              </configuration>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-      </build>
+      <id>it</id>
+      <activation>
+        <property>
+          <name>it</name>
+        </property>
+      </activation>
+      <modules>
+        <module>nexus-staging-maven-plugin-its</module>
+        <!--module>nexus-settings-maven-plugin-its</module -->
+      </modules>
     </profile>
+
     <profile>
       <id>m2e</id>
       <activation>

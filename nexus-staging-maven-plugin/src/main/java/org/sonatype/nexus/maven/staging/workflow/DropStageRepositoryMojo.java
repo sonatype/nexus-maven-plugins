@@ -16,6 +16,7 @@ import java.util.Arrays;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Mojo;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
 /**
@@ -23,8 +24,8 @@ import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
  * 
  * @author cstamas
  * @since 1.0
- * @goal drop
  */
+@Mojo( name = "drop", requiresOnline = true )
 public class DropStageRepositoryMojo
     extends AbstractStagingBuildActionMojo
 {

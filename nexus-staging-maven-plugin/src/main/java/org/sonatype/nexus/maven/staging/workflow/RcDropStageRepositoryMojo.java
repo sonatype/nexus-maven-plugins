@@ -16,6 +16,7 @@ import java.util.Arrays;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Mojo;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
 /**
@@ -23,10 +24,8 @@ import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
  * 
  * @author cstamas
  * @since 1.0
- * @goal rc-drop
- * @requiresProject false
- * @requiresDirectInvocation true
  */
+@Mojo( name = "rc-drop", requiresProject = false, requiresDirectInvocation = true, requiresOnline = true )
 public class RcDropStageRepositoryMojo
     extends AbstractStagingRcActionMojo
 {

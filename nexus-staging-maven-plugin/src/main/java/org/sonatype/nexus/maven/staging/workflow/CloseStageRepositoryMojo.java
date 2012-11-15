@@ -18,6 +18,7 @@ import java.util.List;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Mojo;
 import org.sonatype.nexus.maven.staging.ErrorDumper;
 
 import com.sonatype.nexus.staging.client.StagingRuleFailures;
@@ -29,8 +30,8 @@ import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
  * 
  * @author cstamas
  * @since 1.0
- * @goal close
  */
+@Mojo( name = "close", requiresOnline = true )
 public class CloseStageRepositoryMojo
     extends AbstractStagingBuildActionMojo
 {

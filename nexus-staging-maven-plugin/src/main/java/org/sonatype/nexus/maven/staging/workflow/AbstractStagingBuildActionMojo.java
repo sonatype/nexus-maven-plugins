@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.nexus.maven.staging.deploy.DeployMojo;
 import org.sonatype.nexus.maven.staging.deploy.strategy.AbstractStagingDeployStrategy;
@@ -29,18 +30,18 @@ import org.sonatype.nexus.maven.staging.deploy.strategy.AbstractStagingDeployStr
  * as it will use the properties file saved in root of local staging repository. When executed in multi module build,
  * these mojos will be skipped until the very last module having the plugin defined (very same technique as
  * {@link DeployMojo} uses.
- * 
+ *
  * @author cstamas
  */
 public abstract class AbstractStagingBuildActionMojo
     extends AbstractStagingActionMojo
 {
+
     /**
      * Specifies the staging repository ID on remote Nexus against which staging action should happen. If not given,
      * mojo will fail. If not given, the properties file from local staging repository will be consulted.
-     * 
-     * @parameter expression="${stagingRepositoryId}"
      */
+    @Parameter
     private String stagingRepositoryId;
 
     protected String[] getStagingRepositoryIds()
@@ -105,10 +106,12 @@ public abstract class AbstractStagingBuildActionMojo
                 fis = new FileInputStream( stagingRepositoryPropertiesFile );
                 stagingRepositoryProperties.load( fis );
                 final boolean managed =
-                    Boolean.valueOf( stagingRepositoryProperties.getProperty( AbstractStagingDeployStrategy.STAGING_REPOSITORY_MANAGED ) );
+                    Boolean.valueOf( stagingRepositoryProperties.getProperty(
+                        AbstractStagingDeployStrategy.STAGING_REPOSITORY_MANAGED ) );
                 if ( managed )
                 {
-                    return stagingRepositoryProperties.getProperty( AbstractStagingDeployStrategy.STAGING_REPOSITORY_ID );
+                    return stagingRepositoryProperties.getProperty(
+                        AbstractStagingDeployStrategy.STAGING_REPOSITORY_ID );
                 }
                 else
                 {
@@ -118,13 +121,13 @@ public abstract class AbstractStagingBuildActionMojo
             catch ( IOException e )
             {
                 throw new MojoExecutionException( "Unexpected IO exception while loading up staging properties from "
-                    + stagingRepositoryPropertiesFile.getAbsolutePath(), e );
+                                                      + stagingRepositoryPropertiesFile.getAbsolutePath(), e );
             }
         }
         else
         {
             throw new MojoExecutionException( "Unexpected input: this is not a properties file: "
-                + stagingRepositoryPropertiesFile.getAbsolutePath() );
+                                                  + stagingRepositoryPropertiesFile.getAbsolutePath() );
         }
     }
 

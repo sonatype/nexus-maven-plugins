@@ -17,6 +17,8 @@ import java.io.File;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.nexus.maven.staging.deploy.strategy.DeployStrategy;
 import org.sonatype.nexus.maven.staging.deploy.strategy.FinalizeDeployRequest;
@@ -34,23 +36,21 @@ import org.sonatype.nexus.maven.staging.deploy.strategy.Strategies;
  * the {@link DeployMojo} --, the intent with this Mojo is to be called directly, fully parameterized. At least, you
  * have to set {@code nexusUrl}, {@code serverId}, {@code stagingProfileId} (also {@code stagingRepositoryId} if needed)
  * and {@code repositoryDirectory} parameters on CLI.
- * 
+ *
  * @author cstamas
  * @since 1.1
- * @goal deploy-staged-repository
- * @requiresProject false
- * @requiresDirectInvocation true
  */
+@Mojo( name = "deploy-staged-repository", requiresProject = false, requiresDirectInvocation = true, requiresOnline = true )
 public class DeployRepositoryMojo
     extends AbstractDeployMojo
 {
+
     /**
      * Specifies an the location of staging directory to which the project artifacts was staged using
      * {@code maven-deploy-plugin} together with switch {@code altDeploymentRepository}. Note: this parameters if of
      * type {@link java.io.File}, it has to point to an existend FS directory!
-     * 
-     * @parameter expression="${repositoryDirectory}"
      */
+    @Parameter( required = true )
     private File repositoryDirectory;
 
     @Override
@@ -106,9 +106,10 @@ public class DeployRepositoryMojo
         {
             final Parameters parameters =
                 new ParametersImpl( getPluginGav(), getNexusUrl(), getServerId(), repositoryDirectory,
-                    isKeepStagingRepositoryOnCloseRuleFailure(), isKeepStagingRepositoryOnFailure(),
-                    isSkipStagingRepositoryClose(), getStagingProfileId(), getStagingRepositoryId(), getDescription(),
-                    getTags() );
+                                    isKeepStagingRepositoryOnCloseRuleFailure(), isKeepStagingRepositoryOnFailure(),
+                                    isSkipStagingRepositoryClose(), getStagingProfileId(), getStagingRepositoryId(),
+                                    getDescription(),
+                                    getTags() );
 
             return parameters;
         }
