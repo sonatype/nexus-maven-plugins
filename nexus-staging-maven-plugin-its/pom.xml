@@ -144,6 +144,8 @@
               <goal>install</goal>
             </goals>
             <configuration>
+              <!-- Caused by: https://jira.codehaus.org/browse/MINVOKER-115 -->
+              <!-- Once this above fixed, hopefully this section below will not be needed anymore -->
               <extraArtifacts>
                 <extraArtifact>org.sonatype.nexus:nexus-maven-plugins:${project.version}:pom</extraArtifact>
                 <extraArtifact>org.sonatype.nexus:nexus-runtime-platform:${nexus-core.version}:pom</extraArtifact>
