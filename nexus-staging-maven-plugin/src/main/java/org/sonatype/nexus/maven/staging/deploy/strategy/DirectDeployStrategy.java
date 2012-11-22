@@ -30,7 +30,6 @@ import org.sonatype.nexus.maven.staging.deploy.DeployableArtifact;
 @Component( role = DeployStrategy.class, hint = Strategies.DIRECT )
 public class DirectDeployStrategy
     extends AbstractDeployStrategy
-    implements DeployStrategy
 {
     @Requirement
     private ArtifactDeployer artifactDeployer;

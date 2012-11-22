@@ -33,6 +33,8 @@ import org.sonatype.nexus.maven.staging.deploy.strategy.DeployStrategy;
 import org.sonatype.nexus.maven.staging.deploy.strategy.FinalizeDeployRequest;
 import org.sonatype.nexus.maven.staging.deploy.strategy.Parameters;
 import org.sonatype.nexus.maven.staging.deploy.strategy.ParametersImpl;
+import org.sonatype.nexus.maven.staging.deploy.strategy.StagingParameters;
+import org.sonatype.nexus.maven.staging.deploy.strategy.StagingParametersImpl;
 import org.sonatype.nexus.maven.staging.deploy.strategy.Strategies;
 
 /**
@@ -119,7 +121,7 @@ public class DeployMojo
         // matching, etc.
         failIfOffline();
 
-        final Parameters parameters = buildParameters();
+        final Parameters parameters;
         final DeployStrategy deployStrategy;
         if ( skipLocalStaging )
         // totally skipped
@@ -197,6 +199,7 @@ public class DeployMojo
                 deployables.add( new DeployableArtifact( attached.getFile(), attached ) );
             }
 
+            parameters = buildParameters( deployStrategy );
             final DeployPerModuleRequest request =
                 new DeployPerModuleRequest( getMavenSession(), parameters, deployables );
             deployStrategy.deployPerModule( request );
@@ -230,28 +233,6 @@ public class DeployMojo
             {
                 throw new MojoExecutionException( e.getMessage(), e );
             }
-        }
-    }
-
-    @Override
-    protected Parameters buildParameters()
-        throws MojoExecutionException
-    {
-        try
-        {
-            final Parameters parameters =
-                new ParametersImpl( getPluginGav(), getNexusUrl(), getServerId(), getStagingDirectoryRoot(),
-                                    isKeepStagingRepositoryOnCloseRuleFailure(), isKeepStagingRepositoryOnFailure(),
-                                    isSkipStagingRepositoryClose(), getStagingProfileId(), getStagingRepositoryId(),
-                                    getDescription(),
-                                    getTags() );
-
-            getLog().debug( parameters.toString() );
-            return parameters;
-        }
-        catch ( NullPointerException e )
-        {
-            throw new MojoExecutionException( "Bad config and/or validation!", e );
         }
     }
 }

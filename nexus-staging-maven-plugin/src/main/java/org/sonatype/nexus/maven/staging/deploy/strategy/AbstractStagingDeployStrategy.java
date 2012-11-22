@@ -13,75 +13,70 @@
 package org.sonatype.nexus.maven.staging.deploy.strategy;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.InvalidRepositoryException;
-import org.apache.maven.artifact.deployer.ArtifactDeployer;
-import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
-import org.apache.maven.artifact.handler.DefaultArtifactHandler;
-import org.apache.maven.artifact.installer.ArtifactInstallationException;
-import org.apache.maven.artifact.installer.ArtifactInstaller;
-import org.apache.maven.artifact.metadata.ArtifactMetadata;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
-import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
-import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.project.artifact.ProjectArtifactMetadata;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.maven.mojo.logback.LogbackUtils;
 import org.sonatype.nexus.client.core.NexusClient;
-import org.sonatype.nexus.client.core.exception.NexusClientErrorResponseException;
 import org.sonatype.nexus.client.core.NexusStatus;
-import org.sonatype.nexus.maven.staging.AbstractStagingMojo;
+import org.sonatype.nexus.client.core.exception.NexusClientErrorResponseException;
 import org.sonatype.nexus.maven.staging.ErrorDumper;
 import org.sonatype.nexus.maven.staging.deploy.StagingRepository;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
-
-import ch.qos.logback.classic.Level;
-
-import com.google.common.base.Preconditions;
 import com.sonatype.nexus.staging.client.Profile;
 import com.sonatype.nexus.staging.client.ProfileMatchingParameters;
 import com.sonatype.nexus.staging.client.StagingRuleFailures;
 import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
+import ch.qos.logback.classic.Level;
 
 public abstract class AbstractStagingDeployStrategy
     extends AbstractDeployStrategy
 {
-    @Requirement
-    private ArtifactInstaller artifactInstaller;
-
-    @Requirement
-    private ArtifactDeployer artifactDeployer;
-
-    @Requirement
-    private ArtifactRepositoryFactory artifactRepositoryFactory;
-
-    @Requirement
-    private ArtifactRepositoryLayout artifactRepositoryLayout;
 
     @Requirement
     private SecDispatcher secDispatcher;
 
     private Remoting remoting;
 
-    protected void initRemoting( final MavenSession mavenSession, final Parameters parameters )
+    @Override
+    public boolean needsNexusClient()
+    {
+        return true;
+    }
+
+    protected StagingParameters getAsStagingParameters( final Parameters parameters )
+        throws MojoExecutionException
+    {
+        if ( parameters == null )
+        {
+            throw new MojoExecutionException(
+                "Internal bug: passed in Parameters instance is null" );
+        }
+        else if ( parameters instanceof StagingParameters )
+        {
+            return (StagingParameters) parameters;
+        }
+        else
+        {
+            throw new MojoExecutionException(
+                "Internal bug: passed in Parameters instance is not StagingParameters, but is "
+                    + parameters.getClass().getName() );
+        }
+    }
+
+    protected void initRemoting( final MavenSession mavenSession, final StagingParameters parameters )
         throws MojoExecutionException
     {
         if ( getLogger().isDebugEnabled() )
@@ -111,157 +106,28 @@ public abstract class AbstractStagingDeployStrategy
         return remoting;
     }
 
-    /**
-     * Performs an "install" (not to be confused with "install into local repository!) into the staging repository. It
-     * will retain snapshot versions, and no metadata is created at all. In short: performs a simple file copy.
-     * 
-     * @param source
-     * @param artifact
-     * @param stagingRepository
-     * @param stagingDirectory
-     * @throws ArtifactDeploymentException
-     * @throws MojoExecutionException
-     */
-    protected void install( final File source, final Artifact artifact, final ArtifactRepository stagingRepository,
-                            final File stagingDirectory )
-        throws ArtifactInstallationException, MojoExecutionException
-    {
-        final String path = stagingRepository.pathOf( artifact );
-        try
-        {
-            artifactInstaller.install( source, artifact, stagingRepository );
-
-            // append the index file
-            final FileOutputStream fos = new FileOutputStream( new File( stagingDirectory, ".index" ), true );
-            final OutputStreamWriter osw = new OutputStreamWriter( fos, "ISO-8859-1" );
-            final PrintWriter pw = new PrintWriter( osw );
-            String pomFileName = null;
-            for ( ArtifactMetadata artifactMetadata : artifact.getMetadataList() )
-            {
-                if ( artifactMetadata instanceof ProjectArtifactMetadata )
-                {
-                    pomFileName = ( (ProjectArtifactMetadata) artifactMetadata ).getLocalFilename( stagingRepository );
-                }
-            }
-            pw.println( String.format( "%s=%s:%s:%s:%s:%s:%s:%s", path, artifact.getGroupId(),
-                artifact.getArtifactId(), artifact.getVersion(),
-                StringUtils.isBlank( artifact.getClassifier() ) ? "n/a" : artifact.getClassifier(), artifact.getType(),
-                artifact.getArtifactHandler().getExtension(), StringUtils.isBlank( pomFileName ) ? "n/a" : pomFileName ) );
-            pw.flush();
-            pw.close();
-        }
-        catch ( IOException e )
-        {
-            throw new ArtifactInstallationException( "Cannot locally stage and maintain the index file!", e );
-        }
-    }
-
-    // G:A:V:C:P:Ext:PomFileName
-    private final Pattern indexProps = Pattern.compile( "(.*):(.*):(.*):(.*):(.*):(.*):(.*)" );
-
-    protected void deployUp( final MavenSession mavenSession, final File sourceDirectory,
-                             final ArtifactRepository remoteRepository )
-        throws ArtifactDeploymentException, IOException
-    {
-        // I'd need Aether RepoSystem and create one huge DeployRequest will _all_ artifacts (would be FAST as it would
-        // go parallel), but we need to work in Maven2 too, so old compat and slow method remains: deploy one by one...
-        final FileInputStream fis = new FileInputStream( new File( sourceDirectory, ".index" ) );
-        final Properties index = new Properties();
-        try
-        {
-            index.load( fis );
-        }
-        finally
-        {
-            IOUtil.close( fis );
-        }
-
-        for ( String includedFilePath : index.stringPropertyNames() )
-        {
-            final File includedFile = new File( sourceDirectory, includedFilePath );
-            final String includedFileProps = index.getProperty( includedFilePath );
-            final Matcher matcher = indexProps.matcher( includedFileProps );
-            if ( !matcher.matches() )
-            {
-                throw new ArtifactDeploymentException( "Internal error! Line \"" + includedFileProps
-                    + "\" does not match pattern \"" + indexProps.toString() + "\"?" );
-            }
-
-            final String groupId = matcher.group( 1 );
-            final String artifactId = matcher.group( 2 );
-            final String version = matcher.group( 3 );
-            final String classifier = "n/a".equals( matcher.group( 4 ) ) ? null : matcher.group( 4 );
-            final String packaging = matcher.group( 5 );
-            final String extension = matcher.group( 6 );
-            final String pomFileName = "n/a".equals( matcher.group( 7 ) ) ? null : matcher.group( 7 );
-
-            // just a synthetic one, to properly set extension
-            final FakeArtifactHandler artifactHandler = new FakeArtifactHandler( packaging, extension );
-
-            final DefaultArtifact artifact =
-                new DefaultArtifact( groupId, artifactId, VersionRange.createFromVersion( version ), null, packaging,
-                    classifier, artifactHandler );
-            if ( pomFileName != null )
-            {
-                final File pomFile = new File( includedFile.getParentFile(), pomFileName );
-                final ProjectArtifactMetadata pom = new ProjectArtifactMetadata( artifact, pomFile );
-                artifact.addMetadata( pom );
-            }
-            artifactDeployer.deploy( includedFile, artifact, remoteRepository, mavenSession.getLocalRepository() );
-        }
-    }
-
-    // ==
-
-    /**
-     * Just a "fake" synthetic handler, to overcome Maven2/3 differences (no extension setter in M2 but there is in M3
-     * on {@link DefaultArtifactHandler}.
-     */
-    public static class FakeArtifactHandler
-        extends DefaultArtifactHandler
-    {
-        private final String extension;
-
-        /**
-         * Constructor.
-         * 
-         * @param type
-         * @param extension
-         */
-        public FakeArtifactHandler( final String type, final String extension )
-        {
-            super( Preconditions.checkNotNull( type ) );
-            this.extension = Preconditions.checkNotNull( extension );
-        }
-
-        @Override
-        public String getExtension()
-        {
-            return extension;
-        }
-    }
-
     // ==
 
     /**
      * Selects a staging profile based on informations given (configured) to Mojo.
-     * 
+     *
      * @param parameters to perform matching
-     * @param artifact the artifact for we match
+     * @param artifact   the artifact for we match
      * @return the profileID selected
      * @throws MojoExecutionException
      */
-    protected String selectStagingProfile( final Parameters parameters, final Artifact artifact )
+    protected String selectStagingProfile( final StagingParameters parameters, final Artifact artifact )
         throws MojoExecutionException
     {
         try
         {
             final NexusClient nexusClient = getRemoting().getNexusClient();
-            getLogger().info( "Preparing staging against Nexus on URL " + nexusClient.getConnectionInfo().getBaseUrl() );
+            getLogger().info(
+                "Preparing staging against Nexus on URL " + nexusClient.getConnectionInfo().getBaseUrl() );
             final NexusStatus nexusStatus = nexusClient.getNexusStatus();
             getLogger().info(
                 String.format( " * Remote Nexus reported itself as version %s and edition \"%s\"",
-                    nexusStatus.getVersion(), nexusStatus.getEditionLong() ) );
+                               nexusStatus.getVersion(), nexusStatus.getEditionLong() ) );
             final StagingWorkflowV2Service stagingService = remoting.getStagingWorkflowV2Service();
 
             Profile stagingProfile;
@@ -270,9 +136,10 @@ public abstract class AbstractStagingDeployStrategy
             {
                 final ProfileMatchingParameters params =
                     new ProfileMatchingParameters( artifact.getGroupId(), artifact.getArtifactId(),
-                        artifact.getVersion() );
+                                                   artifact.getVersion() );
                 stagingProfile = stagingService.matchProfile( params );
-                getLogger().info( " * Using staging profile ID \"" + stagingProfile.getId() + "\" (matched by Nexus)." );
+                getLogger().info(
+                    " * Using staging profile ID \"" + stagingProfile.getId() + "\" (matched by Nexus)." );
             }
             else
             {
@@ -290,7 +157,7 @@ public abstract class AbstractStagingDeployStrategy
         }
     }
 
-    protected StagingRepository beforeUpload( final Parameters parameters, final Profile stagingProfile )
+    protected StagingRepository beforeUpload( final StagingParameters parameters, final Profile stagingProfile )
         throws MojoExecutionException
     {
         try
@@ -300,7 +167,8 @@ public abstract class AbstractStagingDeployStrategy
             {
                 String createdStagingRepositoryId =
                     stagingService.startStaging( stagingProfile,
-                        parameters.getDefaultedUserDescriptionOfAction( "Started" ), parameters.getTags() );
+                                                 parameters.getDefaultedUserDescriptionOfAction( "Started" ),
+                                                 parameters.getTags() );
                 // store the one just created for us, as it means we need to "babysit" it (close or drop, depending
                 // on outcome)
                 if ( parameters.getTags() != null && !parameters.getTags().isEmpty() )
@@ -313,7 +181,8 @@ public abstract class AbstractStagingDeployStrategy
                 {
                     getLogger().info( " * Created staging repository with ID \"" + createdStagingRepositoryId + "\"." );
                 }
-                final String url = stagingService.startedRepositoryBaseUrl( stagingProfile, createdStagingRepositoryId );
+                final String url =
+                    stagingService.startedRepositoryBaseUrl( stagingProfile, createdStagingRepositoryId );
                 return new StagingRepository( stagingProfile, createdStagingRepositoryId, url, true );
             }
             else
@@ -321,7 +190,7 @@ public abstract class AbstractStagingDeployStrategy
                 getLogger().info(
                     " * Using non-managed staging repository with ID \"" + parameters.getStagingRepositoryId()
                         + "\" (we are NOT managing it)." ); // we will not close it! This might be created by some
-                                                            // other automated component
+                // other automated component
                 final String url =
                     stagingService.startedRepositoryBaseUrl( stagingProfile, parameters.getStagingRepositoryId() );
                 return new StagingRepository( stagingProfile, parameters.getStagingRepositoryId(), url, false );
@@ -345,13 +214,13 @@ public abstract class AbstractStagingDeployStrategy
 
     public static final String STAGING_REPOSITORY_MANAGED = "stagingRepository.managed";
 
-    protected void afterUpload( final Parameters parameters, final StagingRepository stagingRepository )
+    protected void afterUpload( final StagingParameters parameters, final StagingRepository stagingRepository )
         throws MojoExecutionException, StagingRuleFailuresException
     {
         // if upload successful. write out the properties file
         final String stagingRepositoryUrl =
             concat( getRemoting().getNexusClient().getConnectionInfo().getBaseUrl().toString(),
-                "/content/repositories", stagingRepository.getRepositoryId() );
+                    "/content/repositories", stagingRepository.getRepositoryId() );
 
         final Properties stagingProperties = new Properties();
         // the staging repository ID where the staging went
@@ -385,7 +254,7 @@ public abstract class AbstractStagingDeployStrategy
         catch ( IOException e )
         {
             throw new MojoExecutionException( "Error saving staging repository properties to file "
-                + stagingPropertiesFile, e );
+                                                  + stagingPropertiesFile, e );
         }
         finally
         {
@@ -405,8 +274,8 @@ public abstract class AbstractStagingDeployStrategy
                         getLogger().info(
                             " * Closing staging repository with ID \"" + stagingRepository.getRepositoryId() + "\"." );
                         stagingService.finishStaging( stagingRepository.getProfile(),
-                            stagingRepository.getRepositoryId(),
-                            parameters.getDefaultedUserDescriptionOfAction( "Closed" ) );
+                                                      stagingRepository.getRepositoryId(),
+                                                      parameters.getDefaultedUserDescriptionOfAction( "Closed" ) );
                     }
                     catch ( StagingRuleFailuresException e )
                     {
@@ -433,20 +302,22 @@ public abstract class AbstractStagingDeployStrategy
                 ErrorDumper.dumpErrors( getLogger(), e );
                 // fail the build
                 throw new MojoExecutionException( "Could not perform action against repository \""
-                    + stagingRepository.getRepositoryId() + "\": Nexus ErrorResponse received!", e );
+                                                      + stagingRepository.getRepositoryId()
+                                                      + "\": Nexus ErrorResponse received!", e );
             }
         }
     }
 
     /**
      * Performs various cleanup after staging repository failure.
-     * 
+     *
      * @param stagingRepositories
      * @param problem
      * @throws MojoExecutionException
      */
-    protected void afterUploadFailure( final Parameters parameters, final List<StagingRepository> stagingRepositories,
-                                       final Throwable problem )
+    protected void afterUploadFailure( final StagingParameters parameters,
+        final List<StagingRepository> stagingRepositories,
+        final Throwable problem )
         throws MojoExecutionException
     {
         final String msg;
@@ -508,7 +379,8 @@ public abstract class AbstractStagingDeployStrategy
                         " * Dropping failed staging repository with ID \"" + stagingRepository.getRepositoryId()
                             + "\" (" + msg + ")." );
                     stagingService.dropStagingRepositories( parameters.getDefaultedUserDescriptionOfAction( "Dropped" )
-                        + " (" + msg + ").", stagingRepository.getRepositoryId() );
+                                                                + " (" + msg + ").",
+                                                            stagingRepository.getRepositoryId() );
                 }
                 else
                 {
@@ -538,18 +410,6 @@ public abstract class AbstractStagingDeployStrategy
         return result.toString();
     }
 
-    protected File getStagingDirectory( final File stagingDirectoryRoot, final String profileId )
-        throws MojoExecutionException
-    {
-        final File root = stagingDirectoryRoot;
-        if ( StringUtils.isBlank( profileId ) )
-        {
-            throw new MojoExecutionException(
-                "Internal bug: passed in profileId must be non-null and non-empty string!" );
-        }
-        return new File( root, profileId );
-    }
-
     protected ArtifactRepository getArtifactRepositoryForDirectory( final File stagingDirectory )
         throws MojoExecutionException
     {
@@ -571,9 +431,7 @@ public abstract class AbstractStagingDeployStrategy
             {
                 final String id = "nexus";
                 final String url = stagingDirectory.getCanonicalFile().toURI().toURL().toExternalForm();
-
-                return artifactRepositoryFactory.createDeploymentArtifactRepository( id, url, artifactRepositoryLayout,
-                    true );
+                return createDeploymentArtifactRepository( id, url );
             }
             catch ( IOException e )
             {
@@ -587,12 +445,12 @@ public abstract class AbstractStagingDeployStrategy
         }
     }
 
-    protected ArtifactRepository getDeploymentArtifactRepositoryForNexusStagingRepository( final StagingRepository stagingRepository )
+    protected ArtifactRepository getDeploymentArtifactRepositoryForNexusStagingRepository(
+        final StagingRepository stagingRepository )
         throws InvalidRepositoryException
     {
         final ArtifactRepository result =
-            artifactRepositoryFactory.createDeploymentArtifactRepository( getRemoting().getServer().getId(),
-                stagingRepository.getUrl(), artifactRepositoryLayout, true );
+            createDeploymentArtifactRepository( getRemoting().getServer().getId(), stagingRepository.getUrl() );
         return result;
     }
 }

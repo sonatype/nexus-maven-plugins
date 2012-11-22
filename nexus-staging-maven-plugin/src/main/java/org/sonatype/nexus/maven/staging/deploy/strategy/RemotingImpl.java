@@ -31,7 +31,6 @@ import org.sonatype.nexus.client.rest.UsernamePasswordAuthenticationInfo;
 import org.sonatype.nexus.client.rest.jersey.JerseyNexusClientFactory;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
-
 import com.google.common.base.Preconditions;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 import com.sonatype.nexus.staging.client.rest.JerseyStagingWorkflowV2SubsystemFactory;
@@ -42,7 +41,7 @@ public class RemotingImpl
 {
     private final MavenSession mavenSession;
 
-    private final Parameters parameters;
+    private final StagingParameters parameters;
 
     private final SecDispatcher secDispatcher;
 
@@ -52,7 +51,7 @@ public class RemotingImpl
 
     private NexusClient nexusClient;
 
-    public RemotingImpl( final MavenSession mavenSession, final Parameters parameters,
+    public RemotingImpl( final MavenSession mavenSession, final StagingParameters parameters,
                             final SecDispatcher secDispatcher )
         throws MojoExecutionException
     {
@@ -67,7 +66,7 @@ public class RemotingImpl
         return mavenSession;
     }
 
-    protected Parameters getParameters()
+    protected StagingParameters getParameters()
     {
         return parameters;
     }
@@ -77,7 +76,7 @@ public class RemotingImpl
         return secDispatcher;
     }
 
-    protected void init( MavenSession mavenSession, Parameters parameters )
+    protected void init( MavenSession mavenSession, StagingParameters parameters )
         throws MojoExecutionException
     {
         if ( StringUtils.isBlank( parameters.getNexusUrl() ) )

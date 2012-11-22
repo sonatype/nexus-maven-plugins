@@ -20,6 +20,9 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.sonatype.nexus.maven.staging.AbstractStagingMojo;
 import org.sonatype.nexus.maven.staging.deploy.strategy.DeployStrategy;
 import org.sonatype.nexus.maven.staging.deploy.strategy.Parameters;
+import org.sonatype.nexus.maven.staging.deploy.strategy.ParametersImpl;
+import org.sonatype.nexus.maven.staging.deploy.strategy.StagingParameters;
+import org.sonatype.nexus.maven.staging.deploy.strategy.StagingParametersImpl;
 
 /**
  * Abstract class for deploy related mojos.
@@ -104,11 +107,50 @@ public abstract class AbstractDeployMojo
      * Builds the parameters instance to pass to the {@link DeployStrategy}. This is mostly built from Mojo parameters,
      * but some strategies might have different input.
      *
+     * @param strategy
      * @return
      * @throws MojoExecutionException
      */
-    protected abstract Parameters buildParameters()
-        throws MojoExecutionException;
+    protected Parameters buildParameters( final DeployStrategy strategy )
+        throws MojoExecutionException
+    {
+        if ( strategy.needsNexusClient() )
+        {
+            try
+            {
+                final StagingParameters parameters =
+                    new StagingParametersImpl( getPluginGav(), getNexusUrl(), getServerId(), getStagingDirectoryRoot(),
+                                               isKeepStagingRepositoryOnCloseRuleFailure(),
+                                               isKeepStagingRepositoryOnFailure(),
+                                               isSkipStagingRepositoryClose(), getStagingProfileId(),
+                                               getStagingRepositoryId(),
+                                               getDescription(),
+                                               getTags() );
+
+                getLog().debug( parameters.toString() );
+                return parameters;
+            }
+            catch ( NullPointerException e )
+            {
+                throw new MojoExecutionException( "Bad config and/or validation!", e );
+            }
+        }
+        else
+        {
+            try
+            {
+                final Parameters parameters =
+                    new ParametersImpl( getPluginGav(), getStagingDirectoryRoot() );
+
+                getLog().debug( parameters.toString() );
+                return parameters;
+            }
+            catch ( NullPointerException e )
+            {
+                throw new MojoExecutionException( "Bad config and/or validation!", e );
+            }
+        }
+    }
 
     // ==
 

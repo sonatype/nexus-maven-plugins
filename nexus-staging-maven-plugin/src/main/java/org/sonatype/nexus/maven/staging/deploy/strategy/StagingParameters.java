@@ -17,12 +17,29 @@ import java.util.Map;
 
 /**
  * Execution parameters, mostly coming from Mojo parameters.
- * 
+ *
  * @author cstamas
  */
-public interface Parameters
+public interface StagingParameters
+    extends Parameters
 {
-    String getPluginGav();
+    String getNexusUrl();
 
-    File getStagingDirectoryRoot();
+    String getServerId();
+
+    boolean isKeepStagingRepositoryOnCloseRuleFailure();
+
+    boolean isKeepStagingRepositoryOnFailure();
+
+    boolean isSkipStagingRepositoryClose();
+
+    String getStagingProfileId();
+
+    String getStagingRepositoryId();
+
+    String getUserDescriptionOfAction();
+
+    Map<String, String> getTags();
+
+    String getDefaultedUserDescriptionOfAction( String action );
 }

@@ -94,13 +94,13 @@ public abstract class AbstractStagingMojo
     /**
      * The base URL for a Nexus Professional instance that includes the nexus-staging-plugin.
      */
-    @Parameter( property = "nexusUrl", required = true )
+    @Parameter( property = "nexusUrl" )
     private String nexusUrl;
 
     /**
      * The ID of the server entry in the Maven settings.xml from which to pick credentials to contact remote Nexus.
      */
-    @Parameter( property = "serverId", required = true )
+    @Parameter( property = "serverId" )
     private String serverId;
 
     /**

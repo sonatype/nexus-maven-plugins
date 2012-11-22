@@ -31,8 +31,7 @@ import org.sonatype.nexus.maven.staging.deploy.DeployableArtifact;
  */
 @Component( role = DeployStrategy.class, hint = Strategies.DEFERRED )
 public class DeferredDeployStrategy
-    extends AbstractStagingDeployStrategy
-    implements DeployStrategy
+    extends AbstractDeployStrategy
 {
     private static final String DEFERRED_UPLOAD = "deferred";
 

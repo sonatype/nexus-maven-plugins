@@ -36,7 +36,8 @@ import com.sonatype.nexus.staging.client.Profile;
 import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
 
 /**
- * Image deploy strategy, that deploys the locally present directory structure to remote in "as is" form.
+ * Image deploy strategy, that stages the locally present directory structure to remote in "as is" form. It uses
+ * staging features, but, uploads the "image", folder structure as-is.
  * 
  * @author cstamas
  * @since 1.1
@@ -44,7 +45,6 @@ import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
 @Component( role = DeployStrategy.class, hint = Strategies.IMAGE )
 public class ImageDeployStrategy
     extends AbstractStagingDeployStrategy
-    implements DeployStrategy
 {
     /**
      * Zapper component.
@@ -72,7 +72,8 @@ public class ImageDeployStrategy
         throws ArtifactDeploymentException, MojoExecutionException
     {
         getLogger().info( "Staging remotely locally deployed repository..." );
-        initRemoting( request.getMavenSession(), request.getParameters() );
+        final StagingParameters parameters = getAsStagingParameters( request.getParameters() );
+        initRemoting( request.getMavenSession(), parameters );
 
         final NexusClient nexusClient = getRemoting().getNexusClient();
 
@@ -82,25 +83,25 @@ public class ImageDeployStrategy
             String.format( " * Remote Nexus reported itself as version %s and edition \"%s\"",
                 nexusStatus.getVersion(), nexusStatus.getEditionLong() ) );
 
-        final String profileId = request.getParameters().getStagingProfileId();
+        final String profileId = parameters.getStagingProfileId();
         final Profile stagingProfile = getRemoting().getStagingWorkflowV2Service().selectProfile( profileId );
-        final StagingRepository stagingRepository = beforeUpload( request.getParameters(), stagingProfile );
+        final StagingRepository stagingRepository = beforeUpload( parameters, stagingProfile );
         try
         {
             getLogger().info( " * Uploading locally staged artifacts to profile " + stagingProfile.getName() );
             zapUp( request.getParameters().getStagingDirectoryRoot(), stagingRepository.getUrl() );
             getLogger().info( " * Upload of locally staged artifacts finished." );
-            afterUpload( request.getParameters(), stagingRepository );
+            afterUpload( parameters, stagingRepository );
         }
         catch ( StagingRuleFailuresException e )
         {
-            afterUploadFailure( request.getParameters(), Collections.singletonList( stagingRepository ), e );
+            afterUploadFailure( parameters, Collections.singletonList( stagingRepository ), e );
             getLogger().error( "Remote staging finished with a failure." );
             throw new ArtifactDeploymentException( "Remote staging failed: " + e.getMessage(), e );
         }
         catch ( IOException e )
         {
-            afterUploadFailure( request.getParameters(), Collections.singletonList( stagingRepository ), e );
+            afterUploadFailure( parameters, Collections.singletonList( stagingRepository ), e );
             getLogger().error( "Remote staging finished with a failure." );
             throw new ArtifactDeploymentException( "Remote staging failed: " + e.getMessage(), e );
         }

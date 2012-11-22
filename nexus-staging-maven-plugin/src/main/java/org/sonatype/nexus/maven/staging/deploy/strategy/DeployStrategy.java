@@ -18,17 +18,29 @@ import org.apache.maven.plugin.MojoExecutionException;
 
 /**
  * Deploy strategy encapsulates the actual deploy method.
- * 
+ *
  * @author cstamas
  * @since 1.1
  */
 public interface DeployStrategy
 {
+
+    /**
+     * Returns true if this strategy needs Nexus Client to work. This boils down to having {@code nexusUrl} and
+     * {@code serverId} set in plugin configuration or not. For example, "deferred" and "direct" deploys
+     * does not do any REST Calls, they will return {@code false} here, while others does manipulate remote
+     * Nexus over REST API calls.
+     *
+     * @return {@code true} if Nexus Client is needed for this strategy.
+     * @since 1.3
+     */
+    boolean needsNexusClient();
+
     /**
      * To be invoked at every module's deploy phase (or where deploy mojo is bound), hence, is invoked multiple times
      * (as many times as many modules are built in reactor). Depending on strategy, this method might do nothing, might
      * remotely deploy or locally stage.
-     * 
+     *
      * @param request
      * @throws ArtifactInstallationException
      * @throws ArtifactDeploymentException
@@ -42,7 +54,7 @@ public interface DeployStrategy
      * nexus-staging-maven-plugin defined to run in reactor), hence this method is about to be invoked only once. Before
      * calling this method, all the needed {@link #deployPerModule(DeployPerModuleRequest)} calls are made. Depending on
      * strategy, this method might do remote deploys or just nothing (as in direct deploy case).
-     * 
+     *
      * @param request
      * @throws ArtifactDeploymentException
      * @throws MojoExecutionException

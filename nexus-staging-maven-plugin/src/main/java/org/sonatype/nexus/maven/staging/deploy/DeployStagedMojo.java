@@ -19,7 +19,8 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.sonatype.nexus.maven.staging.deploy.strategy.DeployStrategy;
 import org.sonatype.nexus.maven.staging.deploy.strategy.FinalizeDeployRequest;
 import org.sonatype.nexus.maven.staging.deploy.strategy.Parameters;
-import org.sonatype.nexus.maven.staging.deploy.strategy.ParametersImpl;
+import org.sonatype.nexus.maven.staging.deploy.strategy.StagingParameters;
+import org.sonatype.nexus.maven.staging.deploy.strategy.StagingParametersImpl;
 import org.sonatype.nexus.maven.staging.deploy.strategy.Strategies;
 
 /**
@@ -53,7 +54,7 @@ public class DeployStagedMojo
                     deployStrategy = getDeployStrategy( Strategies.STAGING );
                 }
 
-                final Parameters parameters = buildParameters();
+                final Parameters parameters = buildParameters( deployStrategy );
                 final FinalizeDeployRequest request = new FinalizeDeployRequest( getMavenSession(), parameters );
 
                 deployStrategy.finalizeDeploy( request );
@@ -66,27 +67,6 @@ public class DeployStagedMojo
         else
         {
             getLog().info( "Execution skipped to the last project..." );
-        }
-    }
-
-    @Override
-    protected Parameters buildParameters()
-        throws MojoExecutionException
-    {
-        try
-        {
-            final Parameters parameters =
-                new ParametersImpl( getPluginGav(), getNexusUrl(), getServerId(), getStagingDirectoryRoot(),
-                    isKeepStagingRepositoryOnCloseRuleFailure(), isKeepStagingRepositoryOnFailure(),
-                    isSkipStagingRepositoryClose(), getStagingProfileId(), getStagingRepositoryId(), getDescription(),
-                    getTags() );
-
-            getLog().debug( parameters.toString() );
-            return parameters;
-        }
-        catch ( NullPointerException e )
-        {
-            throw new MojoExecutionException( "Bad config and/or validation!", e );
         }
     }
 }
