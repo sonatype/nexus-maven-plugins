@@ -23,6 +23,7 @@ import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.nexus.maven.staging.deploy.strategy.DeployStrategy;
 import org.sonatype.nexus.maven.staging.deploy.strategy.FinalizeDeployRequest;
 import org.sonatype.nexus.maven.staging.deploy.strategy.Parameters;
+import org.sonatype.nexus.maven.staging.deploy.strategy.ParametersImpl;
 import org.sonatype.nexus.maven.staging.deploy.strategy.StagingParameters;
 import org.sonatype.nexus.maven.staging.deploy.strategy.StagingParametersImpl;
 import org.sonatype.nexus.maven.staging.deploy.strategy.Strategies;
@@ -41,7 +42,8 @@ import org.sonatype.nexus.maven.staging.deploy.strategy.Strategies;
  * @author cstamas
  * @since 1.1
  */
-@Mojo( name = "deploy-staged-repository", requiresProject = false, requiresDirectInvocation = true, requiresOnline = true )
+@Mojo( name = "deploy-staged-repository", requiresProject = false, requiresDirectInvocation = true,
+       requiresOnline = true )
 public class DeployRepositoryMojo
     extends AbstractDeployMojo
 {
@@ -50,6 +52,8 @@ public class DeployRepositoryMojo
      * Specifies an the location of staging directory to which the project artifacts was staged using
      * {@code maven-deploy-plugin} together with switch {@code altDeploymentRepository}. Note: this parameters if of
      * type {@link java.io.File}, it has to point to an existend FS directory!
+     * <p/>
+     * TODO: should this parameter be marked as readOnly=true? As it is mandatory, and must be supplied on CLI as -DreposioryDirectory=...
      */
     @Parameter( property = "repositoryDirectory", required = true )
     private File repositoryDirectory;
@@ -96,5 +100,17 @@ public class DeployRepositoryMojo
         {
             getLog().info( "Execution skipped to the last project..." );
         }
+    }
+
+    /**
+     * This goal override the parent's AbstractStagingMojo#getStagingDirectoryRoot as this Mojo explicitly receives
+     * (and validates) it in the #execute method.
+     *
+     * @return
+     */
+    @Override
+    protected File getStagingDirectoryRoot()
+    {
+        return repositoryDirectory;
     }
 }
