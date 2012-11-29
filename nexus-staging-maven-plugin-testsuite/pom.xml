@@ -147,7 +147,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-invoker-plugin</artifactId>
-            <version>1.6</version>
+            <version>1.8</version>
             <executions>
               <execution>
                 <goals>
@@ -157,7 +157,6 @@
                   <!-- Caused by: https://jira.codehaus.org/browse/MINVOKER-115 -->
                   <!-- Once this above fixed, hopefully this section below will not be needed anymore -->
                   <extraArtifacts>
-                    <extraArtifact>org.sonatype.nexus:nexus-maven-plugins:${project.version}:pom</extraArtifact>
                     <extraArtifact>org.sonatype.nexus:nexus-runtime-platform:${nexus-core.version}:pom</extraArtifact>
                     <extraArtifact>org.apache.maven:apache-maven:2.2.1:zip:bin</extraArtifact>
                     <extraArtifact>org.apache.maven:apache-maven:3.0.4:zip:bin</extraArtifact>
