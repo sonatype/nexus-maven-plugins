@@ -97,11 +97,4 @@ public class DeployRepositoryMojo
             getLog().info( "Execution skipped to the last project..." );
         }
     }
-
-    @Override
-    protected File getStagingDirectoryRoot()
-    {
-        return repositoryDirectory;
-    }
-
 }
