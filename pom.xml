@@ -106,12 +106,16 @@
     <slf4j.version>1.7.2</slf4j.version>
     <logback.version>1.0.7</logback.version>
     <maven.version>3.0.4</maven.version>
+
     <nexus-core.version>2.3-SNAPSHOT</nexus-core.version>
     <nexus-pro.version>2.3-SNAPSHOT</nexus-pro.version>
-    <staging-client.version>2.2-SNAPSHOT</staging-client.version>
+    <nexus-staging.version>2.2-SNAPSHOT</nexus-staging.version>
 
-    <!-- This below is needed to "default" maven-release-plugin (see pluginMgt section) to empty string -->
-    <arguments/>
+    <it.nexus.bundle.groupId>com.sonatype.nexus</it.nexus.bundle.groupId>
+    <it.nexus.bundle.artifactId>nexus-professional-bundle-template</it.nexus.bundle.artifactId>
+    <it.nexus.bundle.version>${nexus-pro.version}</it.nexus.bundle.version>
+
+    <nexus.plugin.type>nexus-plugin</nexus.plugin.type>
   </properties>
 
   <dependencyManagement>
@@ -276,6 +280,38 @@
         <version>${logback.version}</version>
         <type>jar</type>
         <scope>runtime</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>com.sonatype.nexus.plugin</groupId>
+        <artifactId>nexus-staging-plugin</artifactId>
+        <version>${nexus-staging.version}</version>
+        <type>${nexus.plugin.type}</type>
+      </dependency>
+      <dependency>
+        <groupId>com.sonatype.nexus.plugin</groupId>
+        <artifactId>nexus-procurement-plugin</artifactId>
+        <version>${nexus-pro.version}</version>
+        <type>${nexus.plugin.type}</type>
+      </dependency>
+      <dependency>
+        <groupId>com.sonatype.nexus.plugin</groupId>
+        <artifactId>nexus-pgp-plugin</artifactId>
+        <version>${nexus-pro.version}</version>
+        <type>${nexus.plugin.type}</type>
+      </dependency>
+      <dependency>
+        <groupId>com.sonatype.components</groupId>
+        <artifactId>plexus-rule</artifactId>
+        <version>1.5</version>
+        <type>${nexus.plugin.type}</type>
+      </dependency>
+      <dependency>
+        <groupId>${it.nexus.bundle.groupId}</groupId>
+        <artifactId>${it.nexus.bundle.artifactId}</artifactId>
+        <version>${it.nexus.bundle.version}</version>
+        <type>zip</type>
+        <classifier>bundle</classifier>
       </dependency>
 
     </dependencies>

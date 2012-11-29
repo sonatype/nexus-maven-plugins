@@ -65,8 +65,12 @@ public abstract class StagingMavenPluginITSupport
     @Parameterized.Parameters
     public static Collection<Object[]> data()
     {
-        return firstAvailableTestParameters( systemTestParameters(),
-            testParameters( $( "com.sonatype.nexus:nexus-professional:zip:bundle" ) ) ).load();
+        return firstAvailableTestParameters(
+            systemTestParameters(),
+            testParameters(
+                $( "${it.nexus.bundle.groupId}:${it.nexus.bundle.artifactId}:zip:bundle" )
+            )
+        ).load();
     }
 
     protected final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -84,7 +88,21 @@ public abstract class StagingMavenPluginITSupport
     @Override
     protected NexusBundleConfiguration configureNexus( final NexusBundleConfiguration configuration )
     {
-        return new NexusProConfigurator( this ).configure( configuration );
+        return new NexusProConfigurator( this ).configure( configuration )
+            .setPlugins(
+                artifactResolver().resolvePluginFromDependencyManagement(
+                    "com.sonatype.components", "plexus-rule"
+                ),
+                artifactResolver().resolvePluginFromDependencyManagement(
+                    "com.sonatype.nexus.plugin", "nexus-procurement-plugin"
+                ),
+                artifactResolver().resolvePluginFromDependencyManagement(
+                    "com.sonatype.nexus.plugin", "nexus-pgp-plugin"
+                ),
+                artifactResolver().resolvePluginFromDependencyManagement(
+                    "com.sonatype.nexus.plugin", "nexus-staging-plugin"
+                )
+            );
     }
 
     private final String MAVEN_G = "org.apache.maven";

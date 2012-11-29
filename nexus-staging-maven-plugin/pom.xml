@@ -47,7 +47,7 @@
     <dependency>
       <groupId>com.sonatype.nexus.staging</groupId>
       <artifactId>nexus-staging-client</artifactId>
-      <version>${staging-client.version}</version>
+      <version>${nexus-staging.version}</version>
       <scope>compile</scope>
       <optional>true</optional>
     </dependency>
