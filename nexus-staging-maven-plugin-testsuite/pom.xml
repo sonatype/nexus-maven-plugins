@@ -23,7 +23,7 @@
   </parent>
 
   <groupId>org.sonatype.plugins</groupId>
-  <artifactId>nexus-staging-maven-plugin-its</artifactId>
+  <artifactId>nexus-staging-maven-plugin-testsuite</artifactId>
 
   <dependencyManagement>
     <dependencies>

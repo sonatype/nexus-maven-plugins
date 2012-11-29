@@ -283,8 +283,7 @@
 
   <modules>
     <module>nexus-staging-maven-plugin</module>
-    <module>nexus-staging-maven-plugin-its</module>
-    <!--<module>nexus-settings-maven-plugin</module>-->
+    <module>nexus-staging-maven-plugin-testsuite</module>
   </modules>
 
   <!-- pluginManagement and reporting taken from org.sonatype.plugins:plugins-parent:6 -->
