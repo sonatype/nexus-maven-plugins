@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.sonatype.forge</groupId>
     <artifactId>forge-parent</artifactId>
-    <version>22</version>
+    <version>31</version>
     <relativePath/>
   </parent>
 
@@ -107,9 +107,9 @@
     <logback.version>1.0.7</logback.version>
     <maven.version>3.0.4</maven.version>
 
-    <nexus-core.version>2.3-SNAPSHOT</nexus-core.version>
-    <nexus-pro.version>2.3-SNAPSHOT</nexus-pro.version>
-    <nexus-staging.version>2.2-SNAPSHOT</nexus-staging.version>
+    <nexus-core.version>2.3.0</nexus-core.version>
+    <nexus-pro.version>2.3.0</nexus-pro.version>
+    <nexus-staging.version>2.2</nexus-staging.version>
 
     <it.nexus.bundle.groupId>com.sonatype.nexus</it.nexus.bundle.groupId>
     <it.nexus.bundle.artifactId>nexus-professional-bundle-template</it.nexus.bundle.artifactId>
@@ -330,12 +330,9 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
-            <forkMode>once</forkMode>
-            <argLine>-ea -XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError</argLine>
+            <argLine>-XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError</argLine>
             <workingDirectory>${project.build.directory}</workingDirectory>
-            <failIfNoTests>false</failIfNoTests>
             <systemPropertyVariables>
-              <java.awt.headless>true</java.awt.headless>
               <h2.check>false</h2.check>
               <!-- workaround for H2 deadlock -->
             </systemPropertyVariables>
@@ -353,12 +350,9 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-failsafe-plugin</artifactId>
           <configuration>
-            <forkMode>always</forkMode>
-            <argLine>-ea -XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError</argLine>
+            <argLine>-XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError</argLine>
             <workingDirectory>${project.build.directory}</workingDirectory>
-            <failIfNoTests>false</failIfNoTests>
             <systemPropertyVariables>
-              <java.awt.headless>true</java.awt.headless>
               <h2.check>false</h2.check>
               <!-- workaround for H2 deadlock -->
             </systemPropertyVariables>
@@ -391,7 +385,6 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-plugin-plugin</artifactId>
-          <version>3.2</version>
           <executions>
             <execution>
               <id>default-descriptor</id>
@@ -440,7 +433,7 @@
           <plugin>
             <groupId>org.sonatype.plugins</groupId>
             <artifactId>sisu-maven-bridge-maven-plugin</artifactId>
-            <version>3.0-SNAPSHOT</version>
+            <version>3.0</version>
             <executions>
               <execution>
                 <goals>
