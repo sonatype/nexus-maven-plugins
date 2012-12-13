@@ -69,6 +69,8 @@ that's baseURL is set plugin configuration.
 This mode performs full staging workflow, from repository creation to closing it in case of success or dropping the repository
 in case of (transport or staging rule) failure.
 
+For supported staging workflows, refer to [Staging Workflows](WORKFLOWS.md) page.
+
 ### Image upload
 
 This mode performs full staging workflow, from repository creation to closing it in case of success or dropping the repository
