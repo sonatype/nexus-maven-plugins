@@ -12,7 +12,7 @@
     Eclipse Foundation. All other trademarks are the property of their respective owners.
 
 -->
-# Nexus Staging Maven Plugin (for version 1.1)
+# Nexus Staging Maven Plugin
 
 Maven Plugin to control Nexus Staging workflow. While the maven plugin ("staging client") part is OSS, to use staging features it need a Sonatype Nexus Professional instance 2.1+ on the server side!
 Plugin is compatible with Maven 2.2.1 and Maven 3.0.x.
@@ -69,7 +69,7 @@ that's baseURL is set plugin configuration.
 This mode performs full staging workflow, from repository creation to closing it in case of success or dropping the repository
 in case of (transport or staging rule) failure.
 
-For supported staging workflows, refer to [Staging Workflows](WORKFLOWS.md) page.
+For supported staging workflows, refer to [Staging Workflows](nexus-staging-maven-plugin/WORKFLOWS.md) page.
 
 ### Image upload
 
