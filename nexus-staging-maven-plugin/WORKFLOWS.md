@@ -18,21 +18,21 @@
 Maven Plugin to control Nexus Staging supports several "scenarios" or "workflows" to perform staging. 
 These are:
 
-* [One Shot][]
-* [Two Shots][]
+* [One Shot]()
+* [Two Shots]()
 
 As for profile selection multiple strategies might be used
 
-* [Server Side Matching][]
-* [Targeted Profile][]
+* [Server Side Matching]()
+* [Targeted Profile]()
 
 One special (advanced!) mode that takes over control on both, workflow and staging repository management:
 
-* [Targeted Repository][]
+* [Targeted Repository]()
 
 Finally, some actions you might perform post staging:
 
-* [Post Staging][]
+* [Post Staging]()
 
 
 ## One Shot
@@ -40,7 +40,7 @@ Finally, some actions you might perform post staging:
 This is the simplest, most used, and _recommended_ way to use Staging. "One Shot" refers to case where Maven invocation
 results as one or more (closed) staging repository on Nexus. Naturally, this covers single and multi module (aka "reactor build")
 builds (note: depending on matching used, there might be _multiple_ staging repositories
-created, but this is an advanced use of the plugin! In majority of the cases the one-build one-staging-repo
+created, but that would be an advanced use of this plugin! In majority of the cases the one-build one-staging-repo
 ratio stands).
 
 Example invocation:
@@ -97,7 +97,7 @@ profile settings (ie. exceptionally, some other profile should be used instead o
 for this build).
 
 The profile ID might configured as plugin configuration section, but it also might be passed
-in as CLI parameter (the it applies to whole reactor build). Also, you might have a multi
+in as CLI parameter (then it gets applied to whole reactor build). Also, you might have a multi
 module build that has modules specifying different profiles in plugin configuration section.
 
 Example invocation in CLI:
@@ -117,7 +117,7 @@ TODO: we need an indirection level here maybe?
 Advanced use case.
 
 In all cases above, the build still, selected a profile, created and managed a staging repository: 
-it selected profile by matching of by ID, it created staging repository, deployed to it 
+it selected profile by matching or by user specified ID, it created staging repository, deployed to it 
 and finally closed it, so it _managed the staging repository lifecycle_. In this mode, 
 some 3rd party entity invokes the staging repository creation, shares the created repository ID among as
 many Maven invocations as needed (even on different hosts) but _the plugin does not manage the staging 
@@ -189,8 +189,7 @@ do you want to execute builds in parallel or sequentially one by one...
   * Closing connection #0
 ```
 
-This results in _one_ staging repository, holding _all the artifacts_ that are resulting
-from all the builds invoked in step 2.
+This results in _artifacts of all maven invocations happened in step 2 being deployed into one staging repository_.
 
 
 ## Post Staging
