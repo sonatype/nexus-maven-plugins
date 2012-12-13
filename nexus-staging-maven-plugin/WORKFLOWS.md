@@ -18,21 +18,21 @@
 Maven Plugin to control Nexus Staging supports several "scenarios" or "workflows" to perform staging. 
 These are:
 
-* [One Shot]()
-* [Two Shots]()
+* [One Shot](#one-shot)
+* [Two Shots](#two-shots)
 
 As for profile selection multiple strategies might be used
 
-* [Server Side Matching]()
-* [Targeted Profile]()
+* [Server Side Matching](#server-side-matching)
+* [Targeted Profile](#targeted-profile)
 
 One special (advanced!) mode that takes over control on both, workflow and staging repository management:
 
-* [Targeted Repository]()
+* [Targeted Repository](#targeted-repository)
 
 Finally, some actions you might perform post staging:
 
-* [Post Staging]()
+* [Post Staging](#post-staging)
 
 
 ## One Shot
