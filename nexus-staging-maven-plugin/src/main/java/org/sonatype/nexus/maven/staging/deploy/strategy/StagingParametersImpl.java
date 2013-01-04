@@ -16,6 +16,7 @@ import java.io.File;
 import java.util.Map;
 
 import org.codehaus.plexus.util.StringUtils;
+
 import com.google.common.base.Preconditions;
 
 public class StagingParametersImpl
@@ -37,16 +38,16 @@ public class StagingParametersImpl
 
     private final String stagingRepositoryId;
 
-    private final String userDescriptionOfAction;
+    private final String actionDescription;
 
     private final Map<String, String> tags;
 
-    public StagingParametersImpl( String pluginGav, String nexusUrl, String serverId, File stagingDirectoryRoot,
+    public StagingParametersImpl( String pluginGav, String rootProjectGav, String nexusUrl, String serverId, File stagingDirectoryRoot,
         boolean keepStagingRepositoryOnCloseRuleFailure, boolean keepStagingRepositoryOnFailure,
         boolean skipStagingRepositoryClose, String stagingProfileId, String stagingRepositoryId,
-        String userDescriptionOfAction, Map<String, String> tags )
+        String actionDescription, Map<String, String> tags )
     {
-        super( pluginGav, stagingDirectoryRoot );
+        super( pluginGav, rootProjectGav, stagingDirectoryRoot );
         this.nexusUrl = Preconditions.checkNotNull( nexusUrl );
         this.serverId = Preconditions.checkNotNull( serverId );
         this.keepStagingRepositoryOnCloseRuleFailure = keepStagingRepositoryOnCloseRuleFailure;
@@ -54,7 +55,7 @@ public class StagingParametersImpl
         this.skipStagingRepositoryClose = skipStagingRepositoryClose;
         this.stagingProfileId = stagingProfileId;
         this.stagingRepositoryId = stagingRepositoryId;
-        this.userDescriptionOfAction = userDescriptionOfAction;
+        this.actionDescription = actionDescription;
         this.tags = tags;
     }
 
@@ -101,9 +102,16 @@ public class StagingParametersImpl
     }
 
     @Override
-    public String getUserDescriptionOfAction()
+    public String getActionDescription( final String action )
     {
-        return userDescriptionOfAction;
+        if ( StringUtils.isBlank( actionDescription ) )
+        {
+            return getRootProjectGav();
+        }
+        else
+        {
+            return actionDescription + " (" + getRootProjectGav() + ")";
+        }
     }
 
     public Map<String, String> getTags()
@@ -112,21 +120,11 @@ public class StagingParametersImpl
     }
 
     @Override
-    public String getDefaultedUserDescriptionOfAction( String action )
-    {
-        String result = getUserDescriptionOfAction();
-        if ( StringUtils.isBlank( result ) )
-        {
-            result = action + " by " + getPluginGav();
-        }
-        return result;
-    }
-
-    @Override
     public String toString()
     {
         return "ParametersImpl{" +
             "pluginGav='" + getPluginGav() + '\'' +
+            ", rootProjectGav=" + getRootProjectGav() +
             ", nexusUrl='" + nexusUrl + '\'' +
             ", serverId='" + serverId + '\'' +
             ", stagingDirectoryRoot=" + getStagingDirectoryRoot() +
@@ -135,7 +133,7 @@ public class StagingParametersImpl
             ", skipStagingRepositoryClose=" + skipStagingRepositoryClose +
             ", stagingProfileId='" + stagingProfileId + '\'' +
             ", stagingRepositoryId='" + stagingRepositoryId + '\'' +
-            ", userDescriptionOfAction='" + userDescriptionOfAction + '\'' +
+            ", actionDescription='" + actionDescription + '\'' +
             ", tags=" + tags +
             '}';
     }

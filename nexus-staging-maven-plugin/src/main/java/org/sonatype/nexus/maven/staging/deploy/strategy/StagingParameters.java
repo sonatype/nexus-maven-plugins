@@ -12,7 +12,6 @@
  */
 package org.sonatype.nexus.maven.staging.deploy.strategy;
 
-import java.io.File;
 import java.util.Map;
 
 /**
@@ -37,9 +36,7 @@ public interface StagingParameters
 
     String getStagingRepositoryId();
 
-    String getUserDescriptionOfAction();
+    String getActionDescription( String action );
 
     Map<String, String> getTags();
-
-    String getDefaultedUserDescriptionOfAction( String action );
 }

@@ -107,8 +107,8 @@ public abstract class AbstractStagingMojo
      * The repository "description" to pass to Nexus when repository staging workflow step is made. If none passed in,
      * plugin defaults are applied.
      */
-    @Parameter( property = "description" )
-    private String description;
+    @Parameter( property = "stagingDescription" )
+    private String stagingDescription;
 
     /**
      * Controls whether the staging repository is kept or not (it will be dropped) in case of staging rule failure when
@@ -130,9 +130,9 @@ public abstract class AbstractStagingMojo
         return serverId;
     }
 
-    protected String getDescription()
+    protected String getStagingDescription()
     {
-        return description;
+        return stagingDescription;
     }
 
     public boolean isKeepStagingRepositoryOnCloseRuleFailure()
@@ -153,6 +153,12 @@ public abstract class AbstractStagingMojo
     protected String getPluginGav()
     {
         return pluginGroupId + ":" + pluginArtifactId + ":" + pluginVersion;
+    }
+
+    protected String getRootProjectGav()
+    {
+        final MavenProject rootProject = getFirstProjectWithThisPluginDefined();
+        return rootProject.getGroupId() + ":" + rootProject.getArtifactId() + ":" + rootProject.getVersion();
     }
 
     // == common methods

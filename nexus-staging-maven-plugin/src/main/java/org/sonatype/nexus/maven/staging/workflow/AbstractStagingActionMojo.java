@@ -90,15 +90,19 @@ public abstract class AbstractStagingActionMojo
 
     protected String getDefaultDescriptionForAction( final String action )
     {
-        return action + " by " + getPluginGav();
+        return getRootProjectGav();
     }
 
     protected String getDescriptionWithDefaultsForAction( final String action )
     {
-        String result = getDescription();
+        String result = getStagingDescription();
         if ( StringUtils.isBlank( result ) )
         {
             result = getDefaultDescriptionForAction( action );
+        }
+        else
+        {
+            result = result + " (" + getDefaultDescriptionForAction( action ) + ")";
         }
         return result;
     }

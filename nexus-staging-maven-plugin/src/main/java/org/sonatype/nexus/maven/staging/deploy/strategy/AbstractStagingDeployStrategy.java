@@ -167,7 +167,7 @@ public abstract class AbstractStagingDeployStrategy
             {
                 String createdStagingRepositoryId =
                     stagingService.startStaging( stagingProfile,
-                                                 parameters.getDefaultedUserDescriptionOfAction( "Started" ),
+                                                 parameters.getActionDescription( "Started" ),
                                                  parameters.getTags() );
                 // store the one just created for us, as it means we need to "babysit" it (close or drop, depending
                 // on outcome)
@@ -275,7 +275,7 @@ public abstract class AbstractStagingDeployStrategy
                             " * Closing staging repository with ID \"" + stagingRepository.getRepositoryId() + "\"." );
                         stagingService.finishStaging( stagingRepository.getProfile(),
                                                       stagingRepository.getRepositoryId(),
-                                                      parameters.getDefaultedUserDescriptionOfAction( "Closed" ) );
+                                                      parameters.getActionDescription( "Closed" ) );
                     }
                     catch ( StagingRuleFailuresException e )
                     {
@@ -378,7 +378,7 @@ public abstract class AbstractStagingDeployStrategy
                     getLogger().error(
                         " * Dropping failed staging repository with ID \"" + stagingRepository.getRepositoryId()
                             + "\" (" + msg + ")." );
-                    stagingService.dropStagingRepositories( parameters.getDefaultedUserDescriptionOfAction( "Dropped" )
+                    stagingService.dropStagingRepositories( parameters.getActionDescription( "Dropped" )
                                                                 + " (" + msg + ").",
                                                             stagingRepository.getRepositoryId() );
                 }

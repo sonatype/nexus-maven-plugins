@@ -13,7 +13,6 @@
 package org.sonatype.nexus.maven.staging.deploy.strategy;
 
 import java.io.File;
-import java.util.Map;
 
 /**
  * Execution parameters, mostly coming from Mojo parameters.
@@ -23,6 +22,8 @@ import java.util.Map;
 public interface Parameters
 {
     String getPluginGav();
+    
+    String getRootProjectGav();
 
     File getStagingDirectoryRoot();
 }
