@@ -46,13 +46,6 @@
     <url>https://issues.sonatype.org/browse/NEXUS</url>
   </issueManagement>
 
-  <distributionManagement>
-    <site>
-      <id>sonatype.org-sites</id>
-      <url>${pluginsSiteBaseUrl}/${project.artifactId}</url>
-    </site>
-  </distributionManagement>
-
   <scm>
     <url>https://github.com/sonatype/nexus-maven-plugins</url>
     <connection>scm:git:git://github.com/sonatype/nexus-maven-plugins.git</connection>
