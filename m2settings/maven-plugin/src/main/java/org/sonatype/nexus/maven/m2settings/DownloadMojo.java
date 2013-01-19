@@ -41,14 +41,11 @@ import org.sonatype.nexus.client.rest.UsernamePasswordAuthenticationInfo;
 import org.sonatype.nexus.client.rest.jersey.JerseyNexusClientFactory;
 
 import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
 import java.util.List;
@@ -253,6 +250,8 @@ public class DownloadMojo
             new JerseyTemplatesSubsystemFactory(),
             new JerseyUserTokenSubsystemFactory()
         );
+
+        // TODO: Sort out how to configure proxy muck here...
 
         return factory.createFor(baseUrl, new UsernamePasswordAuthenticationInfo(username, password));
     }
