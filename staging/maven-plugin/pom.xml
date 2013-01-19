@@ -40,28 +40,28 @@
     <dependency>
       <groupId>com.sonatype.nexus.staging</groupId>
       <artifactId>nexus-staging-client</artifactId>
-      <optional>true</optional>
+      <!--<optional>true</optional>-->
     </dependency>
 
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-    </dependency>
+    <!--<dependency>-->
+      <!--<groupId>org.slf4j</groupId>-->
+      <!--<artifactId>slf4j-api</artifactId>-->
+    <!--</dependency>-->
 
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-core</artifactId>
-    </dependency>
+    <!--<dependency>-->
+      <!--<groupId>org.slf4j</groupId>-->
+      <!--<artifactId>jcl-over-slf4j</artifactId>-->
+    <!--</dependency>-->
 
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-    </dependency>
+    <!--<dependency>-->
+      <!--<groupId>ch.qos.logback</groupId>-->
+      <!--<artifactId>logback-core</artifactId>-->
+    <!--</dependency>-->
 
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>jcl-over-slf4j</artifactId>
-    </dependency>
+    <!--<dependency>-->
+      <!--<groupId>ch.qos.logback</groupId>-->
+      <!--<artifactId>logback-classic</artifactId>-->
+    <!--</dependency>-->
 
     <dependency>
       <groupId>org.sonatype.spice.zapper</groupId>
@@ -78,28 +78,27 @@
       <artifactId>sisu-charger</artifactId>
     </dependency>
 
-    <!-- Plexus container -->
-    <dependency>
-      <groupId>org.sonatype.sisu</groupId>
-      <artifactId>sisu-inject-plexus</artifactId>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.sonatype.sisu</groupId>
-          <artifactId>sisu-guava</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
+    <!--<dependency>-->
+      <!--<groupId>org.sonatype.sisu</groupId>-->
+      <!--<artifactId>sisu-inject-plexus</artifactId>-->
+      <!--<scope>provided</scope>-->
+      <!--<exclusions>-->
+        <!--<exclusion>-->
+          <!--<groupId>org.sonatype.sisu</groupId>-->
+          <!--<artifactId>sisu-guava</artifactId>-->
+        <!--</exclusion>-->
+      <!--</exclusions>-->
+    <!--</dependency>-->
 
-    <dependency>
-      <groupId>javax.inject</groupId>
-      <artifactId>javax.inject</artifactId>
-    </dependency>
+    <!--<dependency>-->
+      <!--<groupId>javax.inject</groupId>-->
+      <!--<artifactId>javax.inject</artifactId>-->
+    <!--</dependency>-->
 
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-    </dependency>
+    <!--<dependency>-->
+      <!--<groupId>com.google.guava</groupId>-->
+      <!--<artifactId>guava</artifactId>-->
+    <!--</dependency>-->
 
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
@@ -174,7 +173,7 @@
             <configuration>
               <descriptors>
                 <descriptor>${project.build.directory}/components.xml</descriptor>
-                <descriptor>${basedir}/src/main/resources/META-INF/shaded-components.xml</descriptor>
+                <descriptor>${project.basedir}/src/main/resources/META-INF/shaded-components.xml</descriptor>
               </descriptors>
             </configuration>
           </execution>
@@ -215,16 +214,6 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-plugin-plugin</artifactId>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

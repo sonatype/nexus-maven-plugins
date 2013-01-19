@@ -55,8 +55,8 @@
   </scm>
 
   <properties>
-    <nexus.version>2.3.0</nexus.version>
-    <sisu-inject.version>2.3.1</sisu-inject.version>
+    <nexus.version>2.4-SNAPSHOT</nexus.version>
+    <sisu-inject.version>2.3.2</sisu-inject.version>
     <slf4j.version>1.7.2</slf4j.version>
     <logback.version>1.0.7</logback.version>
     <maven.version>3.0.4</maven.version>
@@ -78,8 +78,20 @@
       </dependency>
 
       <dependency>
+        <groupId>javax.inject</groupId>
+        <artifactId>javax.inject</artifactId>
+        <version>1</version>
+      </dependency>
+
+      <dependency>
         <groupId>org.sonatype.sisu</groupId>
         <artifactId>sisu-inject-bean</artifactId>
+        <version>${sisu-inject.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.sonatype.sisu</groupId>
+        <artifactId>sisu-inject-plexus</artifactId>
         <version>${sisu-inject.version}</version>
       </dependency>
 
@@ -94,20 +106,6 @@
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
         <version>13.0.1</version>
-      </dependency>
-
-      <dependency>
-        <groupId>javax.inject</groupId>
-        <artifactId>javax.inject</artifactId>
-        <version>1</version>
-      </dependency>
-
-      <!-- Plexus support (the version should be tied to SISU used ones!) -->
-      <!-- Plexus needs to be compiled against, is specific (unlike JSR330-enabled SISU is) -->
-      <dependency>
-        <groupId>org.sonatype.sisu</groupId>
-        <artifactId>sisu-inject-plexus</artifactId>
-        <version>${sisu-inject.version}</version>
       </dependency>
 
       <dependency>
@@ -319,8 +317,8 @@
   </dependencyManagement>
 
   <modules>
-    <module>staging</module>
     <module>m2settings</module>
+    <module>staging</module>
   </modules>
 
   <build>
@@ -385,14 +383,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-plugin-plugin</artifactId>
-          <executions>
-            <execution>
-              <goals>
-                <goal>descriptor</goal>
-                <goal>helpmojo</goal>
-              </goals>
-            </execution>
-          </executions>
+          <version>3.2</version>
         </plugin>
 
         <plugin>
@@ -403,18 +394,18 @@
       </plugins>
     </pluginManagement>
 
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>enforce-dependencies</id>
-            <phase>none</phase>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
+    <!--<plugins>-->
+    <!--<plugin>-->
+    <!--<groupId>org.apache.maven.plugins</groupId>-->
+    <!--<artifactId>maven-enforcer-plugin</artifactId>-->
+    <!--<executions>-->
+    <!--<execution>-->
+    <!--<id>enforce-dependencies</id>-->
+    <!--<phase>none</phase>-->
+    <!--</execution>-->
+    <!--</executions>-->
+    <!--</plugin>-->
+    <!--</plugins>-->
   </build>
 
   <profiles>
