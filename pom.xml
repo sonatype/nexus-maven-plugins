@@ -26,7 +26,7 @@
 
   <groupId>org.sonatype.nexus.maven</groupId>
   <artifactId>nexus-maven-plugins</artifactId>
-  <version>1.3.1-SNAPSHOT</version>
+  <version>1.4-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <licenses>
@@ -36,48 +36,9 @@
     </license>
   </licenses>
 
-  <mailingLists>
-    <mailingList>
-      <name>Nexus Users</name>
-      <subscribe>nexus-user-subscribe@sonatype.org</subscribe>
-      <unsubscribe>nexus-user-unsubscribe@sonatype.org</unsubscribe>
-      <post>nexus-user@sonatype.org</post>
-      <archive>http://nexus.sonatype.org/mailing-list-user-archives.html</archive>
-    </mailingList>
-    <mailingList>
-      <name>Nexus Professional Users</name>
-      <subscribe>nexus-pro-users-subscribe@sonatype.org</subscribe>
-      <unsubscribe>nexus-pro-users-unsubscribe@sonatype.org</unsubscribe>
-      <post>nexus-pro-users@sonatype.org</post>
-      <archive>http://nexus.sonatype.org/mailing-list-pro-user-archives.html</archive>
-    </mailingList>
-    <mailingList>
-      <name>Nexus Developers</name>
-      <subscribe>nexus-dev-subscribe@sonatype.org</subscribe>
-      <unsubscribe>nexus-dev-unsubscribe@sonatype.org</unsubscribe>
-      <post>nexus-dev@sonatype.org</post>
-      <archive>http://nexus.sonatype.org/mailing-list-dev-archives.html</archive>
-    </mailingList>
-    <mailingList>
-      <name>Nexus SCM</name>
-      <subscribe>nexus-scm-subscribe@sonatype.org</subscribe>
-      <unsubscribe>nexus-scm-unsubscribe@sonatype.org</unsubscribe>
-    </mailingList>
-    <mailingList>
-      <name>Nexus Issues</name>
-      <subscribe>nexus-issues-subscribe@sonatype.org</subscribe>
-      <unsubscribe>nexus-issues-unsubscribe@sonatype.org</unsubscribe>
-    </mailingList>
-    <mailingList>
-      <name>Nexus CI</name>
-      <subscribe>nexus-ci-subscribe@sonatype.org</subscribe>
-      <unsubscribe>nexus-ci-unsubscribe@sonatype.org</unsubscribe>
-    </mailingList>
-  </mailingLists>
-
   <ciManagement>
-    <system>Hudson</system>
-    <url>https://builds.sonatype.org/job/nexus-maven-plugins/</url>
+    <system>Bamboo</system>
+    <url>https://bamboo.zion.sonatype.com/</url>
   </ciManagement>
 
   <issueManagement>
@@ -114,7 +75,7 @@
     <it.nexus.bundle.artifactId>nexus-professional-bundle-template</it.nexus.bundle.artifactId>
     <it.nexus.bundle.version>${nexus-pro.version}</it.nexus.bundle.version>
 
-    <nexus.plugin.type>nexus-plugin</nexus.plugin.type>
+    <nexus-plugin.type>nexus-plugin</nexus-plugin.type>
   </properties>
 
   <dependencyManagement>
@@ -129,6 +90,7 @@
         <version>${sisu-inject.version}</version>
         <scope>runtime</scope>
       </dependency>
+
       <dependency>
         <groupId>org.sonatype.sisu</groupId>
         <artifactId>sisu-guice</artifactId>
@@ -136,12 +98,14 @@
         <classifier>no_aop</classifier>
         <scope>runtime</scope>
       </dependency>
+
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
         <version>13.0.1</version>
         <scope>compile</scope>
       </dependency>
+
       <dependency>
         <groupId>javax.inject</groupId>
         <artifactId>javax.inject</artifactId>
@@ -157,18 +121,21 @@
         <version>${sisu-inject.version}</version>
         <scope>compile</scope>
       </dependency>
+
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-component-annotations</artifactId>
         <version>1.5.5</version>
         <scope>compile</scope>
       </dependency>
+
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-classworlds</artifactId>
         <version>2.4</version>
         <scope>compile</scope>
       </dependency>
+
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-utils</artifactId>
@@ -189,12 +156,14 @@
           </exclusion>
         </exclusions>
       </dependency>
+
       <dependency>
         <groupId>org.apache.maven.plugin-tools</groupId>
         <artifactId>maven-plugin-annotations</artifactId>
         <version>3.2</version>
         <scope>provided</scope>
       </dependency>
+
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-core</artifactId>
@@ -223,6 +192,7 @@
           </exclusion>
         </exclusions>
       </dependency>
+
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-compat</artifactId>
@@ -235,6 +205,7 @@
           </exclusion>
         </exclusions>
       </dependency>
+
       <dependency>
         <groupId>org.sonatype.aether</groupId>
         <artifactId>aether-api</artifactId>
@@ -252,6 +223,7 @@
         <type>jar</type>
         <scope>compile</scope>
       </dependency>
+
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>jcl-over-slf4j</artifactId>
@@ -259,6 +231,7 @@
         <type>jar</type>
         <scope>runtime</scope>
       </dependency>
+
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>jul-to-slf4j</artifactId>
@@ -266,6 +239,7 @@
         <type>jar</type>
         <scope>runtime</scope>
       </dependency>
+
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-core</artifactId>
@@ -273,6 +247,7 @@
         <type>jar</type>
         <scope>runtime</scope>
       </dependency>
+
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
@@ -285,26 +260,30 @@
         <groupId>com.sonatype.nexus.plugin</groupId>
         <artifactId>nexus-staging-plugin</artifactId>
         <version>${nexus-staging.version}</version>
-        <type>${nexus.plugin.type}</type>
+        <type>${nexus-plugin.type}</type>
       </dependency>
+
       <dependency>
         <groupId>com.sonatype.nexus.plugin</groupId>
         <artifactId>nexus-procurement-plugin</artifactId>
         <version>${nexus-pro.version}</version>
-        <type>${nexus.plugin.type}</type>
+        <type>${nexus-plugin.type}</type>
       </dependency>
+
       <dependency>
         <groupId>com.sonatype.nexus.plugin</groupId>
         <artifactId>nexus-pgp-plugin</artifactId>
         <version>${nexus-pro.version}</version>
-        <type>${nexus.plugin.type}</type>
+        <type>${nexus-plugin.type}</type>
       </dependency>
+
       <dependency>
         <groupId>com.sonatype.components</groupId>
         <artifactId>plexus-rule</artifactId>
         <version>1.5</version>
-        <type>${nexus.plugin.type}</type>
+        <type>${nexus-plugin.type}</type>
       </dependency>
+
       <dependency>
         <groupId>${it.nexus.bundle.groupId}</groupId>
         <artifactId>${it.nexus.bundle.artifactId}</artifactId>
@@ -313,12 +292,19 @@
         <classifier>bundle</classifier>
       </dependency>
 
+      <dependency>
+        <groupId>org.sonatype.sisu.litmus</groupId>
+        <artifactId>litmus-testsupport</artifactId>
+        <version>1.5.1</version>
+        <scope>test</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
   <modules>
     <module>nexus-staging-maven-plugin</module>
     <module>nexus-staging-maven-plugin-testsuite</module>
+    <module>m2settings</module>
   </modules>
 
   <!-- pluginManagement and reporting taken from org.sonatype.plugins:plugins-parent:6 -->
@@ -468,7 +454,6 @@
       <build>
         <pluginManagement>
           <plugins>
-            <!-- "new" M2E like 1.0 "IndIgor" -->
             <plugin>
               <groupId>org.eclipse.m2e</groupId>
               <artifactId>lifecycle-mapping</artifactId>
