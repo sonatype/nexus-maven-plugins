@@ -16,8 +16,6 @@
 
 Collection of Apache Maven plugins supporting Nexus Suite.
 
-This collection is about to _buy out the deprecated nexus-maven-plugin_.
-
 ## Plugins available
 
 * [Nexus Staging Plugin](https://github.com/sonatype/nexus-maven-plugins/tree/master/nexus-staging-maven-plugin) - Maven Plugin to perform Sonatype Nexus Staging Workflow steps from your build.
@@ -28,6 +26,3 @@ Unless noted otherwise in corresponding plugin documentation, following are the 
 
 * Apache Maven: supported versions are 2.2.1 or 3.0.3+
 * Java: Java 1.6+
-
-Thanks, and have fun,  
-~t~
