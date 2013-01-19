@@ -21,13 +21,14 @@
     <groupId>org.sonatype.forge</groupId>
     <artifactId>forge-parent</artifactId>
     <version>31</version>
-    <relativePath />
+    <relativePath/>
   </parent>
 
   <groupId>org.sonatype.nexus.maven</groupId>
   <artifactId>nexus-maven-plugins</artifactId>
-  <version>1.4-SNAPSHOT</version>
   <packaging>pom</packaging>
+
+  <version>1.4-SNAPSHOT</version>
 
   <licenses>
     <license>
@@ -68,6 +69,7 @@
     <it.nexus.bundle.artifactId>nexus-professional-bundle-template</it.nexus.bundle.artifactId>
     <it.nexus.bundle.version>${nexus-pro.version}</it.nexus.bundle.version>
 
+    <!-- See 'idea' profile. -->
     <nexus-plugin.type>nexus-plugin</nexus-plugin.type>
   </properties>
 
@@ -462,6 +464,16 @@
           </plugin>
         </plugins>
       </build>
+    </profile>
+
+    <!--
+    Support for loading Nexus plugin projects in Intellij IDEA; as it doesn't handle the 'nexus-plugin' packaging WRT to dependency calculations.
+    -->
+    <profile>
+      <id>idea</id>
+      <properties>
+        <nexus-plugin.type>jar</nexus-plugin.type>
+      </properties>
     </profile>
 
     <profile>
