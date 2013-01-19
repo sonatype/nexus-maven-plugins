@@ -33,35 +33,58 @@
     </dependency>
 
     <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-core</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>org.apache.maven.plugin-tools</groupId>
       <artifactId>maven-plugin-annotations</artifactId>
+      <scope>provided</scope>
     </dependency>
 
-    <dependency>
-      <groupId>com.sonatype.nexus.m2-settings-template</groupId>
-      <artifactId>nexus-m2-settings-template-model</artifactId>
-    </dependency>
+    <!--<dependency>-->
+      <!--<groupId>com.sonatype.nexus.m2-settings-template</groupId>-->
+      <!--<artifactId>nexus-m2-settings-template-model</artifactId>-->
+    <!--</dependency>-->
 
-    <dependency>
-      <groupId>com.sonatype.nexus.m2-settings-template</groupId>
-      <artifactId>nexus-m2-settings-template-client</artifactId>
-    </dependency>
+    <!--<dependency>-->
+      <!--<groupId>com.sonatype.nexus.m2-settings-template</groupId>-->
+      <!--<artifactId>nexus-m2-settings-template-client</artifactId>-->
+    <!--</dependency>-->
 
-    <dependency>
-      <groupId>com.sonatype.nexus.usertoken</groupId>
-      <artifactId>nexus-usertoken-model</artifactId>
-    </dependency>
+    <!--<dependency>-->
+      <!--<groupId>com.sonatype.nexus.usertoken</groupId>-->
+      <!--<artifactId>nexus-usertoken-model</artifactId>-->
+    <!--</dependency>-->
 
-    <dependency>
-      <groupId>com.sonatype.nexus.usertoken</groupId>
-      <artifactId>nexus-usertoken-client</artifactId>
-    </dependency>
+    <!--<dependency>-->
+      <!--<groupId>com.sonatype.nexus.usertoken</groupId>-->
+      <!--<artifactId>nexus-usertoken-client</artifactId>-->
+    <!--</dependency>-->
 
-    <dependency>
-      <groupId>org.sonatype.sisu.litmus</groupId>
-      <artifactId>litmus-testsupport</artifactId>
-      <scope>test</scope>
-    </dependency>
+    <!--<dependency>-->
+      <!--<groupId>org.sonatype.sisu.litmus</groupId>-->
+      <!--<artifactId>litmus-testsupport</artifactId>-->
+      <!--<scope>test</scope>-->
+    <!--</dependency>-->
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-plugin-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>descriptor</goal>
+              <goal>helpmojo</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>

@@ -56,11 +56,11 @@
 
   <properties>
     <nexus.version>2.4-SNAPSHOT</nexus.version>
-    <sisu-inject.version>2.3.2</sisu-inject.version>
-    <slf4j.version>1.7.2</slf4j.version>
-    <logback.version>1.0.7</logback.version>
+    <!--<sisu-inject.version>2.3.2</sisu-inject.version>-->
+    <!--<slf4j.version>1.7.2</slf4j.version>-->
     <maven.version>3.0.4</maven.version>
 
+    <!-- Nexus integration-tests configuration -->
     <it.nexus.bundle.groupId>com.sonatype.nexus</it.nexus.bundle.groupId>
     <it.nexus.bundle.artifactId>nexus-professional-bundle-template</it.nexus.bundle.artifactId>
     <it.nexus.bundle.version>${nexus.version}</it.nexus.bundle.version>
@@ -71,36 +71,30 @@
 
   <dependencyManagement>
     <dependencies>
-      <dependency>
-        <groupId>org.sonatype.maven</groupId>
-        <artifactId>mojo-commons</artifactId>
-        <version>1.1</version>
-      </dependency>
-
-      <dependency>
-        <groupId>javax.inject</groupId>
-        <artifactId>javax.inject</artifactId>
-        <version>1</version>
-      </dependency>
+      <!--<dependency>-->
+        <!--<groupId>javax.inject</groupId>-->
+        <!--<artifactId>javax.inject</artifactId>-->
+        <!--<version>1</version>-->
+      <!--</dependency>-->
 
       <dependency>
         <groupId>org.sonatype.sisu</groupId>
         <artifactId>sisu-inject-bean</artifactId>
-        <version>${sisu-inject.version}</version>
+        <version>2.3.2</version>
       </dependency>
 
-      <dependency>
-        <groupId>org.sonatype.sisu</groupId>
-        <artifactId>sisu-inject-plexus</artifactId>
-        <version>${sisu-inject.version}</version>
-      </dependency>
+      <!--<dependency>-->
+        <!--<groupId>org.sonatype.sisu</groupId>-->
+        <!--<artifactId>sisu-inject-plexus</artifactId>-->
+        <!--<version>${sisu-inject.version}</version>-->
+      <!--</dependency>-->
 
-      <dependency>
-        <groupId>org.sonatype.sisu</groupId>
-        <artifactId>sisu-guice</artifactId>
-        <classifier>no_aop</classifier>
-        <version>3.1.2</version>
-      </dependency>
+      <!--<dependency>-->
+        <!--<groupId>org.sonatype.sisu</groupId>-->
+        <!--<artifactId>sisu-guice</artifactId>-->
+        <!--<classifier>no_aop</classifier>-->
+        <!--<version>3.1.2</version>-->
+      <!--</dependency>-->
 
       <dependency>
         <groupId>com.google.guava</groupId>
@@ -114,11 +108,11 @@
         <version>1.5.5</version>
       </dependency>
 
-      <dependency>
-        <groupId>org.codehaus.plexus</groupId>
-        <artifactId>plexus-classworlds</artifactId>
-        <version>2.4</version>
-      </dependency>
+      <!--<dependency>-->
+        <!--<groupId>org.codehaus.plexus</groupId>-->
+        <!--<artifactId>plexus-classworlds</artifactId>-->
+        <!--<version>2.4</version>-->
+      <!--</dependency>-->
 
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
@@ -156,17 +150,10 @@
         </exclusions>
       </dependency>
 
-      <!-- Maven and Maven plugin related stuff -->
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-plugin-api</artifactId>
         <version>${maven.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.codehaus.plexus</groupId>
-            <artifactId>plexus-container-default</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
 
       <dependency>
@@ -179,56 +166,56 @@
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-core</artifactId>
         <version>${maven.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.apache.maven.wagon</groupId>
-            <artifactId>wagon-http</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.apache.maven.wagon</groupId>
-            <artifactId>wagon-http-lightweight</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.apache.maven.wagon</groupId>
-            <artifactId>wagon-webdav-jackrabbit</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.codehaus.plexus</groupId>
-            <artifactId>plexus-container-default</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-jdk14</artifactId>
-          </exclusion>
-        </exclusions>
+        <!--<exclusions>-->
+          <!--<exclusion>-->
+            <!--<groupId>org.apache.maven.wagon</groupId>-->
+            <!--<artifactId>wagon-http</artifactId>-->
+          <!--</exclusion>-->
+          <!--<exclusion>-->
+            <!--<groupId>org.apache.maven.wagon</groupId>-->
+            <!--<artifactId>wagon-http-lightweight</artifactId>-->
+          <!--</exclusion>-->
+          <!--<exclusion>-->
+            <!--<groupId>org.apache.maven.wagon</groupId>-->
+            <!--<artifactId>wagon-webdav-jackrabbit</artifactId>-->
+          <!--</exclusion>-->
+          <!--<exclusion>-->
+            <!--<groupId>org.codehaus.plexus</groupId>-->
+            <!--<artifactId>plexus-container-default</artifactId>-->
+          <!--</exclusion>-->
+          <!--<exclusion>-->
+            <!--<groupId>org.slf4j</groupId>-->
+            <!--<artifactId>slf4j-jdk14</artifactId>-->
+          <!--</exclusion>-->
+        <!--</exclusions>-->
       </dependency>
 
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-compat</artifactId>
         <version>${maven.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.codehaus.plexus</groupId>
-            <artifactId>plexus-container-default</artifactId>
-          </exclusion>
-        </exclusions>
+        <!--<exclusions>-->
+          <!--<exclusion>-->
+            <!--<groupId>org.codehaus.plexus</groupId>-->
+            <!--<artifactId>plexus-container-default</artifactId>-->
+          <!--</exclusion>-->
+        <!--</exclusions>-->
       </dependency>
 
       <dependency>
         <groupId>org.apache.maven.shared</groupId>
         <artifactId>maven-verifier</artifactId>
         <version>1.3</version>
-        <exclusions>
-          <exclusion>
-            <groupId>junit</groupId>
-            <artifactId>junit-dep</artifactId>
-          </exclusion>
-          <exclusion>
-            <artifactId>junit</artifactId>
-            <groupId>junit</groupId>
-          </exclusion>
-        </exclusions>
+        <!--<exclusions>-->
+          <!--<exclusion>-->
+            <!--<groupId>junit</groupId>-->
+            <!--<artifactId>junit-dep</artifactId>-->
+          <!--</exclusion>-->
+          <!--<exclusion>-->
+            <!--<artifactId>junit</artifactId>-->
+            <!--<groupId>junit</groupId>-->
+          <!--</exclusion>-->
+        <!--</exclusions>-->
       </dependency>
 
       <dependency>
@@ -237,29 +224,17 @@
         <version>1.13.1</version>
       </dependency>
 
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-api</artifactId>
-        <version>${slf4j.version}</version>
-      </dependency>
+      <!--<dependency>-->
+        <!--<groupId>org.slf4j</groupId>-->
+        <!--<artifactId>slf4j-api</artifactId>-->
+        <!--<version>${slf4j.version}</version>-->
+      <!--</dependency>-->
 
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>jcl-over-slf4j</artifactId>
-        <version>${slf4j.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>ch.qos.logback</groupId>
-        <artifactId>logback-core</artifactId>
-        <version>${logback.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>ch.qos.logback</groupId>
-        <artifactId>logback-classic</artifactId>
-        <version>${logback.version}</version>
-      </dependency>
+      <!--<dependency>-->
+        <!--<groupId>org.slf4j</groupId>-->
+        <!--<artifactId>jcl-over-slf4j</artifactId>-->
+        <!--<version>${slf4j.version}</version>-->
+      <!--</dependency>-->
 
       <dependency>
         <groupId>org.sonatype.nexus.client</groupId>
@@ -279,20 +254,6 @@
         <groupId>org.sonatype.nexus.indexer-lucene</groupId>
         <artifactId>nexus-indexer-lucene-client</artifactId>
         <version>${nexus.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.sonatype.nexus.plugin</groupId>
-        <artifactId>nexus-procurement-plugin</artifactId>
-        <type>${nexus-plugin.type}</type>
-        <version>${nexus.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.sonatype.nexus.plugin</groupId>
-        <artifactId>nexus-pgp-plugin</artifactId>
-        <version>${nexus.version}</version>
-        <type>${nexus-plugin.type}</type>
       </dependency>
 
       <dependency>
@@ -324,38 +285,38 @@
   <build>
     <pluginManagement>
       <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <configuration>
-            <argLine>-XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError</argLine>
-            <workingDirectory>${project.build.directory}</workingDirectory>
-            <systemPropertyVariables>
-              <h2.check>false</h2.check>
-              <!-- workaround for H2 deadlock -->
-            </systemPropertyVariables>
-            <excludes>
-              <exclude>**/Abstract*.java</exclude>
-              <exclude>**/Test*.java</exclude>
-            </excludes>
-            <includes>
-              <include>**/*Test.java</include>
-            </includes>
-          </configuration>
-        </plugin>
+        <!--<plugin>-->
+          <!--<groupId>org.apache.maven.plugins</groupId>-->
+          <!--<artifactId>maven-surefire-plugin</artifactId>-->
+          <!--<configuration>-->
+            <!--<argLine>-XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError</argLine>-->
+            <!--<workingDirectory>${project.build.directory}</workingDirectory>-->
+            <!--<systemPropertyVariables>-->
+              <!--<h2.check>false</h2.check>-->
+              <!--&lt;!&ndash; workaround for H2 deadlock &ndash;&gt;-->
+            <!--</systemPropertyVariables>-->
+            <!--<excludes>-->
+              <!--<exclude>**/Abstract*.java</exclude>-->
+              <!--<exclude>**/Test*.java</exclude>-->
+            <!--</excludes>-->
+            <!--<includes>-->
+              <!--<include>**/*Test.java</include>-->
+            <!--</includes>-->
+          <!--</configuration>-->
+        <!--</plugin>-->
 
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-failsafe-plugin</artifactId>
-          <configuration>
-            <argLine>-XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError</argLine>
-            <workingDirectory>${project.build.directory}</workingDirectory>
-            <systemPropertyVariables>
-              <h2.check>false</h2.check>
-              <!-- workaround for H2 deadlock -->
-            </systemPropertyVariables>
-          </configuration>
-        </plugin>
+        <!--<plugin>-->
+          <!--<groupId>org.apache.maven.plugins</groupId>-->
+          <!--<artifactId>maven-failsafe-plugin</artifactId>-->
+          <!--<configuration>-->
+            <!--<argLine>-XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError</argLine>-->
+            <!--<workingDirectory>${project.build.directory}</workingDirectory>-->
+            <!--<systemPropertyVariables>-->
+              <!--<h2.check>false</h2.check>-->
+              <!--&lt;!&ndash; workaround for H2 deadlock &ndash;&gt;-->
+            <!--</systemPropertyVariables>-->
+          <!--</configuration>-->
+        <!--</plugin>-->
 
         <plugin>
           <groupId>org.codehaus.plexus</groupId>
@@ -384,12 +345,18 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-plugin-plugin</artifactId>
           <version>3.2</version>
+          <configuration>
+            <!--
+            Works around bug in maven-plugin packaging lifecycle: http://jira.codehaus.org/browse/MNG-5346
+            -->
+            <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
+          </configuration>
         </plugin>
 
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-shade-plugin</artifactId>
-          <version>1.7.1</version>
+          <version>2.0</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -453,6 +420,7 @@
     -->
     <profile>
       <id>idea</id>
+
       <properties>
         <nexus-plugin.type>jar</nexus-plugin.type>
       </properties>
