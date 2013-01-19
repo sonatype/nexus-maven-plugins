@@ -54,20 +54,16 @@
   </scm>
 
   <properties>
-    <forgeSiteUrl>dav:https://sites.sonatype.com/plugins/nexus-maven-plugins</forgeSiteUrl>
-
+    <nexus.version>2.3.0</nexus.version>
     <sisu-inject.version>2.3.1</sisu-inject.version>
     <slf4j.version>1.7.2</slf4j.version>
     <logback.version>1.0.7</logback.version>
     <maven.version>3.0.4</maven.version>
-
-    <nexus-core.version>2.3.0</nexus-core.version>
-    <nexus-pro.version>2.3.0</nexus-pro.version>
     <nexus-staging.version>2.2</nexus-staging.version>
 
     <it.nexus.bundle.groupId>com.sonatype.nexus</it.nexus.bundle.groupId>
     <it.nexus.bundle.artifactId>nexus-professional-bundle-template</it.nexus.bundle.artifactId>
-    <it.nexus.bundle.version>${nexus-pro.version}</it.nexus.bundle.version>
+    <it.nexus.bundle.version>${nexus.version}</it.nexus.bundle.version>
 
     <!-- See 'idea' profile. -->
     <nexus-plugin.type>nexus-plugin</nexus-plugin.type>
@@ -272,7 +268,7 @@
       <dependency>
         <groupId>org.sonatype.nexus.client</groupId>
         <artifactId>nexus-client-core</artifactId>
-        <version>${nexus-core.version}</version>
+        <version>${nexus.version}</version>
       </dependency>
 
       <dependency>
@@ -285,19 +281,20 @@
       <dependency>
         <groupId>com.sonatype.nexus.staging</groupId>
         <artifactId>nexus-staging-client</artifactId>
+        <version>${nexus-staging.version}</version>
       </dependency>
 
       <dependency>
         <groupId>com.sonatype.nexus.plugin</groupId>
         <artifactId>nexus-procurement-plugin</artifactId>
         <type>${nexus-plugin.type}</type>
-        <version>${nexus-pro.version}</version>
+        <version>${nexus.version}</version>
       </dependency>
 
       <dependency>
         <groupId>com.sonatype.nexus.plugin</groupId>
         <artifactId>nexus-pgp-plugin</artifactId>
-        <version>${nexus-pro.version}</version>
+        <version>${nexus.version}</version>
         <type>${nexus-plugin.type}</type>
       </dependency>
 

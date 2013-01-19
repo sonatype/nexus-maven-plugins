@@ -32,7 +32,7 @@
         <artifactId>nexus-professional</artifactId>
         <type>zip</type>
         <classifier>bundle</classifier>
-        <version>${nexus-pro.version}</version>
+        <version>${nexus.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -75,7 +75,7 @@
     <dependency>
       <groupId>org.sonatype.nexus.client</groupId>
       <artifactId>nexus-client-core</artifactId>
-      <version>${nexus-core.version}</version>
+      <version>${nexus.version}</version>
       <scope>compile</scope>
       <!-- To have it installed by invoker, but used in test -->
     </dependency>
@@ -104,7 +104,7 @@
     <dependency>
       <groupId>org.sonatype.nexus.indexer-lucene</groupId>
       <artifactId>nexus-indexer-lucene-client</artifactId>
-      <version>${nexus-core.version}</version>
+      <version>${nexus.version}</version>
       <scope>test</scope>
     </dependency>
 
@@ -164,7 +164,7 @@
                   <!-- Caused by: https://jira.codehaus.org/browse/MINVOKER-115 -->
                   <!-- Once this above fixed, hopefully this section below will not be needed anymore -->
                   <extraArtifacts>
-                    <extraArtifact>org.sonatype.nexus:nexus-runtime-platform:${nexus-core.version}:pom</extraArtifact>
+                    <extraArtifact>org.sonatype.nexus:nexus-runtime-platform:${nexus.version}:pom</extraArtifact>
                     <extraArtifact>org.apache.maven:apache-maven:2.2.1:zip:bin</extraArtifact>
                     <extraArtifact>org.apache.maven:apache-maven:3.0.4:zip:bin</extraArtifact>
                     <extraArtifact>org.apache.maven.plugins:maven-clean-plugin:2.2</extraArtifact>
