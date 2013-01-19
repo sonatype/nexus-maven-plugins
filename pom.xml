@@ -103,14 +103,12 @@
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
         <version>13.0.1</version>
-        <scope>compile</scope>
       </dependency>
 
       <dependency>
         <groupId>javax.inject</groupId>
         <artifactId>javax.inject</artifactId>
         <version>1</version>
-        <scope>compile</scope>
       </dependency>
 
       <!-- Plexus support (the version should be tied to SISU used ones!) -->
@@ -119,28 +117,24 @@
         <groupId>org.sonatype.sisu</groupId>
         <artifactId>sisu-inject-plexus</artifactId>
         <version>${sisu-inject.version}</version>
-        <scope>compile</scope>
       </dependency>
 
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-component-annotations</artifactId>
         <version>1.5.5</version>
-        <scope>compile</scope>
       </dependency>
 
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-classworlds</artifactId>
         <version>2.4</version>
-        <scope>compile</scope>
       </dependency>
 
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-utils</artifactId>
         <version>3.0.8</version>
-        <scope>compile</scope>
       </dependency>
 
       <!-- Maven and Maven plugin related stuff -->
@@ -220,15 +214,12 @@
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
         <version>${slf4j.version}</version>
-        <type>jar</type>
-        <scope>compile</scope>
       </dependency>
 
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>jcl-over-slf4j</artifactId>
         <version>${slf4j.version}</version>
-        <type>jar</type>
         <scope>runtime</scope>
       </dependency>
 
@@ -244,7 +235,6 @@
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-core</artifactId>
         <version>${logback.version}</version>
-        <type>jar</type>
         <scope>runtime</scope>
       </dependency>
 
@@ -252,7 +242,6 @@
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
         <version>${logback.version}</version>
-        <type>jar</type>
         <scope>runtime</scope>
       </dependency>
 
@@ -274,13 +263,6 @@
         <groupId>com.sonatype.nexus.plugin</groupId>
         <artifactId>nexus-pgp-plugin</artifactId>
         <version>${nexus-pro.version}</version>
-        <type>${nexus-plugin.type}</type>
-      </dependency>
-
-      <dependency>
-        <groupId>com.sonatype.components</groupId>
-        <artifactId>plexus-rule</artifactId>
-        <version>1.5</version>
         <type>${nexus-plugin.type}</type>
       </dependency>
 
