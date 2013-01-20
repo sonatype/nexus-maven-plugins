@@ -120,7 +120,7 @@ public class DownloadMojo
     private String templateId;
 
     /**
-     * Disable fetching of content over insecure HTTP (ie. HTTPS URL required).
+     * Disable fetching of content over insecure HTTP (ie. when 'true' HTTPS URL is required).
      */
     @Parameter(property = "secure", defaultValue = "true", required = true)
     private boolean secure;
