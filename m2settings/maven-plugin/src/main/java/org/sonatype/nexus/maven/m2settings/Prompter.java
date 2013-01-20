@@ -34,7 +34,7 @@ public class Prompter
 {
     private static final Logger log = LoggerFactory.getLogger(Prompter.class);
 
-    private ConsoleReader console;
+    private final ConsoleReader console;
 
     public Prompter() throws IOException {
         this.console = new ConsoleReader();
