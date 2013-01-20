@@ -21,8 +21,6 @@ import com.sonatype.nexus.rest.templates.settings.api.dto.M2SettingsTemplateList
 import com.sonatype.nexus.templates.client.M2SettingsTemplates;
 import com.sonatype.nexus.templates.client.rest.JerseyTemplatesSubsystemFactory;
 import com.sonatype.nexus.usertoken.client.rest.JerseyUserTokenSubsystemFactory;
-import jline.console.ConsoleReader;
-import jline.console.completer.StringsCompleter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -88,6 +86,9 @@ public class DownloadMojo
     private Settings settings;
 
     @Component
+    private Prompter prompter;
+
+    @Component
     private List<TemplateInterpolatorCustomizer> customizers;
 
     /**
@@ -150,8 +151,6 @@ public class DownloadMojo
 
     private Logger log;
 
-    private ConsoleReader console;
-
     private NexusClient nexusClient;
 
     @Override
@@ -201,20 +200,15 @@ public class DownloadMojo
     }
 
     private void doExecute() throws Exception {
-        console = new ConsoleReader();
-
-        // history is meaningless in this context, flip it off
-        console.setHistoryEnabled(false);
-
         // Request details from user interactively for anything missing
         if (StringUtils.isBlank(nexusUrl)) {
-            nexusUrl = prompt("Nexus URL").trim();
+            nexusUrl = prompter.prompt("Nexus URL").trim();
         }
         if (StringUtils.isBlank(username)) {
-            username = promptWithDefaultValue("Username", System.getProperty("user.name")).trim();
+            username = prompter.promptWithDefaultValue("Username", System.getProperty("user.name")).trim();
         }
         if (StringUtils.isBlank(password)) {
-            password = prompt("Password", '*'); // trim?
+            password = prompter.prompt("Password", '*'); // trim?
         }
 
         // Setup the connection
@@ -246,7 +240,7 @@ public class DownloadMojo
             for (M2SettingsTemplateListResponseDto template : availableTemplates) {
                 ids.add(template.getId());
             }
-            templateId = promptChoice("Available Templates", "Select Template", ids);
+            templateId = prompter.promptChoice("Available Templates", "Select Template", ids);
         }
 
         // Fetch the template content
@@ -337,107 +331,6 @@ public class DownloadMojo
             log.error("Detected version: {}", version);
             log.error("Compatible version constraint: {}", constraint);
             throw fail("Unsupported Nexus version: " + status.getEditionShort());
-        }
-    }
-
-    // FIXME: CTRL-D corrupts the prompt slightly
-
-    /**
-     * Prompt user for a string, optionally masking the input.
-     */
-    private String prompt(final String message, final @Nullable Character mask) throws IOException {
-        final String prompt = String.format("%s: ", message);
-        String value;
-        do {
-            value = console.readLine(prompt, mask);
-
-            // Do not log values read when masked
-            if (mask == null) {
-                log.debug("Read value: '{}'", value);
-            }
-            else {
-                log.debug("Read masked chars: {}", value.length());
-            }
-        }
-        while (StringUtils.isBlank(value));
-        return value;
-    }
-
-    /**
-     * Prompt user for a string.
-     */
-    private String prompt(final String prompt) throws IOException {
-        return prompt(prompt, null);
-    }
-
-    /**
-     * Prompt user for a string; if user response is blank use a default value.
-     */
-    private String promptWithDefaultValue(final String message, final String defaultValue) throws IOException {
-        final String prompt = String.format("%s [%s]: ", message, defaultValue);
-        String value = console.readLine(prompt);
-        if (StringUtils.isBlank(value)) {
-            return defaultValue;
-        }
-        return value;
-    }
-
-    /**
-     * Helper to parse an integer w/o exceptions being thrown.
-     */
-    private @Nullable Integer parseInt(final String value) {
-        try {
-            return Integer.parseInt(value);
-        }
-        catch (Exception e) {
-            // ignore
-        }
-        return null;
-    }
-
-    /**
-     * Prompt user for a string out of a set of available choices.
-     */
-    private String promptChoice(final String header, final String message, final List<String> choices) throws IOException {
-        // display header
-        console.println(header + ":");
-        for (int i=0; i<choices.size(); i++) {
-            console.println(String.format("  %2d) %s", i, choices.get(i)));
-        }
-        console.flush();
-
-        // setup completer
-        StringsCompleter completer = new StringsCompleter(choices);
-        console.addCompleter(completer);
-
-        try {
-            String value;
-            while (true) {
-                value = prompt(message).trim();
-
-                // check if value is an index
-                Integer i = parseInt(value);
-                if (i != null) {
-                    if (i < choices.size()) {
-                        value = choices.get(i);
-                    }
-                    else {
-                        // out of range
-                        value = null;
-                    }
-                }
-
-                // check if choice is valid
-                if (choices.contains(value)) {
-                    break;
-                }
-
-                console.println("Invalid selection");
-            }
-            return value;
-        }
-        finally {
-            console.removeCompleter(completer);
         }
     }
 
