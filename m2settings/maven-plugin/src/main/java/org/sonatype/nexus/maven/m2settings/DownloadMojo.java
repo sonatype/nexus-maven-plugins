@@ -329,18 +329,17 @@ public class DownloadMojo
             throw fail("Unsupported Nexus edition: " + edition);
         }
 
-        String version = status.getVersion();
         VersionScheme scheme = new GenericVersionScheme();
         VersionConstraint constraint = scheme.parseVersionConstraint(VERSION_CONSTRAINT);
-        Version _version = scheme.parseVersion(version);
-        log.debug("Version: " + _version);
+        Version version = scheme.parseVersion(status.getVersion());
+        log.debug("Version: " + version);
 
-        if (!constraint.containsVersion(_version)) {
+        if (!constraint.containsVersion(version)) {
             log.error("Incompatible Nexus version detected");
-            log.error("Raw version: " + version);
-            log.error("Detected version: " + _version);
+            log.error("Raw version: " + status.getVersion());
+            log.error("Detected version: " + version);
             log.error("Compatible version constraint: " + constraint);
-            throw fail("Unsupported Nexus version: " + version);
+            throw fail("Unsupported Nexus version: " + status.getEditionShort());
         }
     }
 
