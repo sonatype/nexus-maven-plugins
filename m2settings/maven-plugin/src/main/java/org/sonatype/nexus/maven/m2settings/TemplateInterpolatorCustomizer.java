@@ -22,7 +22,5 @@ import org.sonatype.nexus.client.core.NexusClient;
  */
 public interface TemplateInterpolatorCustomizer
 {
-    // TODO: Maybe add a context object to wrap client + anything else?
-
     void customize(NexusClient client, Interpolator interpolator);
 }
