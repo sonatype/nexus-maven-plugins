@@ -203,7 +203,7 @@ public abstract class AbstractStagingActionMojo
                 LogbackUtils.syncLogLevelWithMaven( getLog() );
                 this.nexusClient =
                     new JerseyNexusClientFactory( new JerseyStagingWorkflowV2SubsystemFactory() ).createFor( connectionInfo );
-                getLog().debug( "NexusClient created aginst Nexus instance on URL: " + baseUrl.toString() + "." );
+                getLog().debug( "NexusClient created against Nexus instance on URL: " + baseUrl.toString() + "." );
             }
             catch ( MalformedURLException e )
             {
