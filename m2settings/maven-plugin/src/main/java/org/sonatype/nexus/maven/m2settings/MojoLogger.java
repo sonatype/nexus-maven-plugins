@@ -30,13 +30,9 @@ public class MojoLogger
         return owner;
     }
 
-    public Log getLog() {
-        return owner.getLog();
-    }
-
     @Override
     protected boolean isEnabled(final Level level) {
-        Log mojoLog = getLog();
+        Log mojoLog = getOwner().getLog();
         if (mojoLog == null) {
             log.warn("Mojo.log not configured; owner: {}", owner);
             return false;
@@ -60,7 +56,7 @@ public class MojoLogger
 
     @Override
     protected void doLog(final Event event) {
-        Log mojoLog = getLog();
+        Log mojoLog = getOwner().getLog();
         if (mojoLog == null) {
             log.warn("Mojo.log not configured; owner: {}, event: {}", owner, event);
             return;
