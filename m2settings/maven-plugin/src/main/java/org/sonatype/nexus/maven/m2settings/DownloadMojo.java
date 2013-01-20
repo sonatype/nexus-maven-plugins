@@ -67,8 +67,14 @@ import static org.sonatype.nexus.client.rest.BaseUrl.baseUrlFrom;
 public class DownloadMojo
     extends MojoSupport
 {
+    /**
+     * Start of expression for client-side template interpolation.
+     */
     public static final String START_EXPR = "$[";
 
+    /**
+     * End of expression for client-side template interpolation.
+     */
     public static final String END_EXPR = "]";
 
     /**
