@@ -24,6 +24,9 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.List;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * Prompting helper.
  *
@@ -51,6 +54,8 @@ public class Prompter
      * Prompt user for a string, optionally masking the input.
      */
     public String prompt(final String message, final @Nullable Character mask) throws IOException {
+        checkNotNull(message);
+
         final String prompt = String.format("%s: ", message);
         String value;
         do {
@@ -71,14 +76,19 @@ public class Prompter
     /**
      * Prompt user for a string.
      */
-    public String prompt(final String prompt) throws IOException {
-        return prompt(prompt, null);
+    public String prompt(final String message) throws IOException {
+        checkNotNull(message);
+
+        return prompt(message, null);
     }
 
     /**
      * Prompt user for a string; if user response is blank use a default value.
      */
     public String promptWithDefaultValue(final String message, final String defaultValue) throws IOException {
+        checkNotNull(message);
+        checkNotNull(defaultValue);
+
         final String prompt = String.format("%s [%s]: ", message, defaultValue);
         String value = console.readLine(prompt);
         if (StringUtils.isBlank(value)) {
@@ -104,6 +114,10 @@ public class Prompter
      * Prompt user for a string out of a set of available choices.
      */
     public String promptChoice(final String header, final String message, final List<String> choices) throws IOException {
+        checkNotNull(header);
+        checkNotNull(message);
+        checkArgument(choices.size() > 1, "2 or more choices are required");
+
         // display header
         console.println(header + ":");
         for (int i = 0; i < choices.size(); i++) {
