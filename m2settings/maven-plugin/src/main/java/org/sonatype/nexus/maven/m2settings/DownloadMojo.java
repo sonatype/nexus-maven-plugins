@@ -379,7 +379,7 @@ public class DownloadMojo
     /**
      * Create a writer for the given file and optional encoding.
      */
-    private Writer createWriter(final File file, final @Nullable String encoding) throws IOException {
+    private BufferedWriter createWriter(final File file, final @Nullable String encoding) throws IOException {
         if (encoding != null) {
             return new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), encoding));
         }
