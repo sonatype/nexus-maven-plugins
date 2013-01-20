@@ -243,6 +243,12 @@
       </dependency>
 
       <dependency>
+        <groupId>org.sonatype.gossip</groupId>
+        <artifactId>gossip-bootstrap</artifactId>
+        <version>1.8</version>
+      </dependency>
+
+      <dependency>
         <groupId>org.sonatype.nexus.client</groupId>
         <artifactId>nexus-client-core</artifactId>
         <version>${nexus.version}</version>

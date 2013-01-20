@@ -27,7 +27,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -36,6 +35,7 @@ import org.codehaus.plexus.interpolation.Interpolator;
 import org.codehaus.plexus.interpolation.InterpolatorFilterReader;
 import org.codehaus.plexus.interpolation.StringSearchInterpolator;
 import org.codehaus.plexus.util.IOUtil;
+import org.slf4j.Logger;
 import org.sonatype.aether.util.version.GenericVersionScheme;
 import org.sonatype.aether.version.Version;
 import org.sonatype.aether.version.VersionConstraint;
@@ -148,7 +148,7 @@ public class DownloadMojo
     @Parameter(property = "backup.timestampFormat", defaultValue = "-yyyyMMddHHmmss")
     private String backupTimestampFormat;
 
-    private Log log;
+    private Logger log;
 
     private ConsoleReader console;
 
@@ -156,8 +156,7 @@ public class DownloadMojo
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        // FIXME: Make a slf4j Logger adapter... Mojo Log API sucks ass
-        log = getLog();
+        log = new MojoLogger(this);
 
         try {
             doExecute();
@@ -172,7 +171,7 @@ public class DownloadMojo
      * Fail execution.
      */
     private Exception fail(final String message) throws Exception {
-        log.debug("Failing: " + message);
+        log.debug("Failing: {}", message);
         throw new MojoExecutionException(message);
     }
 
@@ -180,7 +179,7 @@ public class DownloadMojo
      * Fail execution and try to clean up cause hierarchy.
      */
     private Exception fail(final String message, Throwable cause) throws Exception {
-        log.debug("Failing: " + message, cause);
+        log.debug("Failing: {}", message, cause);
 
         // Try to decode exception stack for more meaningful and terse error messages
         if (cause instanceof NexusClientHandlerException) {
@@ -212,7 +211,7 @@ public class DownloadMojo
 
         // Setup the connection
         try {
-            log.info("Connecting to: " + nexusUrl + " (as " + username + ")");
+            log.info("Connecting to: {} (as {})", nexusUrl, username);
             nexusClient = createClient(nexusUrl, username, password);
         }
         catch (Exception e) {
@@ -222,7 +221,7 @@ public class DownloadMojo
         // Validate the connection
         NexusStatus status = nexusClient.getStatus();
         ensureCompatibleNexus(status);
-        log.info("Connected: " + status.getAppName() + " " + status.getVersion());
+        log.info("Connected: {} {}", status.getAppName(), status.getVersion());
 
         M2SettingsTemplates templates = nexusClient.getSubsystem(M2SettingsTemplates.class);
 
@@ -245,9 +244,9 @@ public class DownloadMojo
         // Fetch the template content
         String content;
         try {
-            log.info("Fetching content for templateId: " + templateId);
+            log.info("Fetching content for templateId: {}", templateId);
             content = templates.getContent(templateId);
-            log.debug("Content: " + content);
+            log.debug("Content: {}", content);
         }
         catch (Exception e) {
             throw fail("Unable to fetch content for templateId: " + templateId, e);
@@ -262,7 +261,7 @@ public class DownloadMojo
         }
 
         // Save the content
-        log.info("Saving content to: " + outputFile.getAbsolutePath());
+        log.info("Saving content to: {}", outputFile.getAbsolutePath());
 
         try {
             Interpolator interpolator = createInterpolator();
@@ -314,7 +313,7 @@ public class DownloadMojo
      * Require Nexus PRO version 2.3+.
      */
     private void ensureCompatibleNexus(final NexusStatus status) throws Exception {
-        log.debug("Ensuring compatibility: " + status);
+        log.debug("Ensuring compatibility: {}", status);
 
         String edition = status.getEditionShort();
         if (!"PRO".equals(edition)) {
@@ -324,13 +323,13 @@ public class DownloadMojo
         VersionScheme scheme = new GenericVersionScheme();
         VersionConstraint constraint = scheme.parseVersionConstraint(VERSION_CONSTRAINT);
         Version version = scheme.parseVersion(status.getVersion());
-        log.debug("Version: " + version);
+        log.debug("Version: {}", version);
 
         if (!constraint.containsVersion(version)) {
             log.error("Incompatible Nexus version detected");
-            log.error("Raw version: " + status.getVersion());
-            log.error("Detected version: " + version);
-            log.error("Compatible version constraint: " + constraint);
+            log.error("Raw version: {}", status.getVersion());
+            log.error("Detected version: {}", version);
+            log.error("Compatible version constraint: {}", constraint);
             throw fail("Unsupported Nexus version: " + status.getEditionShort());
         }
     }
@@ -348,10 +347,10 @@ public class DownloadMojo
 
             // Do not log values read when masked
             if (mask == null) {
-                log.debug("Read value: '" + value + "'");
+                log.debug("Read value: '{}'", value);
             }
             else {
-                log.debug("Read masked chars: " + value.length());
+                log.debug("Read masked chars: {}", value.length());
             }
         }
         while (StringUtils.isBlank(value));
@@ -451,7 +450,7 @@ public class DownloadMojo
         String timestamp = new SimpleDateFormat(backupTimestampFormat).format(new Date());
         File file = new File(outputFile.getParentFile(), outputFile.getName() + timestamp);
 
-        log.info("Backing up: " + outputFile.getAbsolutePath() + " to: " + file.getAbsolutePath());
+        log.info("Backing up: {} to: {}", outputFile.getAbsolutePath(), file.getAbsolutePath());
         Files.move(outputFile, file);
     }
 
@@ -466,7 +465,7 @@ public class DownloadMojo
             for (TemplateInterpolatorCustomizer customizer : customizers) {
                 try {
                     if (debug) {
-                        log.debug("Applying customizer: " + customizer);
+                        log.debug("Applying customizer: {}", customizer);
                     }
                     customizer.customize(nexusClient, interpolator);
                 }
