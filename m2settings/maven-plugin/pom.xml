@@ -111,6 +111,9 @@
         </executions>
       </plugin>
 
+      <!--
+      Merging here needed to support shading.
+      -->
       <plugin>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-component-metadata</artifactId>
@@ -130,6 +133,10 @@
         </executions>
       </plugin>
 
+      <!--
+      Need to shade to allow access to Maven security bits, as well as provide open access to
+      commercial/private artifacts from required Nexus PRO plugins.
+      -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
