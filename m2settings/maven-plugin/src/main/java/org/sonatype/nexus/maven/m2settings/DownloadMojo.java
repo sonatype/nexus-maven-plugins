@@ -147,6 +147,29 @@ public class DownloadMojo
 
     @Override
     protected void doExecute() throws Exception {
+        connect();
+
+        String content = fetch();
+
+        save(content);
+    }
+
+    @Override
+    protected void doCleanup() {
+        if (nexusClient != null) {
+            try {
+                nexusClient.close();
+            }
+            catch (Exception e) {
+                // ignore
+            }
+        }
+    }
+
+    /**
+     * Connect to Nexus.
+     */
+    private void connect() throws Exception {
         // Request details from user interactively for anything missing
         if (StringUtils.isBlank(nexusUrl)) {
             nexusUrl = prompter.prompt("Nexus URL").trim();
@@ -171,77 +194,9 @@ public class DownloadMojo
         NexusStatus status = nexusClient.getStatus();
         ensureCompatibleNexus(status);
         log.info("Connected: {} {}", status.getAppName(), status.getVersion());
-
-        M2SettingsTemplates templates = nexusClient.getSubsystem(M2SettingsTemplates.class);
-
-        // Ask the user for the templateId if not configured
-        if (StringUtils.isBlank(templateId)) {
-            List<M2SettingsTemplateListResponseDto> availableTemplates = templates.get();
-
-            // This might never happen, but just in-case the server's impl changes
-            if (availableTemplates.isEmpty()) {
-                throw fail("There are no accessible m2settings available");
-            }
-
-            List<String> ids = Lists.newArrayListWithExpectedSize(availableTemplates.size());
-            for (M2SettingsTemplateListResponseDto template : availableTemplates) {
-                ids.add(template.getId());
-            }
-            templateId = prompter.promptChoice("Available Templates", "Select Template", ids);
-        }
-
-        // Fetch the template content
-        String content;
-        try {
-            log.info("Fetching content for templateId: {}", templateId);
-            content = templates.getContent(templateId);
-            log.debug("Content: {}", content);
-        }
-        catch (Exception e) {
-            throw fail("Unable to fetch content for templateId: " + templateId, e);
-        }
-
-        // Backup if requested
-        try {
-            maybeBackup();
-        }
-        catch (Exception e) {
-            throw fail("Failed to backup file: " + outputFile.getAbsolutePath(), e);
-        }
-
-        // Save the content
-        log.info("Saving content to: {}", outputFile.getAbsolutePath());
-
-        try {
-            Interpolator interpolator = createInterpolator();
-            Writer writer = createWriter(outputFile, encoding);
-            try {
-                InterpolatorFilterReader reader = new InterpolatorFilterReader(new StringReader(content), interpolator, START_EXPR, END_EXPR);
-                IOUtil.copy(reader, writer);
-                writer.flush();
-            }
-            finally {
-                IOUtil.close(writer);
-            }
-        }
-        catch (Exception e) {
-            throw fail("Failed to save content to: " + outputFile.getAbsolutePath(), e);
-        }
     }
 
-    @Override
-    protected void doCleanup() {
-        if (nexusClient != null) {
-            try {
-                nexusClient.close();
-            }
-            catch (Exception e) {
-                // ignore
-            }
-        }
-    }
-
-    public NexusClient createClient(final String url, final String username, final String password) throws Exception {
+    private NexusClient createClient(final String url, final String username, final String password) throws Exception {
         BaseUrl baseUrl = baseUrlFrom(url);
         if (baseUrl.getProtocol() == Protocol.HTTP) {
             String message = "Insecure protocol: " + baseUrl;
@@ -290,6 +245,73 @@ public class DownloadMojo
             log.error("Detected version: {}", version);
             log.error("Compatible version constraint: {}", constraint);
             throw fail("Unsupported Nexus version: " + status.getEditionShort());
+        }
+    }
+
+    /**
+     * Fetch template content.
+     */
+    private String fetch() throws Exception {
+        M2SettingsTemplates templates = nexusClient.getSubsystem(M2SettingsTemplates.class);
+
+        // Ask the user for the templateId if not configured
+        if (StringUtils.isBlank(templateId)) {
+            List<M2SettingsTemplateListResponseDto> availableTemplates = templates.get();
+
+            // This might never happen, but just in-case the server's impl changes
+            if (availableTemplates.isEmpty()) {
+                throw fail("There are no accessible m2settings available");
+            }
+
+            List<String> ids = Lists.newArrayListWithExpectedSize(availableTemplates.size());
+            for (M2SettingsTemplateListResponseDto template : availableTemplates) {
+                ids.add(template.getId());
+            }
+            templateId = prompter.promptChoice("Available Templates", "Select Template", ids);
+        }
+
+        // Fetch the template content
+        String content;
+        try {
+            log.info("Fetching content for templateId: {}", templateId);
+            content = templates.getContent(templateId);
+            log.debug("Content: {}", content);
+        }
+        catch (Exception e) {
+            throw fail("Unable to fetch content for templateId: " + templateId, e);
+        }
+        return content;
+    }
+
+    /**
+     * Save content to file.
+     */
+    private void save(final String content) throws Exception {
+        // Backup if requested
+        try {
+            maybeBackup();
+        }
+        catch (Exception e) {
+            throw fail("Failed to backup file: " + outputFile.getAbsolutePath(), e);
+        }
+
+        // Save the content
+        log.info("Saving content to: {}", outputFile.getAbsolutePath());
+
+        try {
+            Interpolator interpolator = createInterpolator();
+            Writer writer = createWriter(outputFile, encoding);
+            try {
+                InterpolatorFilterReader reader = new InterpolatorFilterReader(new StringReader(content), interpolator, START_EXPR, END_EXPR);
+                IOUtil.copy(reader, writer);
+                writer.flush();
+            }
+            finally {
+                IOUtil.close(writer);
+            }
+        }
+        catch (Exception e) {
+            throw fail("Failed to save content to: " + outputFile.getAbsolutePath(), e);
         }
     }
 
