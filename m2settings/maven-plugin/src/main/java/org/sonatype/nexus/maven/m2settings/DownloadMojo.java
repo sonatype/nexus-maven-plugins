@@ -13,7 +13,6 @@
 
 package org.sonatype.nexus.maven.m2settings;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
@@ -22,9 +21,6 @@ import com.sonatype.nexus.templates.client.M2SettingsTemplates;
 import com.sonatype.nexus.templates.client.rest.JerseyTemplatesSubsystemFactory;
 import com.sonatype.nexus.usertoken.client.rest.JerseyUserTokenSubsystemFactory;
 import org.apache.commons.lang.StringUtils;
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -33,7 +29,6 @@ import org.codehaus.plexus.interpolation.Interpolator;
 import org.codehaus.plexus.interpolation.InterpolatorFilterReader;
 import org.codehaus.plexus.interpolation.StringSearchInterpolator;
 import org.codehaus.plexus.util.IOUtil;
-import org.slf4j.Logger;
 import org.sonatype.aether.util.version.GenericVersionScheme;
 import org.sonatype.aether.version.Version;
 import org.sonatype.aether.version.VersionConstraint;
@@ -46,7 +41,6 @@ import org.sonatype.nexus.client.rest.Protocol;
 import org.sonatype.nexus.client.rest.ProxyInfo;
 import org.sonatype.nexus.client.rest.UsernamePasswordAuthenticationInfo;
 import org.sonatype.nexus.client.rest.jersey.JerseyNexusClientFactory;
-import org.sonatype.nexus.client.rest.jersey.NexusClientHandlerException;
 
 import javax.annotation.Nullable;
 import java.io.BufferedWriter;
@@ -71,7 +65,7 @@ import static org.sonatype.nexus.client.rest.BaseUrl.baseUrlFrom;
  */
 @Mojo(name = "download", requiresOnline = true, requiresProject = false, aggregator = true)
 public class DownloadMojo
-    extends AbstractMojo
+    extends MojoSupport
 {
     public static final String START_EXPR = "$[";
 
@@ -149,57 +143,10 @@ public class DownloadMojo
     @Parameter(property = "backup.timestampFormat", defaultValue = "-yyyyMMddHHmmss")
     private String backupTimestampFormat;
 
-    private Logger log;
-
     private NexusClient nexusClient;
 
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
-        log = new MojoLogger(this);
-
-        try {
-            doExecute();
-        }
-        catch (Exception e) {
-            Throwables.propagateIfPossible(e, MojoExecutionException.class, MojoFailureException.class);
-            throw Throwables.propagate(e);
-        }
-        finally {
-            try {
-                nexusClient.close();
-            }
-            catch (Exception e) {
-                // ignore
-            }
-        }
-    }
-
-    /**
-     * Fail execution.
-     */
-    private Exception fail(final String message) throws Exception {
-        log.debug("Failing: {}", message);
-        throw new MojoExecutionException(message);
-    }
-
-    /**
-     * Fail execution and try to clean up cause hierarchy.
-     */
-    private Exception fail(final String message, Throwable cause) throws Exception {
-        log.debug("Failing: {}", message, cause);
-
-        // Try to decode exception stack for more meaningful and terse error messages
-        if (cause instanceof NexusClientHandlerException) {
-            cause = cause.getCause();
-            if (cause instanceof NexusClientHandlerException) {
-                cause = cause.getCause();
-            }
-        }
-
-        throw new MojoExecutionException(message, cause);
-    }
-
-    private void doExecute() throws Exception {
+    protected void doExecute() throws Exception {
         // Request details from user interactively for anything missing
         if (StringUtils.isBlank(nexusUrl)) {
             nexusUrl = prompter.prompt("Nexus URL").trim();
@@ -279,6 +226,18 @@ public class DownloadMojo
         }
         catch (Exception e) {
             throw fail("Failed to save content to: " + outputFile.getAbsolutePath(), e);
+        }
+    }
+
+    @Override
+    protected void doCleanup() {
+        if (nexusClient != null) {
+            try {
+                nexusClient.close();
+            }
+            catch (Exception e) {
+                // ignore
+            }
         }
     }
 
