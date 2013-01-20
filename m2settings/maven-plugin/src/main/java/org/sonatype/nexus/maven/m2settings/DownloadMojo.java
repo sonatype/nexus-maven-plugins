@@ -138,7 +138,7 @@ public class DownloadMojo
     private String encoding;
 
     /**
-     * True to backup and existing file before overwriting.
+     * Backup any existing file before overwriting.
      */
     @Parameter(property = "backup", defaultValue = "true")
     private boolean backup;
