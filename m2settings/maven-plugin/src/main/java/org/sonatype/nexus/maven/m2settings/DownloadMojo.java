@@ -165,6 +165,14 @@ public class DownloadMojo
             Throwables.propagateIfPossible(e, MojoExecutionException.class, MojoFailureException.class);
             throw Throwables.propagate(e);
         }
+        finally {
+            try {
+                nexusClient.close();
+            }
+            catch (Exception e) {
+                // ignore
+            }
+        }
     }
 
     /**
@@ -278,8 +286,6 @@ public class DownloadMojo
         catch (Exception e) {
             throw fail("Failed to save content to: " + outputFile.getAbsolutePath(), e);
         }
-
-        nexusClient.close();
     }
 
     public NexusClient createClient(final String url, final String username, final String password) throws Exception {
