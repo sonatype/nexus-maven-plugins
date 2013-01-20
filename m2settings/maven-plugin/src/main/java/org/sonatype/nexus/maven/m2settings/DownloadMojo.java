@@ -71,7 +71,7 @@ import static org.sonatype.nexus.client.rest.BaseUrl.baseUrlFrom;
  *
  * @since 1.4
  */
-@Mojo(name = "download", requiresOnline = true)
+@Mojo(name = "download", requiresOnline = true, requiresProject = false, aggregator = true)
 public class DownloadMojo
     extends AbstractMojo
 {
@@ -119,7 +119,7 @@ public class DownloadMojo
     private String templateId;
 
     /**
-     * True to disable fetching of content over HTTP.
+     * Disable fetching of content over insecure HTTP (ie. HTTPS URL required).
      */
     @Parameter(property = "secure", defaultValue = "true", required = true)
     private boolean secure;
@@ -195,6 +195,9 @@ public class DownloadMojo
 
     private void doExecute() throws Exception {
         console = new ConsoleReader();
+
+        // history is meaningless in this context, flip it off
+        console.setHistoryEnabled(false);
 
         // Request details from user interactively for anything missing
         if (StringUtils.isBlank(nexusUrl)) {

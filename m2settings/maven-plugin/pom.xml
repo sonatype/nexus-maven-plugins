@@ -109,8 +109,60 @@
       <plugin>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-component-metadata</artifactId>
+        <executions>
+          <execution>
+            <id>merge</id>
+            <goals>
+              <goal>merge-metadata</goal>
+            </goals>
+            <configuration>
+              <descriptors>
+                <descriptor>${project.build.directory}/components.xml</descriptor>
+                <descriptor>${project.basedir}/src/main/resources/META-INF/shaded-components.xml</descriptor>
+              </descriptors>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
 
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <artifactSet>
+                <includes>
+                  <include>org.sonatype.plexus:plexus-sec-dispatcher</include>
+                  <include>org.sonatype.plexus:plexus-cipher</include>
+                  <include>com.sonatype.nexus.m2-settings-template:nexus-m2-settings-template-model</include>
+                  <include>com.sonatype.nexus.m2-settings-template:nexus-m2-settings-template-client</include>
+                  <include>com.sonatype.nexus.usertoken:nexus-usertoken-model</include>
+                  <include>com.sonatype.nexus.usertoken:nexus-usertoken-client</include>
+                  <include>com.sonatype.nexus.pluginkit:nexus-pluginkit-support</include>
+                </includes>
+              </artifactSet>
+              <relocations>
+                <relocation>
+                  <pattern>org.sonatype.plexus.components.sec.dispatcher</pattern>
+                  <shadedPattern>org.sonatype.plexus.components.sec.dispatcher.shaded</shadedPattern>
+                  <excludes>
+                    <exclude>org.sonatype.plexus.components.sec.dispatcher.SecDispatcher</exclude>
+                  </excludes>
+                </relocation>
+                <relocation>
+                  <pattern>org.sonatype.plexus.components.cipher</pattern>
+                  <shadedPattern>org.sonatype.plexus.components.cipher.shaded</shadedPattern>
+                </relocation>
+              </relocations>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
