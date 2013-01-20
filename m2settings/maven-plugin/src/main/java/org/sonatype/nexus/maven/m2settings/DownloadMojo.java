@@ -71,7 +71,7 @@ import static org.sonatype.nexus.client.rest.BaseUrl.baseUrlFrom;
  *
  * @since 1.4
  */
-@Mojo(name = "download")
+@Mojo(name = "download", requiresOnline = true)
 public class DownloadMojo
     extends AbstractMojo
 {
@@ -193,18 +193,7 @@ public class DownloadMojo
         throw new MojoExecutionException(message, cause);
     }
 
-    /**
-     * Fail if Maven is offline.
-     */
-    private void ensureOnline() throws Exception {
-        if (settings.isOffline()) {
-            throw fail("Maven is in 'offline' mode; unable to download m2settings");
-        }
-    }
-
     private void doExecute() throws Exception {
-        ensureOnline();
-
         console = new ConsoleReader();
 
         // Request details from user interactively for anything missing
