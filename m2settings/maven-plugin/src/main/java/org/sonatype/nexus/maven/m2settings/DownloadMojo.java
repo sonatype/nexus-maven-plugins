@@ -156,6 +156,7 @@ public class DownloadMojo
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        // FIXME: Make a slf4j Logger adapter... Mojo Log API sucks ass
         log = getLog();
 
         try {
@@ -176,7 +177,7 @@ public class DownloadMojo
     }
 
     /**
-     * Fail execution and try to clean up cause hierachy.
+     * Fail execution and try to clean up cause hierarchy.
      */
     private Exception fail(final String message, Throwable cause) throws Exception {
         log.debug("Failing: " + message, cause);
@@ -227,13 +228,9 @@ public class DownloadMojo
         }
 
         // Validate the connection
-        ConnectionInfo info = nexusClient.getConnectionInfo();
-        log.debug("Connection: " + info);
-
         NexusStatus status = nexusClient.getStatus();
-        log.debug("Status: " + status);
-
         ensureCompatibleNexus(status);
+        log.info("Connected: " + status.getAppName() + " " + status.getVersion());
 
         M2SettingsTemplates templates = nexusClient.getSubsystem(M2SettingsTemplates.class);
 
@@ -325,6 +322,8 @@ public class DownloadMojo
      * Require Nexus PRO version 2.3+.
      */
     private void ensureCompatibleNexus(final NexusStatus status) throws Exception {
+        log.debug("Ensuring compatibility: " + status);
+
         String edition = status.getEditionShort();
         if (!"PRO".equals(edition)) {
             throw fail("Unsupported Nexus edition: " + edition);
@@ -345,6 +344,8 @@ public class DownloadMojo
         }
     }
 
+    // FIXME: CTRL-D corrupts the prompt slightly
+
     /**
      * Prompt user for a string, optionally masking the input.
      */
@@ -353,7 +354,9 @@ public class DownloadMojo
         String value;
         do {
             value = console.readLine(prompt, mask);
-            if (mask != null) {
+
+            // Do not log values read when masked
+            if (mask == null) {
                 log.debug("Read value: '" + value + "'");
             }
             else {
@@ -383,7 +386,10 @@ public class DownloadMojo
         return value;
     }
 
-    private Integer parseInt(final String value) {
+    /**
+     * Helper to parse an integer w/o exceptions being thrown.
+     */
+    private @Nullable Integer parseInt(final String value) {
         try {
             return Integer.parseInt(value);
         }

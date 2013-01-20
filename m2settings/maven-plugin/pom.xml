@@ -28,6 +28,11 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-plugin-api</artifactId>
     </dependency>
@@ -73,9 +78,11 @@
       <artifactId>nexus-usertoken-client</artifactId>
     </dependency>
 
-    <!--
-    FIXME: Need some slf4j impl here to prevent it from bitching.
-    -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <scope>runtime</scope>
+    </dependency>
 
     <dependency>
       <groupId>org.sonatype.sisu.litmus</groupId>
