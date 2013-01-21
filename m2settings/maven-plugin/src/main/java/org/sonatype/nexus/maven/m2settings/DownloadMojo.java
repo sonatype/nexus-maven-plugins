@@ -287,6 +287,8 @@ public class DownloadMojo
                 }
 
                 // FIXME: would like to sort here to help keep the list consistent, but would also like "default" to always be first
+                // FIXME: if we can assume that "default" is always first, then we can strip it off, sort, then prepend it to get what we want
+                // FIXME: have to see what the impl/backing of server-side looks like before I'd feel comfortable with this assumption
                 //Collections.sort(ids);
 
                 templateId = prompter.promptChoice("Available Templates", "Select Template", ids); // already trimmed
