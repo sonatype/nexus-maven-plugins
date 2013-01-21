@@ -178,14 +178,19 @@ public class DownloadMojo
     private void connect() throws Exception {
         // Request details from user interactively for anything missing
         if (StringUtils.isBlank(nexusUrl)) {
-            nexusUrl = prompter.prompt("Nexus URL").trim();
+            nexusUrl = prompter.prompt("Nexus URL");
         }
+        nexusUrl = nexusUrl.trim();
+
         if (StringUtils.isBlank(username)) {
-            username = prompter.promptWithDefaultValue("Username", System.getProperty("user.name")).trim();
+            username = prompter.promptWithDefaultValue("Username", System.getProperty("user.name"));
         }
+        username = username.trim();
+
         if (StringUtils.isBlank(password)) {
-            password = prompter.prompt("Password", '*'); // trim?
+            password = prompter.prompt("Password", '*');
         }
+        // do not trim password, needs to be given asis
 
         // Setup the connection
         try {
@@ -269,12 +274,20 @@ public class DownloadMojo
                 throw fail("There are no accessible m2settings available");
             }
 
-            List<String> ids = Lists.newArrayListWithExpectedSize(availableTemplates.size());
-            for (M2SettingsTemplateListResponseDto template : availableTemplates) {
-                ids.add(template.getId());
+            // If only 1 template, select it
+            if (availableTemplates.size() == 1) {
+                templateId = availableTemplates.get(0).getId();
             }
-            templateId = prompter.promptChoice("Available Templates", "Select Template", ids);
+            else {
+                // Else ask the user which template they want
+                List<String> ids = Lists.newArrayListWithExpectedSize(availableTemplates.size());
+                for (M2SettingsTemplateListResponseDto template : availableTemplates) {
+                    ids.add(template.getId());
+                }
+                templateId = prompter.promptChoice("Available Templates", "Select Template", ids); // already trimmed
+            }
         }
+        templateId = templateId.trim();
 
         // Fetch the template content
         String content;
