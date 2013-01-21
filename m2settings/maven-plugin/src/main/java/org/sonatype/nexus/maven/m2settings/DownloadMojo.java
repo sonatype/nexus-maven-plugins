@@ -169,7 +169,7 @@ public class DownloadMojo
                 nexusClient.close();
             }
             catch (Exception e) {
-                // ignore
+                log.debug("Failed to close NexusClient; ignoring", e);
             }
         }
     }
