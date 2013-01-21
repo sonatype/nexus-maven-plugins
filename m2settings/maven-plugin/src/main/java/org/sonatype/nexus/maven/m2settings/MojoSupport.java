@@ -18,7 +18,7 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.sonatype.nexus.client.rest.jersey.NexusClientHandlerException;
+import org.sonatype.nexus.client.core.exception.NexusClientException;
 
 import static com.google.common.base.Preconditions.checkState;
 
@@ -62,11 +62,15 @@ public abstract class MojoSupport
         log.debug("Failing: {}", message, cause);
 
         // Try to decode exception stack for more meaningful and terse error messages
-        if (cause instanceof NexusClientHandlerException) {
+        if (cause instanceof NexusClientException) {
             cause = cause.getCause();
-            if (cause instanceof NexusClientHandlerException) {
+
+            // FIXME: This should probably be handled by the nexus-client jersey adapter
+            if (cause instanceof com.sun.jersey.api.client.ClientHandlerException) {
                 cause = cause.getCause();
             }
+
+            // TODO: decode anything else?
         }
 
         throw new MojoExecutionException(message, cause);

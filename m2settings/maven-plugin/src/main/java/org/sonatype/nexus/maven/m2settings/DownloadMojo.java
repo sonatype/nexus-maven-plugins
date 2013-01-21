@@ -37,6 +37,7 @@ import org.sonatype.nexus.client.core.NexusClient;
 import org.sonatype.nexus.client.core.NexusStatus;
 import org.sonatype.nexus.client.rest.BaseUrl;
 import org.sonatype.nexus.client.rest.ConnectionInfo;
+import org.sonatype.nexus.client.rest.NexusClientFactory;
 import org.sonatype.nexus.client.rest.Protocol;
 import org.sonatype.nexus.client.rest.ProxyInfo;
 import org.sonatype.nexus.client.rest.UsernamePasswordAuthenticationInfo;
@@ -221,7 +222,7 @@ public class DownloadMojo
         }
 
         // configure client w/m2settings and usertoken support
-        JerseyNexusClientFactory factory = new JerseyNexusClientFactory(
+        NexusClientFactory factory = new JerseyNexusClientFactory(
             new JerseyTemplatesSubsystemFactory(),
             new JerseyUserTokenSubsystemFactory()
         );
