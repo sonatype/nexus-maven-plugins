@@ -10,7 +10,7 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.nexus.maven.m2settings.usertoken;
+package org.sonatype.nexus.maven.m2settings.template;
 
 import com.sonatype.nexus.usertoken.client.UserToken;
 import com.sonatype.nexus.usertoken.plugin.rest.model.AuthTicketXO;
@@ -36,10 +36,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.sonatype.nexus.maven.m2settings.DownloadMojo.END_EXPR;
 import static org.sonatype.nexus.maven.m2settings.DownloadMojo.START_EXPR;
-import static org.sonatype.nexus.maven.m2settings.usertoken.UserTokenTemplateInterpolatorCustomizer.*;
+import static org.sonatype.nexus.maven.m2settings.template.UserTokenCustomizer.ENCRYPTED_SUFFIX;
+import static org.sonatype.nexus.maven.m2settings.template.UserTokenCustomizer.USER_TOKEN;
+import static org.sonatype.nexus.maven.m2settings.template.UserTokenCustomizer.USER_TOKEN_NAME_CODE;
+import static org.sonatype.nexus.maven.m2settings.template.UserTokenCustomizer.USER_TOKEN_PASS_CODE;
 
 /**
- * Tests for {@link UserTokenTemplateInterpolatorCustomizer}.
+ * Tests for {@link UserTokenCustomizer}.
  */
 public class UserTokenTemplateInterpolatorCustomizerTest
     extends TestSupport
@@ -53,7 +56,7 @@ public class UserTokenTemplateInterpolatorCustomizerTest
     @Mock
     private MasterPasswordEncryption encryption;
 
-    private UserTokenTemplateInterpolatorCustomizer customizer;
+    private UserTokenCustomizer customizer;
 
     private StringSearchInterpolator interpolator;
 
@@ -78,7 +81,7 @@ public class UserTokenTemplateInterpolatorCustomizerTest
         when(userToken.get(anyString())).thenReturn(token);
         when(encryption.encrypt(any(String.class))).thenReturn("{foo}");
 
-        customizer = new UserTokenTemplateInterpolatorCustomizer(encryption, nexusClient);
+        customizer = new UserTokenCustomizer(encryption, nexusClient);
         interpolator = new StringSearchInterpolator(START_EXPR, END_EXPR);
 
         customizer.customize(nexusClient, interpolator);

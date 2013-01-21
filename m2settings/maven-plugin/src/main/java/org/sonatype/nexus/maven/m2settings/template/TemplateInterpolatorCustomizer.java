@@ -10,14 +10,17 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.nexus.maven.m2settings.usertoken;
+package org.sonatype.nexus.maven.m2settings.template;
+
+import org.codehaus.plexus.interpolation.Interpolator;
+import org.sonatype.nexus.client.core.NexusClient;
 
 /**
- * Helper to deal with master-password encryption.
+ * Allows customization of the template {@link Interpolator}.
  *
  * @since 1.4
  */
-public interface MasterPasswordEncryption
+public interface TemplateInterpolatorCustomizer
 {
-    String encrypt(final String value) throws Exception;
+    void customize(NexusClient client, Interpolator interpolator);
 }

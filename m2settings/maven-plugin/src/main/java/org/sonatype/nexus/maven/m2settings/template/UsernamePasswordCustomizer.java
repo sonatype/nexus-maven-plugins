@@ -10,43 +10,38 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.nexus.maven.m2settings.usertoken;
+package org.sonatype.nexus.maven.m2settings.template;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.sonatype.nexus.usertoken.client.UserToken;
-import com.sonatype.nexus.usertoken.plugin.rest.model.AuthTicketXO;
-import com.sonatype.nexus.usertoken.plugin.rest.model.UserTokenXO;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.interpolation.AbstractValueSource;
 import org.codehaus.plexus.interpolation.Interpolator;
+import org.jetbrains.annotations.NonNls;
 import org.sonatype.nexus.client.core.NexusClient;
 import org.sonatype.nexus.client.rest.UsernamePasswordAuthenticationInfo;
-import org.sonatype.nexus.maven.m2settings.TemplateInterpolatorCustomizer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * User-token {@link TemplateInterpolatorCustomizer}.
+ * Username-password {@link TemplateInterpolatorCustomizer}.
  *
  * @since 1.4
  */
-@Component(role=TemplateInterpolatorCustomizer.class, hint="usertoken", instantiationStrategy="per-lookup")
-public class UserTokenTemplateInterpolatorCustomizer
+@Component(role=TemplateInterpolatorCustomizer.class, hint="username-password", instantiationStrategy="per-lookup")
+public class UsernamePasswordCustomizer
     implements TemplateInterpolatorCustomizer
 {
-    public static final char SEPARATOR = ':';
+    @NonNls
+    public static final String USER_ID = "userId";
 
-    //@NonNls
-    public static final String USER_TOKEN = "userToken";
+    @NonNls
+    public static final String USER_NAME = "userName";
 
-    //@NonNls
-    public static final String USER_TOKEN_NAME_CODE = USER_TOKEN + ".nameCode";
+    @NonNls
+    public static final String PASSWORD = "password";
 
-    //@NonNls
-    public static final String USER_TOKEN_PASS_CODE = USER_TOKEN + ".passCode";
-
-    //@NonNls
+    @NonNls
     public static final String ENCRYPTED_SUFFIX = ".encrypted";
 
     @Requirement
@@ -55,13 +50,13 @@ public class UserTokenTemplateInterpolatorCustomizer
     private NexusClient nexusClient;
 
     // Constructor for Plexus
-    public UserTokenTemplateInterpolatorCustomizer() {
+    public UsernamePasswordCustomizer() {
         super();
     }
 
     @VisibleForTesting
-    public UserTokenTemplateInterpolatorCustomizer(final MasterPasswordEncryption encryption,
-                                                   final NexusClient nexusClient)
+    public UsernamePasswordCustomizer(final MasterPasswordEncryption encryption,
+                                      final NexusClient nexusClient)
     {
         this.encryption = checkNotNull(encryption);
         this.nexusClient = checkNotNull(nexusClient);
@@ -86,14 +81,14 @@ public class UserTokenTemplateInterpolatorCustomizer
                 }
 
                 String result = null;
-                if (expression.equalsIgnoreCase(USER_TOKEN)) {
-                    result = renderUserToken();
+                if (expression.equalsIgnoreCase(USER_NAME)) {
+                    result = getUsername();
                 }
-                else if (expression.equalsIgnoreCase(USER_TOKEN_NAME_CODE)) {
-                    result = getNameCode();
+                else if (expression.equalsIgnoreCase(USER_ID)) {
+                    result = getUsername();
                 }
-                else if (expression.equalsIgnoreCase(USER_TOKEN_PASS_CODE)) {
-                    result = getPassCode();
+                else if (expression.equalsIgnoreCase(PASSWORD)) {
+                    result = getPassword();
                 }
 
                 // Attempt to encrypt
@@ -111,32 +106,16 @@ public class UserTokenTemplateInterpolatorCustomizer
         });
     }
 
-    /**
-     * Cached user-token details, as more than one interpolation key may need to use this data.
-     *
-     * Component using instantiationStrategy="per-lookup" to try and avoid holding on to this for too long.
-     */
-    private UserTokenXO cachedToken;
-
-    private UserTokenXO getUserToken() {
-        if (cachedToken == null) {
-            UserToken userToken = nexusClient.getSubsystem(UserToken.class);
-            UsernamePasswordAuthenticationInfo auth = (UsernamePasswordAuthenticationInfo) nexusClient.getConnectionInfo().getAuthenticationInfo();
-            AuthTicketXO ticket = userToken.authenticate(auth.getUsername(), auth.getPassword());
-            cachedToken = userToken.get(ticket.getT());
-        }
-        return cachedToken;
+    private UsernamePasswordAuthenticationInfo getAuthenticationInfo() {
+        return (UsernamePasswordAuthenticationInfo) nexusClient.getConnectionInfo().getAuthenticationInfo();
     }
 
-    public String renderUserToken() {
-        return getNameCode() + SEPARATOR + getPassCode();
+    private String getUsername() {
+        return getAuthenticationInfo().getUsername();
     }
 
-    public String getNameCode() {
-        return getUserToken().getNameCode();
-    }
-
-    public String getPassCode() {
-        return getUserToken().getPassCode();
+    private String getPassword() {
+        return getAuthenticationInfo().getPassword();
     }
 }
+

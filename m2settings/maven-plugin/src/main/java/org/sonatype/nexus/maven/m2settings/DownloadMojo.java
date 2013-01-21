@@ -41,6 +41,7 @@ import org.sonatype.nexus.client.rest.Protocol;
 import org.sonatype.nexus.client.rest.ProxyInfo;
 import org.sonatype.nexus.client.rest.UsernamePasswordAuthenticationInfo;
 import org.sonatype.nexus.client.rest.jersey.JerseyNexusClientFactory;
+import org.sonatype.nexus.maven.m2settings.template.TemplateInterpolatorCustomizer;
 
 import javax.annotation.Nullable;
 import java.io.BufferedWriter;
@@ -52,7 +53,6 @@ import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -252,11 +252,8 @@ public class DownloadMojo
         log.debug("Version: {}", version);
 
         if (!constraint.containsVersion(version)) {
-            log.error("Incompatible Nexus version detected");
-            log.error("Raw version: {}", status.getVersion());
-            log.error("Detected version: {}", version);
-            log.error("Compatible version constraint: {}", constraint);
-            throw fail("Unsupported Nexus version: " + status.getEditionShort());
+            log.error("Incompatible Nexus version detected: {} ({}) does not match: {}", version, status.getVersion(), constraint);
+            throw fail("Unsupported Nexus version: " + status.getVersion());
         }
     }
 

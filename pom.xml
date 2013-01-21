@@ -249,6 +249,12 @@
       </dependency>
 
       <dependency>
+        <groupId>com.intellij</groupId>
+        <artifactId>annotations</artifactId>
+        <version>9.0.4</version>
+      </dependency>
+
+      <dependency>
         <groupId>org.sonatype.nexus.client</groupId>
         <artifactId>nexus-client-core</artifactId>
         <version>${nexus.version}</version>
