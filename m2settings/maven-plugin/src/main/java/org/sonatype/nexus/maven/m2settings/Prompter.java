@@ -143,6 +143,7 @@ public class Prompter
                 Integer i = parseInt(value);
                 if (i != null && i >= 0 && i < choices.size()) {
                     value = choices.get(i);
+                    break;
                 }
 
                 // check if choice is valid
