@@ -17,14 +17,9 @@ import com.sonatype.nexus.usertoken.client.UserToken;
 import com.sonatype.nexus.usertoken.plugin.rest.model.AuthTicketXO;
 import com.sonatype.nexus.usertoken.plugin.rest.model.UserTokenXO;
 import org.codehaus.plexus.component.annotations.Component;
-import org.codehaus.plexus.component.annotations.Requirement;
-import org.codehaus.plexus.interpolation.AbstractValueSource;
-import org.codehaus.plexus.interpolation.Interpolator;
 import org.jetbrains.annotations.NonNls;
 import org.sonatype.nexus.client.core.NexusClient;
 import org.sonatype.nexus.client.rest.UsernamePasswordAuthenticationInfo;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * User-token {@link TemplateInterpolatorCustomizer}.
@@ -33,7 +28,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 @Component(role=TemplateInterpolatorCustomizer.class, hint="usertoken", instantiationStrategy="per-lookup")
 public class UserTokenCustomizer
-    implements TemplateInterpolatorCustomizer
+    extends MasterPasswordCustomizerSupport
 {
     public static final char SEPARATOR = ':';
 
@@ -46,14 +41,6 @@ public class UserTokenCustomizer
     @NonNls
     public static final String USER_TOKEN_PASS_CODE = USER_TOKEN + ".passCode";
 
-    @NonNls
-    public static final String ENCRYPTED_SUFFIX = ".encrypted";
-
-    @Requirement
-    private MasterPasswordEncryption encryption;
-
-    private NexusClient nexusClient;
-
     // Constructor for Plexus
     public UserTokenCustomizer() {
         super();
@@ -63,52 +50,22 @@ public class UserTokenCustomizer
     public UserTokenCustomizer(final MasterPasswordEncryption encryption,
                                final NexusClient nexusClient)
     {
-        this.encryption = checkNotNull(encryption);
-        this.nexusClient = checkNotNull(nexusClient);
+        super(encryption, nexusClient);
     }
 
     @Override
-    public void customize(final NexusClient client, final Interpolator interpolator) {
-        this.nexusClient = checkNotNull(client);
-        checkNotNull(interpolator);
-
-        interpolator.addValueSource(new AbstractValueSource(false)
-        {
-            @Override
-            public Object getValue(String expression) {
-                // Check for encryption flag
-                boolean encrypt = false;
-                if (expression.toLowerCase().endsWith(ENCRYPTED_SUFFIX)) {
-                    encrypt = true;
-
-                    // Strip off suffix and continue
-                    expression = expression.substring(0, expression.length() - ENCRYPTED_SUFFIX.length());
-                }
-
-                String result = null;
-                if (expression.equalsIgnoreCase(USER_TOKEN)) {
-                    result = renderUserToken();
-                }
-                else if (expression.equalsIgnoreCase(USER_TOKEN_NAME_CODE)) {
-                    result = getNameCode();
-                }
-                else if (expression.equalsIgnoreCase(USER_TOKEN_PASS_CODE)) {
-                    result = getPassCode();
-                }
-
-                // Attempt to encrypt
-                if (encrypt && result != null) {
-                    try {
-                        result = encryption.encrypt(result);
-                    }
-                    catch (Exception e) {
-                        throw new RuntimeException("Failed to encrypt result; Master-password encryption configuration may be missing or invalid", e);
-                    }
-                }
-
-                return result;
-            }
-        });
+    protected String getPlainValue(final String expression) {
+        String result = null;
+        if (expression.equalsIgnoreCase(USER_TOKEN)) {
+            result = renderUserToken();
+        }
+        else if (expression.equalsIgnoreCase(USER_TOKEN_NAME_CODE)) {
+            result = getNameCode();
+        }
+        else if (expression.equalsIgnoreCase(USER_TOKEN_PASS_CODE)) {
+            result = getPassCode();
+        }
+        return result;
     }
 
     /**
@@ -120,23 +77,23 @@ public class UserTokenCustomizer
 
     private UserTokenXO getUserToken() {
         if (cachedToken == null) {
-            UserToken userToken = nexusClient.getSubsystem(UserToken.class);
-            UsernamePasswordAuthenticationInfo auth = (UsernamePasswordAuthenticationInfo) nexusClient.getConnectionInfo().getAuthenticationInfo();
+            UserToken userToken = getNexusClient().getSubsystem(UserToken.class);
+            UsernamePasswordAuthenticationInfo auth = getAuthenticationInfo();
             AuthTicketXO ticket = userToken.authenticate(auth.getUsername(), auth.getPassword());
             cachedToken = userToken.get(ticket.getT());
         }
         return cachedToken;
     }
 
-    public String renderUserToken() {
+    private String renderUserToken() {
         return getNameCode() + SEPARATOR + getPassCode();
     }
 
-    public String getNameCode() {
+    private String getNameCode() {
         return getUserToken().getNameCode();
     }
 
-    public String getPassCode() {
+    private String getPassCode() {
         return getUserToken().getPassCode();
     }
 }

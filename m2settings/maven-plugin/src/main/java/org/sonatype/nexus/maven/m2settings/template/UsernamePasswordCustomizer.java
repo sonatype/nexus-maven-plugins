@@ -14,14 +14,8 @@ package org.sonatype.nexus.maven.m2settings.template;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.codehaus.plexus.component.annotations.Component;
-import org.codehaus.plexus.component.annotations.Requirement;
-import org.codehaus.plexus.interpolation.AbstractValueSource;
-import org.codehaus.plexus.interpolation.Interpolator;
 import org.jetbrains.annotations.NonNls;
 import org.sonatype.nexus.client.core.NexusClient;
-import org.sonatype.nexus.client.rest.UsernamePasswordAuthenticationInfo;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Username-password {@link TemplateInterpolatorCustomizer}.
@@ -30,7 +24,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 @Component(role=TemplateInterpolatorCustomizer.class, hint="username-password", instantiationStrategy="per-lookup")
 public class UsernamePasswordCustomizer
-    implements TemplateInterpolatorCustomizer
+    extends MasterPasswordCustomizerSupport
 {
     @NonNls
     public static final String USER_ID = "userId";
@@ -41,14 +35,6 @@ public class UsernamePasswordCustomizer
     @NonNls
     public static final String PASSWORD = "password";
 
-    @NonNls
-    public static final String ENCRYPTED_SUFFIX = ".encrypted";
-
-    @Requirement
-    private MasterPasswordEncryption encryption;
-
-    private NexusClient nexusClient;
-
     // Constructor for Plexus
     public UsernamePasswordCustomizer() {
         super();
@@ -58,56 +44,19 @@ public class UsernamePasswordCustomizer
     public UsernamePasswordCustomizer(final MasterPasswordEncryption encryption,
                                       final NexusClient nexusClient)
     {
-        this.encryption = checkNotNull(encryption);
-        this.nexusClient = checkNotNull(nexusClient);
+        super(encryption, nexusClient);
     }
 
     @Override
-    public void customize(final NexusClient client, final Interpolator interpolator) {
-        this.nexusClient = checkNotNull(client);
-        checkNotNull(interpolator);
-
-        interpolator.addValueSource(new AbstractValueSource(false)
-        {
-            @Override
-            public Object getValue(String expression) {
-                // Check for encryption flag
-                boolean encrypt = false;
-                if (expression.toLowerCase().endsWith(ENCRYPTED_SUFFIX)) {
-                    encrypt = true;
-
-                    // Strip off suffix and continue
-                    expression = expression.substring(0, expression.length() - ENCRYPTED_SUFFIX.length());
-                }
-
-                String result = null;
-                if (expression.equalsIgnoreCase(USER_NAME)) {
-                    result = getUsername();
-                }
-                else if (expression.equalsIgnoreCase(USER_ID)) {
-                    result = getUsername();
-                }
-                else if (expression.equalsIgnoreCase(PASSWORD)) {
-                    result = getPassword();
-                }
-
-                // Attempt to encrypt
-                if (encrypt && result != null) {
-                    try {
-                        result = encryption.encrypt(result);
-                    }
-                    catch (Exception e) {
-                        throw new RuntimeException("Failed to encrypt result; Master-password encryption configuration may be missing or invalid", e);
-                    }
-                }
-
-                return result;
-            }
-        });
-    }
-
-    private UsernamePasswordAuthenticationInfo getAuthenticationInfo() {
-        return (UsernamePasswordAuthenticationInfo) nexusClient.getConnectionInfo().getAuthenticationInfo();
+    protected String getPlainValue(final String expression) {
+        String result = null;
+        if (expression.equalsIgnoreCase(USER_NAME) || expression.equalsIgnoreCase(USER_ID)) {
+            result = getUsername();
+        }
+        else if (expression.equalsIgnoreCase(PASSWORD)) {
+            result = getPassword();
+        }
+        return result;
     }
 
     private String getUsername() {
