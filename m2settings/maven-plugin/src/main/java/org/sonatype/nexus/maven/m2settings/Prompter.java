@@ -138,14 +138,8 @@ public class Prompter
 
                 // check if value is an index
                 Integer i = parseInt(value);
-                if (i != null) {
-                    if (i >= 0 && i < choices.size()) {
-                        value = choices.get(i);
-                    }
-                    else {
-                        // out of range
-                        value = null;
-                    }
+                if (i != null && i >= 0 && i < choices.size()) {
+                    value = choices.get(i);
                 }
 
                 // check if choice is valid
@@ -153,7 +147,7 @@ public class Prompter
                     break;
                 }
 
-                console.println("Invalid selection");
+                console.println("Invalid selection: " + value);
             }
             return value;
         }
