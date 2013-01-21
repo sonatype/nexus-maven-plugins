@@ -114,6 +114,7 @@ public class Prompter
      * Prompt user for a string out of a set of available choices.
      *
      * Choices must not have entries with leading/trailing whitespace.
+     * At least 2 choices are required.
      */
     public String promptChoice(final String header, final String message, final List<String> choices) throws IOException {
         checkNotNull(header);
