@@ -50,6 +50,11 @@ public abstract class MasterPasswordCustomizerSupport
         return encryption;
     }
 
+    /**
+     * Handles encryption of plain-values for entries suffixed with {@link #ENCRYPTED_SUFFIX}.
+     *
+     * @see #getPlainValue(String)
+     */
     @Override
     protected String getValue(@NonNls String expression) {
         // Check for encryption flag
