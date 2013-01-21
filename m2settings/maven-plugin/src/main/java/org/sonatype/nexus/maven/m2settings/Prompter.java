@@ -118,6 +118,8 @@ public class Prompter
         checkNotNull(message);
         checkArgument(choices.size() > 1, "2 or more choices are required");
 
+        // TODO: Sort out if we want zero or one based indexes
+
         // display header
         console.println(header + ":");
         for (int i = 0; i < choices.size(); i++) {
@@ -137,7 +139,7 @@ public class Prompter
                 // check if value is an index
                 Integer i = parseInt(value);
                 if (i != null) {
-                    if (i < choices.size()) {
+                    if (i >= 0  && i < choices.size()) {
                         value = choices.get(i);
                     }
                     else {
