@@ -181,24 +181,15 @@ public class DownloadMojo
         if (StringUtils.isBlank(nexusUrl)) {
             nexusUrl = prompter.prompt("Nexus URL");
         }
-        else {
-            log.info("Nexus URL: {}", nexusUrl);
-        }
         nexusUrl = nexusUrl.trim();
 
         if (StringUtils.isBlank(username)) {
             username = prompter.promptWithDefaultValue("Username", System.getProperty("user.name"));
         }
-        else {
-            log.info("Username: {}", username);
-        }
         username = username.trim();
 
         if (StringUtils.isBlank(password)) {
             password = prompter.prompt("Password", '*');
-        }
-        else {
-            log.info("Password: ****");
         }
         // do not trim password, needs to be given asis
 
@@ -302,9 +293,6 @@ public class DownloadMojo
 
                 templateId = prompter.promptChoice("Available Templates", "Select Template", ids); // already trimmed
             }
-        }
-        else {
-            log.info("Template ID: {}", templateId);
         }
         templateId = templateId.trim();
 
