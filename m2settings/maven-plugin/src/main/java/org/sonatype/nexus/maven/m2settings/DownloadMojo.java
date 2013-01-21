@@ -366,13 +366,9 @@ public class DownloadMojo
     private Interpolator createInterpolator() {
         Interpolator interpolator = new StringSearchInterpolator(START_EXPR, END_EXPR);
         if (customizers != null) {
-            boolean debug = log.isDebugEnabled();
-
             for (TemplateInterpolatorCustomizer customizer : customizers) {
                 try {
-                    if (debug) {
-                        log.debug("Applying customizer: {}", customizer);
-                    }
+                    log.debug("Applying customizer: {}", customizer);
                     customizer.customize(nexusClient, interpolator);
                 }
                 catch (Exception e) {
