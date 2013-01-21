@@ -52,6 +52,7 @@ import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -284,6 +285,10 @@ public class DownloadMojo
                 for (M2SettingsTemplateListResponseDto template : availableTemplates) {
                     ids.add(template.getId());
                 }
+
+                // FIXME: would like to sort here to help keep the list consistent, but would also like "default" to always be first
+                //Collections.sort(ids);
+
                 templateId = prompter.promptChoice("Available Templates", "Select Template", ids); // already trimmed
             }
         }
