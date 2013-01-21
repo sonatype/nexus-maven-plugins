@@ -155,7 +155,6 @@
                   <include>com.sonatype.nexus.m2-settings-template:nexus-m2-settings-template-client</include>
                   <include>com.sonatype.nexus.usertoken:nexus-usertoken-model</include>
                   <include>com.sonatype.nexus.usertoken:nexus-usertoken-client</include>
-                  <include>com.sonatype.nexus.pluginkit:nexus-pluginkit-support</include>
                 </includes>
               </artifactSet>
               <relocations>
