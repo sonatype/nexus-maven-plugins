@@ -27,7 +27,6 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
-import org.sonatype.maven.mojo.logback.LogbackUtils;
 import org.sonatype.nexus.client.core.NexusClient;
 import org.sonatype.nexus.client.core.NexusStatus;
 import org.sonatype.nexus.client.core.exception.NexusClientErrorResponseException;
@@ -39,7 +38,6 @@ import com.sonatype.nexus.staging.client.ProfileMatchingParameters;
 import com.sonatype.nexus.staging.client.StagingRuleFailures;
 import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
-import ch.qos.logback.classic.Level;
 
 public abstract class AbstractStagingDeployStrategy
     extends AbstractDeployStrategy
@@ -79,14 +77,17 @@ public abstract class AbstractStagingDeployStrategy
     protected void initRemoting( final MavenSession mavenSession, final StagingParameters parameters )
         throws MojoExecutionException
     {
-        if ( getLogger().isDebugEnabled() )
-        {
-            LogbackUtils.syncLogLevelWithLevel( Level.DEBUG );
-        }
-        else
-        {
-            LogbackUtils.syncLogLevelWithLevel( Level.WARN );
-        }
+
+        // FIXME: not sure this is a good idea to assume we know what slf4j impl mvn has installed, even with a direct dep on one
+        //if ( getLogger().isDebugEnabled() )
+        //{
+        //    LogbackUtils.syncLogLevelWithLevel( Level.DEBUG );
+        //}
+        //else
+        //{
+        //    LogbackUtils.syncLogLevelWithLevel( Level.WARN );
+        //}
+
         remoting = new RemotingImpl( mavenSession, parameters, secDispatcher );
         if ( remoting.getServer() != null )
         {

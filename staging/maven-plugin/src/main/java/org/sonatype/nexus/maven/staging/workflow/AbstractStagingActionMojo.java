@@ -22,7 +22,6 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Server;
 import org.codehaus.plexus.util.StringUtils;
-import org.sonatype.maven.mojo.logback.LogbackUtils;
 import org.sonatype.maven.mojo.settings.MavenSettings;
 import org.sonatype.nexus.client.core.NexusClient;
 import org.sonatype.nexus.client.core.exception.NexusClientErrorResponseException;
@@ -200,7 +199,10 @@ public abstract class AbstractStagingActionMojo
                 }
 
                 final ConnectionInfo connectionInfo = new ConnectionInfo( baseUrl, authenticationInfo, proxyInfos );
-                LogbackUtils.syncLogLevelWithMaven( getLog() );
+
+                // FIXME: not sure this is a good idea to assume we know what slf4j impl mvn has installed, even with a direct dep on one
+                //LogbackUtils.syncLogLevelWithMaven( getLog() );
+
                 this.nexusClient =
                     new JerseyNexusClientFactory( new JerseyStagingWorkflowV2SubsystemFactory() ).createFor( connectionInfo );
                 getLog().debug( "NexusClient created against Nexus instance on URL: " + baseUrl.toString() + "." );
