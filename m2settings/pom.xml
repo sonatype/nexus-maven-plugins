@@ -26,11 +26,6 @@
   <artifactId>nexus-m2settings</artifactId>
   <packaging>pom</packaging>
 
-  <properties>
-    <m2settings.version>2.4-SNAPSHOT</m2settings.version>
-    <usertoken.version>1.3-SNAPSHOT</usertoken.version>
-  </properties>
-
   <dependencyManagement>
     <dependencies>
       <dependency>
