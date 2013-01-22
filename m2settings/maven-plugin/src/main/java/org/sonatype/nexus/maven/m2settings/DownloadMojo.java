@@ -267,12 +267,11 @@ public class DownloadMojo
             }
 
             AuthenticationInfo proxyAuth = null;
-
-            // already configured, use it
             if (!StringUtils.isBlank(proxyUsername) && !StringUtils.isBlank(proxyUsername)) {
                 proxyAuth = new UsernamePasswordAuthenticationInfo(proxyUsername.trim(), proxyPassword);
             }
             else {
+                // FIXME: asis, when not using proxy auth, this will always get prompted
                 String answer = prompter.promptChoice("Proxy Authentication", "Choose", Lists.newArrayList("yes", "no"));
                 if ("yes".equals(answer)) {
                     if (StringUtils.isBlank(proxyUsername)) {
