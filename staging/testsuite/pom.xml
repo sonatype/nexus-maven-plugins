@@ -94,11 +94,6 @@
   <build>
     <testResources>
       <testResource>
-        <directory>src/test/resources</directory>
-        <filtering>true</filtering>
-      </testResource>
-
-      <testResource>
         <directory>src/test/it-resources</directory>
         <filtering>true</filtering>
       </testResource>
