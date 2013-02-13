@@ -286,7 +286,7 @@ public abstract class StagingMavenPluginITSupport
                     finally
                     {
                         final File mavenLog = new File( baseDir, getLogFileName() );
-                        testIndex().recordLink( "maven.log/" + getNumberOfRuns(), mavenLog );
+                        testIndex().recordAndCopyLink( "maven.log/" + getNumberOfRuns(), mavenLog );
                     }
                 }
             };
