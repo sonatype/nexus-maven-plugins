@@ -41,7 +41,7 @@ import com.sonatype.nexus.staging.client.StagingRepository;
  * repositories should be dropped by same guidelines we drop the one repository that failed:
  * "user will start another build, and new ones will be created", but the ones not dropped will remain dangling. Failure
  * is achieved by activating a profile, that makes 2nd module produce an invalid build (lacking javadoc).
- * 
+ *
  * @author cstamas
  * @see https://docs.sonatype.com/display/Nexus/Staging+V2+Testing
  */
@@ -62,7 +62,7 @@ public class MultiprofileFailureV2RoundtripIT
     {
         // TODO: (cstamas) I promised to Alin to change this "old way of doing things" to use of REST API that would
         // configure Nexus properly once the Security and Staging Management Nexus Client subsystems are done.
-        return super.configureNexus( configuration ).addOverlays(
+        return super.configureNexus( configuration ).setLogLevel("DEBUG").addOverlays(
             fileTaskBuilder.copy().directory( file( testData().resolveFile( "preset-nexus" ) ) ).to().directory(
                 path( "sonatype-work/nexus/conf" ) ) );
     }
@@ -75,7 +75,7 @@ public class MultiprofileFailureV2RoundtripIT
 
     /**
      * Using "deploy".
-     * 
+     *
      * @throws VerificationException
      * @throws IOException
      */
@@ -116,7 +116,7 @@ public class MultiprofileFailureV2RoundtripIT
 
     /**
      * Using "close" build action.
-     * 
+     *
      * @throws VerificationException
      * @throws IOException
      */
