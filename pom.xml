@@ -292,6 +292,16 @@
         <version>1.2</version>
       </dependency>
 
+      <!-- HACK: magic alert this is needed by IT support when bundle under test is less than nexus 2.4 -->
+      <!-- FIXME: need a supported method to reliably check version under test and include this conditionally -->
+      <dependency>
+        <groupId>com.sonatype.components</groupId>
+        <artifactId>plexus-rule</artifactId>
+        <version>1.5</version>
+        <type>${nexus-plugin.type}</type>
+        <scope>test</scope>
+      </dependency>
+
     </dependencies>
   </dependencyManagement>
 

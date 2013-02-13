@@ -54,7 +54,7 @@ import com.sonatype.nexus.testsuite.support.NexusProConfigurator;
 
 /**
  * A base class that gets and prepares given version of Maven. Also, it creates Verifier for it.
- * 
+ *
  * @author cstamas
  */
 @NexusStartAndStopStrategy( EACH_TEST )
@@ -88,8 +88,10 @@ public abstract class StagingMavenPluginITSupport
     @Override
     protected NexusBundleConfiguration configureNexus( final NexusBundleConfiguration configuration )
     {
+
         return new NexusProConfigurator( this ).configure( configuration )
             .setPlugins(
+                // TODO remove plexus rule for nexus 2.4+ - see NEXUS-5475
                 artifactResolver().resolvePluginFromDependencyManagement(
                     "com.sonatype.components", "plexus-rule"
                 ),
@@ -117,7 +119,7 @@ public abstract class StagingMavenPluginITSupport
 
     /**
      * Override this method to have other than default versions involved.
-     * 
+     *
      * @return
      */
     protected List<String> getMavenVersions()
@@ -172,7 +174,7 @@ public abstract class StagingMavenPluginITSupport
     /**
      * Prepares a verifier to run against a project with following GAV: getClass().getPackage().getName() :
      * baseDir.getName() + "-" + mavenVersion : "1.0".
-     * 
+     *
      * @param testId
      * @param mavenVersion
      * @param mavenSettings
@@ -191,7 +193,7 @@ public abstract class StagingMavenPluginITSupport
     /**
      * Prepares a verifier to run against a project with following GAV: getClass().getPackage().getName() :
      * baseDir.getName() + "-" + mavenVersion : version.
-     * 
+     *
      * @param testId
      * @param mavenVersion
      * @param mavenSettings
@@ -211,7 +213,7 @@ public abstract class StagingMavenPluginITSupport
 
     /**
      * Creates a project, filters if needed and prepares a Verifier to run against it.
-     * 
+     *
      * @param testId
      * @param mavenVersion
      * @param mavenSettings
@@ -303,7 +305,7 @@ public abstract class StagingMavenPluginITSupport
 
     /**
      * Recurses the baseDir searching for POMs and filters them.
-     * 
+     *
      * @param baseDir
      * @param properties
      * @throws IOException
@@ -342,7 +344,7 @@ public abstract class StagingMavenPluginITSupport
     /**
      * Returns the list of all staging repositories - whether open or closed - found in all profiles (all staging
      * repositories present instance-wide).
-     * 
+     *
      * @return
      */
     protected List<StagingRepository> getAllStagingRepositories()
@@ -361,7 +363,7 @@ public abstract class StagingMavenPluginITSupport
 
     /**
      * Returns the list of all staging repositories - whether open or closed - found in passed in profile.
-     * 
+     *
      * @return
      */
     protected List<StagingRepository> getProfileStagingRepositories( final Profile profile )
@@ -379,7 +381,7 @@ public abstract class StagingMavenPluginITSupport
      * (AsynchronousEventInspector). Hence, this method in short does a GAV search, but is "shielded" with some retries
      * and sleeps to make sure that result is correct. For input parameters see
      * {@link MavenIndexer#searchByGAV(String, String, String, String, String, String)} method.
-     * 
+     *
      * @return
      */
     protected SearchResponse searchWithRetriesForGAV( final String groupId, final String artifactId,
