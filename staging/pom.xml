@@ -27,8 +27,7 @@
   <packaging>pom</packaging>
 
   <properties>
-    <staging.version>2.2</staging.version>
-    <logback.version>1.0.7</logback.version>
+    <staging.version>2.3-SNAPSHOT</staging.version>
   </properties>
 
   <dependencyManagement>
@@ -40,17 +39,17 @@
         <version>1.1</version>
       </dependency>
 
-      <dependency>
-        <groupId>ch.qos.logback</groupId>
-        <artifactId>logback-core</artifactId>
-        <version>${logback.version}</version>
-      </dependency>
+      <!--<dependency>-->
+        <!--<groupId>ch.qos.logback</groupId>-->
+        <!--<artifactId>logback-core</artifactId>-->
+        <!--<version>${logback.version}</version>-->
+      <!--</dependency>-->
 
-      <dependency>
-        <groupId>ch.qos.logback</groupId>
-        <artifactId>logback-classic</artifactId>
-        <version>${logback.version}</version>
-      </dependency>
+      <!--<dependency>-->
+        <!--<groupId>ch.qos.logback</groupId>-->
+        <!--<artifactId>logback-classic</artifactId>-->
+        <!--<version>1.0.7</version>-->
+      <!--</dependency>-->
 
       <dependency>
         <groupId>com.sonatype.nexus.plugin</groupId>
