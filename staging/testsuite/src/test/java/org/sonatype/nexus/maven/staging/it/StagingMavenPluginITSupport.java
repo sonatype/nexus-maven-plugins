@@ -91,9 +91,6 @@ public abstract class StagingMavenPluginITSupport
         return new NexusProConfigurator( this ).configure( configuration )
             .setPlugins(
                 artifactResolver().resolvePluginFromDependencyManagement(
-                    "com.sonatype.components", "plexus-rule"
-                ),
-                artifactResolver().resolvePluginFromDependencyManagement(
                     "com.sonatype.nexus.plugin", "nexus-procurement-plugin"
                 ),
                 artifactResolver().resolvePluginFromDependencyManagement(
