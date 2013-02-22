@@ -71,6 +71,7 @@ public class SimpleV2RoundtripIT
         StagingRepository repository = stagingRepositories.get(0);
         assertThat(repository.getState(), is(State.RELEASED));
 
+        // drop the repository so the next test has empty repositories
         getStagingWorkflowV2Service().dropStagingRepositories("cleanup", repository.getId());
 
         // stuff we staged are released and found by indexer
