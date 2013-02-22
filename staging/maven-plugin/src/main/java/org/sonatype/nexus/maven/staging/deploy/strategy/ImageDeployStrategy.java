@@ -90,13 +90,7 @@ public class ImageDeployStrategy
             getLogger().info( " * Upload of locally staged artifacts finished." );
             afterUpload( parameters, stagingRepository );
         }
-        catch ( StagingRuleFailuresException e )
-        {
-            afterUploadFailure( parameters, Collections.singletonList( stagingRepository ), e );
-            getLogger().error( "Remote staging finished with a failure." );
-            throw new ArtifactDeploymentException( "Remote staging failed: " + e.getMessage(), e );
-        }
-        catch ( IOException e )
+        catch ( Exception e )
         {
             afterUploadFailure( parameters, Collections.singletonList( stagingRepository ), e );
             getLogger().error( "Remote staging finished with a failure." );
