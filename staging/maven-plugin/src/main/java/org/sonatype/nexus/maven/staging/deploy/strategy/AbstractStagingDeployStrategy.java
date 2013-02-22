@@ -331,7 +331,7 @@ public abstract class AbstractStagingDeployStrategy
             final List<String> failedRepositories = new ArrayList<String>();
             for ( StagingRuleFailures failures : srfe.getFailures() )
             {
-                failedRepositories.add( failures.getRepositoryName() + "(id=" + failures.getRepositoryId() + ")" );
+                failedRepositories.add( failures.getRepositoryId() );
             }
             msg = "Rule failure during close of staging repositories: " + failedRepositories;
             keep = parameters.isKeepStagingRepositoryOnCloseRuleFailure();

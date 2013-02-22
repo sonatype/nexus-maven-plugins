@@ -57,7 +57,7 @@ public class CloseStageRepositoryMojo
                 final List<String> failedRepositories = new ArrayList<String>();
                 for ( StagingRuleFailures failures : e.getFailures() )
                 {
-                    failedRepositories.add( failures.getRepositoryName() + "(id=" + failures.getRepositoryId() + ")" );
+                    failedRepositories.add( failures.getRepositoryId() );
                 }
                 final String msg = "Rule failure during close of staging repositories: " + failedRepositories;
 
