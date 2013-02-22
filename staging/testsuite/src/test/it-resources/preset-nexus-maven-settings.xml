@@ -21,12 +21,17 @@
       <password>deployment123</password>
     </server>
   </servers>
-  <mirrors>
-    <mirror>
-      <id>local-nexus</id>
-      <mirrorOf>external:*</mirrorOf>
-      <!-- Use a fake repository to not run into situations where local repository is not enough-->
-      <url>http://localhost:${nexus.port}/nexus/content/repository/fake</url>
-    </mirror>
-  </mirrors>
+
+  <!--
+  HACK: Disable for now, too many odd missing dependencies
+  -->
+
+  <!--<mirrors>-->
+    <!--<mirror>-->
+      <!--<id>local-nexus</id>-->
+      <!--<mirrorOf>external:*</mirrorOf>-->
+      <!--&lt;!&ndash; Use a fake repository to not run into situations where local repository is not enough&ndash;&gt;-->
+      <!--<url>http://localhost:${nexus.port}/nexus/content/repository/fake</url>-->
+    <!--</mirror>-->
+  <!--</mirrors>-->
 </settings>

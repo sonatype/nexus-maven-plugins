@@ -26,15 +26,28 @@
   <artifactId>nexus-staging-maven-plugin-testsuite</artifactId>
 
   <dependencies>
+    <!--
+    FIXME: Probably should not have this dependency here, as this pollutes the test classes environment.
+    -->
+
     <dependency>
       <groupId>org.sonatype.plugins</groupId>
       <artifactId>nexus-staging-maven-plugin</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-simple</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
+
+    <!--
+    NOTE: Not using scope=test here, as the maven-invoker-plugin does not include artifacts in that scope when its populating the local repository.
+    -->
 
     <dependency>
       <groupId>org.sonatype.sisu</groupId>
       <artifactId>sisu-inject-bean</artifactId>
-      <scope>test</scope>
       <exclusions>
         <exclusion>
           <groupId>org.sonatype.sisu</groupId>
@@ -46,13 +59,11 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId>
-      <scope>test</scope>
     </dependency>
 
     <dependency>
@@ -63,31 +74,26 @@
     <dependency>
       <groupId>com.sonatype.nexus.staging</groupId>
       <artifactId>nexus-staging-client</artifactId>
-      <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.sonatype.plexus</groupId>
       <artifactId>plexus-jetty-testsuite</artifactId>
-      <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>com.sonatype.nexus.pluginkit</groupId>
       <artifactId>nexus-testsuite-support</artifactId>
-      <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.sonatype.nexus.indexer-lucene</groupId>
       <artifactId>nexus-indexer-lucene-client</artifactId>
-      <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-verifier</artifactId>
-      <scope>test</scope>
     </dependency>
   </dependencies>
 
