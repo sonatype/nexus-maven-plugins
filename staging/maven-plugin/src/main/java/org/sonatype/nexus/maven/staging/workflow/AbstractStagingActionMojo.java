@@ -200,9 +200,6 @@ public abstract class AbstractStagingActionMojo
 
                 final ConnectionInfo connectionInfo = new ConnectionInfo( baseUrl, authenticationInfo, proxyInfos );
 
-                // FIXME: not sure this is a good idea to assume we know what slf4j impl mvn has installed, even with a direct dep on one
-                //LogbackUtils.syncLogLevelWithMaven( getLog() );
-
                 this.nexusClient =
                     new JerseyNexusClientFactory( new JerseyStagingWorkflowV2SubsystemFactory() ).createFor( connectionInfo );
                 getLog().debug( "NexusClient created against Nexus instance on URL: " + baseUrl.toString() + "." );

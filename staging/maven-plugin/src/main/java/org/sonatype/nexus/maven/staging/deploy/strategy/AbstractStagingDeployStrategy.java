@@ -77,17 +77,6 @@ public abstract class AbstractStagingDeployStrategy
     protected void initRemoting( final MavenSession mavenSession, final StagingParameters parameters )
         throws MojoExecutionException
     {
-
-        // FIXME: not sure this is a good idea to assume we know what slf4j impl mvn has installed, even with a direct dep on one
-        //if ( getLogger().isDebugEnabled() )
-        //{
-        //    LogbackUtils.syncLogLevelWithLevel( Level.DEBUG );
-        //}
-        //else
-        //{
-        //    LogbackUtils.syncLogLevelWithLevel( Level.WARN );
-        //}
-
         remoting = new RemotingImpl( mavenSession, parameters, secDispatcher );
         if ( remoting.getServer() != null )
         {

@@ -130,27 +130,7 @@ public class ImageDeployStrategy
             request.setProxyPassword( proxy.getPassword() );
         }
 
-        // FIXME: not sure this is a good idea to assume we know what slf4j impl mvn has installed, even with a direct dep on one
-        // Zapper is a bit "chatty", if no Maven debug session is ongoing, then up logback to WARN
-        //if ( getLogger().isDebugEnabled() )
-        //{
-        //    LogbackUtils.syncLogLevelWithLevel( Level.DEBUG );
-        //}
-        //else
-        //{
-        //    LogbackUtils.syncLogLevelWithLevel( Level.WARN );
-        //}
-
         zapper.deployDirectory( request );
-
-        //if ( getLogger().isDebugEnabled() )
-        //{
-        //    LogbackUtils.syncLogLevelWithLevel( Level.DEBUG );
-        //}
-        //else
-        //{
-        //    LogbackUtils.syncLogLevelWithLevel( Level.INFO );
-        //}
     }
 
 }

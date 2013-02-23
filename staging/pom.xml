@@ -39,18 +39,6 @@
         <version>1.1</version>
       </dependency>
 
-      <!--<dependency>-->
-        <!--<groupId>ch.qos.logback</groupId>-->
-        <!--<artifactId>logback-core</artifactId>-->
-        <!--<version>${logback.version}</version>-->
-      <!--</dependency>-->
-
-      <!--<dependency>-->
-        <!--<groupId>ch.qos.logback</groupId>-->
-        <!--<artifactId>logback-classic</artifactId>-->
-        <!--<version>1.0.7</version>-->
-      <!--</dependency>-->
-
       <dependency>
         <groupId>com.sonatype.nexus.plugin</groupId>
         <artifactId>nexus-staging-plugin</artifactId>
