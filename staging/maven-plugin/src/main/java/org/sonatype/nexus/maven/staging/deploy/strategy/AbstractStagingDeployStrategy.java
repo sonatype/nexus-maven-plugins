@@ -113,10 +113,7 @@ public abstract class AbstractStagingDeployStrategy
                 }
                 else {
                     ticked = true;
-                    synchronized (System.out) {
-                        System.out.print(".");
-                        System.out.flush();
-                    }
+                    System.out.print(".");
                 }
             }
 
