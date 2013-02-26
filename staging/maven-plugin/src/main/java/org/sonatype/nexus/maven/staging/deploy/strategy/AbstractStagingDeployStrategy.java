@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import com.sonatype.nexus.staging.client.StagingWorkflowV1Service.ProgressMonitor;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.InvalidRepositoryException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -89,6 +90,76 @@ public abstract class AbstractStagingDeployStrategy
                 "Using " + remoting.getProxy().getProtocol().toUpperCase() + " Proxy with ID=\""
                     + remoting.getProxy().getId() + "\" from Maven settings." );
         }
+
+        // FIXME: Is there a better place to do this?  Really would like to be in a mojo-context here
+
+        // install and configure progress monitor
+        StagingWorkflowV2Service service = remoting.getStagingWorkflowV2Service();
+        //service.setProgressTimeoutMinutes();
+        //service.setProgressPauseDurationSeconds();
+        service.setProgressMonitor(new ProgressMonitor()
+        {
+            private boolean ticked;
+
+            @Override
+            public void start() {
+                getLogger().debug("START");
+            }
+
+            @Override
+            public void tick() {
+                if (getLogger().isDebugEnabled()) {
+                    getLogger().debug("TICK");
+                }
+                else {
+                    ticked = true;
+                    synchronized (System.out) {
+                        System.out.print(".");
+                        System.out.flush();
+                    }
+                }
+            }
+
+            private void printlnIfTicked() {
+                if (ticked) {
+                    System.out.println();
+                }
+            }
+
+            @Override
+            public void pause() {
+                getLogger().debug("PAUSE");
+            }
+
+            @Override
+            public void info(String message) {
+                printlnIfTicked();
+                getLogger().info(" * " + message);
+            }
+
+            @Override
+            public void error(String message) {
+                printlnIfTicked();
+                getLogger().error(" * " + message);
+            }
+
+            @Override
+            public void stop() {
+                getLogger().debug("STOP");
+            }
+
+            @Override
+            public void timeout() {
+                printlnIfTicked();
+                getLogger().warn("TIMEOUT");
+            }
+
+            @Override
+            public void interrupted() {
+                printlnIfTicked();
+                getLogger().warn("INTERRUPTED");
+            }
+        });
     }
 
     protected synchronized Remoting getRemoting()
