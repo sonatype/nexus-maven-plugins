@@ -53,9 +53,12 @@ public class ProgressMonitorImpl
 
     @Override
     public void start() {
-        logger.debug("START");
-
-        System.out.print("Waiting for operation to complete");
+        if (logger.isDebugEnabled()) {
+            logger.debug("START");
+        }
+        else {
+            System.out.print("Waiting for operation to complete");
+        }
     }
 
     @Override
