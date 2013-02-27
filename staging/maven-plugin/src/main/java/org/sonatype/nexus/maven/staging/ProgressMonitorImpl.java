@@ -58,7 +58,7 @@ public class ProgressMonitorImpl
         }
         else {
             System.out.println();
-            System.out.print("Waiting for operation to complete");
+            System.out.print("Waiting for operation to complete...");
         }
     }
 
