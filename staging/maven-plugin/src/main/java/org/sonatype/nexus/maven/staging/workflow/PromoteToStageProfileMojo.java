@@ -59,5 +59,6 @@ public class PromoteToStageProfileMojo
                 + " to build profile ID=\"" + getBuildPromotionProfileId() + "\"" );
         stagingWorkflow.promoteStagingRepositories( getDescriptionWithDefaultsForAction( "Promoted" ),
                                                     getBuildPromotionProfileId(), getStagingRepositoryIds() );
+        getLog().info( "Promoted" );
     }
 }

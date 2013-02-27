@@ -45,6 +45,7 @@ public class CloseStageRepositoryMojo
             getLog().info( "Closing staging repository with IDs=" + Arrays.toString( getStagingRepositoryIds() ) );
             stagingWorkflow.finishStagingRepositories( getDescriptionWithDefaultsForAction( "Closed" ),
                 stagingRepositoryIds );
+            getLog().info( "Closed" );
         }
         catch ( StagingRuleFailuresException e )
         {
