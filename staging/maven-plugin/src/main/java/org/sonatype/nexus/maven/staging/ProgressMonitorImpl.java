@@ -57,6 +57,7 @@ public class ProgressMonitorImpl
             logger.debug("START");
         }
         else {
+            System.out.println();
             System.out.print("Waiting for operation to complete");
         }
     }
@@ -91,8 +92,13 @@ public class ProgressMonitorImpl
 
     @Override
     public void stop() {
-        maybePrintln();
-        logger.debug("STOP");
+        if (logger.isDebugEnabled()) {
+            logger.debug("STOP");
+        }
+        else {
+            maybePrintln();
+            System.out.println();
+        }
     }
 
     @Override
