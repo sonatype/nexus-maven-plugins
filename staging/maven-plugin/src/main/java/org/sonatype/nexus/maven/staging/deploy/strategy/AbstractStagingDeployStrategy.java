@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import com.sonatype.nexus.staging.client.StagingWorkflowV1Service.ProgressMonitor;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.InvalidRepositoryException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -32,6 +31,7 @@ import org.sonatype.nexus.client.core.NexusClient;
 import org.sonatype.nexus.client.core.NexusStatus;
 import org.sonatype.nexus.client.core.exception.NexusClientErrorResponseException;
 import org.sonatype.nexus.maven.staging.ErrorDumper;
+import org.sonatype.nexus.maven.staging.ProgressMonitorImpl;
 import org.sonatype.nexus.maven.staging.deploy.StagingRepository;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 import com.sonatype.nexus.staging.client.Profile;
@@ -91,75 +91,23 @@ public abstract class AbstractStagingDeployStrategy
                     + remoting.getProxy().getId() + "\" from Maven settings." );
         }
 
-        // FIXME: Is there a better place to do this?  Really would like to be in a mojo-context here
-        // FIXME: This is duplicated/augmented from near copy in AbstractStagingActionMojo
-
         // install and configure progress monitor
         StagingWorkflowV2Service service = remoting.getStagingWorkflowV2Service();
-        //service.setProgressTimeoutMinutes();
-        //service.setProgressPauseDurationSeconds();
-        service.setProgressMonitor(new ProgressMonitor()
-        {
-            private boolean needsNewline;
-
-            private void maybePrintln() {
-                if (needsNewline) {
-                    System.out.println();
-                    needsNewline = false;
-                }
+        service.setProgressMonitor(new ProgressMonitorImpl(getLogger()) {
+            @Override
+            public void info(final String message) {
+                super.info(" * " + message);
             }
 
             @Override
-            public void start() {
-                getLogger().debug("START");
-            }
-
-            @Override
-            public void tick() {
-                if (getLogger().isDebugEnabled()) {
-                    getLogger().debug("TICK");
-                }
-                else {
-                    needsNewline = true;
-                    System.out.print(".");
-                }
-            }
-
-            @Override
-            public void pause() {
-                getLogger().debug("PAUSE");
-            }
-
-            @Override
-            public void info(String message) {
-                maybePrintln();
-                getLogger().info(" * " + message);
-            }
-
-            @Override
-            public void error(String message) {
-                maybePrintln();
-                getLogger().error(" * " + message);
-            }
-
-            @Override
-            public void stop() {
-                maybePrintln();
-                getLogger().debug("STOP");
-            }
-
-            @Override
-            public void timeout() {
-                maybePrintln();
-                getLogger().warn("TIMEOUT");
-            }
-
-            @Override
-            public void interrupted() {
-                maybePrintln();
-                getLogger().warn("INTERRUPTED");
+            public void error(final String message) {
+                super.error(" * " + message);
             }
         });
+
+        // TODO: Configure these bits
+        //service.setProgressTimeoutMinutes();
+        //service.setProgressPauseDurationSeconds();
     }
 
     protected synchronized Remoting getRemoting()

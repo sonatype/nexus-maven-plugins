@@ -34,6 +34,7 @@ import org.sonatype.nexus.client.rest.UsernamePasswordAuthenticationInfo;
 import org.sonatype.nexus.client.rest.jersey.JerseyNexusClientFactory;
 import org.sonatype.nexus.maven.staging.AbstractStagingMojo;
 import org.sonatype.nexus.maven.staging.ErrorDumper;
+import org.sonatype.nexus.maven.staging.ProgressMonitorImpl;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
 
 import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
@@ -205,74 +206,13 @@ public abstract class AbstractStagingActionMojo
                     new JerseyNexusClientFactory( new JerseyStagingWorkflowV2SubsystemFactory() ).createFor( connectionInfo );
                 getLog().debug( "NexusClient created against Nexus instance on URL: " + baseUrl.toString() + "." );
 
-                // FIXME: This is duplicated/augmented from near copy in AbstractStagingDeployStrategy
-
                 // install and configure progress monitor
                 StagingWorkflowV2Service service = nexusClient.getSubsystem(StagingWorkflowV2Service.class);
+                service.setProgressMonitor(new ProgressMonitorImpl(getLog()));
+
+                // TODO: Configure these bits
                 //service.setProgressTimeoutMinutes();
                 //service.setProgressPauseDurationSeconds();
-                service.setProgressMonitor(new ProgressMonitor()
-                {
-                    private boolean needsNewline;
-
-                    private void maybePrintln() {
-                        if (needsNewline) {
-                            System.out.println();
-                            needsNewline = false;
-                        }
-                    }
-
-                    @Override
-                    public void start() {
-                        getLog().debug("START");
-                    }
-
-                    @Override
-                    public void tick() {
-                        if (getLog().isDebugEnabled()) {
-                            getLog().debug("TICK");
-                        }
-                        else {
-                            needsNewline = true;
-                            System.out.print(".");
-                        }
-                    }
-
-                    @Override
-                    public void pause() {
-                        getLog().debug("PAUSE");
-                    }
-
-                    @Override
-                    public void info(String message) {
-                        maybePrintln();
-                        getLog().info(" * " + message);
-                    }
-
-                    @Override
-                    public void error(String message) {
-                        maybePrintln();
-                        getLog().error(" * " + message);
-                    }
-
-                    @Override
-                    public void stop() {
-                        maybePrintln();
-                        getLog().debug("STOP");
-                    }
-
-                    @Override
-                    public void timeout() {
-                        maybePrintln();
-                        getLog().warn("TIMEOUT");
-                    }
-
-                    @Override
-                    public void interrupted() {
-                        maybePrintln();
-                        getLog().warn("INTERRUPTED");
-                    }
-                });
             }
             catch ( MalformedURLException e )
             {
