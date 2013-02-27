@@ -92,6 +92,7 @@ public abstract class AbstractStagingDeployStrategy
         }
 
         // FIXME: Is there a better place to do this?  Really would like to be in a mojo-context here
+        // FIXME: This is duplicated/augmented from near copy in AbstractStagingActionMojo
 
         // install and configure progress monitor
         StagingWorkflowV2Service service = remoting.getStagingWorkflowV2Service();
@@ -99,7 +100,14 @@ public abstract class AbstractStagingDeployStrategy
         //service.setProgressPauseDurationSeconds();
         service.setProgressMonitor(new ProgressMonitor()
         {
-            private boolean ticked;
+            private boolean needsNewline;
+
+            private void maybePrintln() {
+                if (needsNewline) {
+                    System.out.println();
+                    needsNewline = false;
+                }
+            }
 
             @Override
             public void start() {
@@ -112,14 +120,8 @@ public abstract class AbstractStagingDeployStrategy
                     getLogger().debug("TICK");
                 }
                 else {
-                    ticked = true;
+                    needsNewline = true;
                     System.out.print(".");
-                }
-            }
-
-            private void printlnIfTicked() {
-                if (ticked) {
-                    System.out.println();
                 }
             }
 
@@ -130,30 +132,31 @@ public abstract class AbstractStagingDeployStrategy
 
             @Override
             public void info(String message) {
-                printlnIfTicked();
+                maybePrintln();
                 getLogger().info(" * " + message);
             }
 
             @Override
             public void error(String message) {
-                printlnIfTicked();
+                maybePrintln();
                 getLogger().error(" * " + message);
             }
 
             @Override
             public void stop() {
+                maybePrintln();
                 getLogger().debug("STOP");
             }
 
             @Override
             public void timeout() {
-                printlnIfTicked();
+                maybePrintln();
                 getLogger().warn("TIMEOUT");
             }
 
             @Override
             public void interrupted() {
-                printlnIfTicked();
+                maybePrintln();
                 getLogger().warn("INTERRUPTED");
             }
         });

@@ -16,6 +16,7 @@ import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.sonatype.nexus.staging.client.StagingWorkflowV1Service.ProgressMonitor;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -203,6 +204,75 @@ public abstract class AbstractStagingActionMojo
                 this.nexusClient =
                     new JerseyNexusClientFactory( new JerseyStagingWorkflowV2SubsystemFactory() ).createFor( connectionInfo );
                 getLog().debug( "NexusClient created against Nexus instance on URL: " + baseUrl.toString() + "." );
+
+                // FIXME: This is duplicated/augmented from near copy in AbstractStagingDeployStrategy
+
+                // install and configure progress monitor
+                StagingWorkflowV2Service service = nexusClient.getSubsystem(StagingWorkflowV2Service.class);
+                //service.setProgressTimeoutMinutes();
+                //service.setProgressPauseDurationSeconds();
+                service.setProgressMonitor(new ProgressMonitor()
+                {
+                    private boolean needsNewline;
+
+                    private void maybePrintln() {
+                        if (needsNewline) {
+                            System.out.println();
+                            needsNewline = false;
+                        }
+                    }
+
+                    @Override
+                    public void start() {
+                        getLog().debug("START");
+                    }
+
+                    @Override
+                    public void tick() {
+                        if (getLog().isDebugEnabled()) {
+                            getLog().debug("TICK");
+                        }
+                        else {
+                            needsNewline = true;
+                            System.out.print(".");
+                        }
+                    }
+
+                    @Override
+                    public void pause() {
+                        getLog().debug("PAUSE");
+                    }
+
+                    @Override
+                    public void info(String message) {
+                        maybePrintln();
+                        getLog().info(" * " + message);
+                    }
+
+                    @Override
+                    public void error(String message) {
+                        maybePrintln();
+                        getLog().error(" * " + message);
+                    }
+
+                    @Override
+                    public void stop() {
+                        maybePrintln();
+                        getLog().debug("STOP");
+                    }
+
+                    @Override
+                    public void timeout() {
+                        maybePrintln();
+                        getLog().warn("TIMEOUT");
+                    }
+
+                    @Override
+                    public void interrupted() {
+                        maybePrintln();
+                        getLog().warn("INTERRUPTED");
+                    }
+                });
             }
             catch ( MalformedURLException e )
             {
