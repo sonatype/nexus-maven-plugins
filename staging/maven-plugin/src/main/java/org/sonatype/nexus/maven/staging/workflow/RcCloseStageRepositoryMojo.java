@@ -36,5 +36,6 @@ public class RcCloseStageRepositoryMojo
         getLog().info( "RC-Closing staging repository with IDs=" + Arrays.toString( getStagingRepositoryIds() ) );
         stagingWorkflow.finishStagingRepositories( getDescriptionWithDefaultsForAction( "RC-Closed" ),
             getStagingRepositoryIds() );
+        getLog().info( "Closed" );
     }
 }

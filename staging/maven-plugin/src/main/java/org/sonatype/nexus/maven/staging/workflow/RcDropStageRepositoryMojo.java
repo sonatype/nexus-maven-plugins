@@ -36,5 +36,6 @@ public class RcDropStageRepositoryMojo
         getLog().info( "RC-Dropping staging repository with IDs=" + Arrays.toString( getStagingRepositoryIds() ) );
         stagingWorkflow.dropStagingRepositories( getDescriptionWithDefaultsForAction( "RC-Dropped" ),
             getStagingRepositoryIds() );
+        getLog().info( "Dropped" );
     }
 }

@@ -60,5 +60,6 @@ public class RcPromoteToStageProfileMojo
                 + getBuildPromotionProfileId() + "\"" );
         stagingWorkflow.promoteStagingRepositories( getDescriptionWithDefaultsForAction( "RC-Promoted" ),
                                                     getBuildPromotionProfileId(), getStagingRepositoryIds() );
+        getLog().info( "Promoted" );
     }
 }
