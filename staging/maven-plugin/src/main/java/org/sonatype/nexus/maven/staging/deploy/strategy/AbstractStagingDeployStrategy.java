@@ -93,17 +93,7 @@ public abstract class AbstractStagingDeployStrategy
 
         // install and configure progress monitor
         StagingWorkflowV2Service service = remoting.getStagingWorkflowV2Service();
-        service.setProgressMonitor(new ProgressMonitorImpl(getLogger()) {
-            @Override
-            public void info(final String message) {
-                super.info(" * " + message);
-            }
-
-            @Override
-            public void error(final String message) {
-                super.error(" * " + message);
-            }
-        });
+        service.setProgressMonitor(new ProgressMonitorImpl(getLogger()));
 
         // TODO: Configure these bits
         //service.setProgressTimeoutMinutes();

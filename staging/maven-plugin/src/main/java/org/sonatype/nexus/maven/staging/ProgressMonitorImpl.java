@@ -80,14 +80,12 @@ public class ProgressMonitorImpl
 
     @Override
     public void info(final String message) {
-        maybePrintln();
-        logger.info(message);
+        logger.debug(message);
     }
 
     @Override
     public void error(final String message) {
-        maybePrintln();
-        logger.error(message);
+        logger.debug(message);
     }
 
     @Override
