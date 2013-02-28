@@ -164,8 +164,13 @@ public class RemotingImpl
         if (workflowService == null) {
             // First try v3
             try {
-                workflowService = nexusClient.getSubsystem( StagingWorkflowV3Service.class );
+                StagingWorkflowV3Service service = nexusClient.getSubsystem( StagingWorkflowV3Service.class );
                 log.debug("Using staging v3 service");
+
+                // NOTE: Configuring progress monitor in AbstractStagingDeployStrategy, so we can get access to Plexus Logger
+                // NOTE: Can't assume slf4j logger will actually output properly to user
+
+                workflowService = service;
             }
             catch (Exception e) {
                 log.debug("Unable to resolve staging v3 service; falling back to v2", e);
