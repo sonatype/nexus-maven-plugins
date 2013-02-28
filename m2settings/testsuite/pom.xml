@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     Sonatype Nexus (TM) Open Source Version
@@ -12,17 +13,15 @@
     Eclipse Foundation. All other trademarks are the property of their respective owners.
 
 -->
-# Nexus Maven Plugins
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-Collection of Apache Maven plugins supporting Nexus Suite.
+  <parent>
+    <groupId>org.sonatype.nexus.maven</groupId>
+    <artifactId>nexus-m2settings</artifactId>
+    <version>1.4-SNAPSHOT</version>
+  </parent>
 
-## Plugins available
+  <artifactId>nexus-m2settings-testsuite</artifactId>
 
-* [Nexus Staging Plugin](https://github.com/sonatype/nexus-maven-plugins/tree/master/nexus-staging-maven-plugin) - Maven Plugin to perform Sonatype Nexus Staging Workflow steps from your build.
-
-## System requirements
-
-Unless noted otherwise in corresponding plugin documentation, following are the minimal requirements:
-
-* Apache Maven: supported versions are 2.2.1 or 3.0.3+
-* Java: Java 1.6+
+</project>
