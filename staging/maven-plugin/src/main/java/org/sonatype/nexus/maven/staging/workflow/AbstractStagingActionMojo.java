@@ -248,6 +248,8 @@ public abstract class AbstractStagingActionMojo
             try {
                 StagingWorkflowV3Service service = nexusClient.getSubsystem(StagingWorkflowV3Service.class);
 
+                getLog().debug("Using staging v3 service");
+
                 // configure progress monitor
                 service.setProgressMonitor(new ProgressMonitorImpl(getLog()));
 
@@ -265,6 +267,7 @@ public abstract class AbstractStagingActionMojo
                 // fallback to v2 if v3 not available
                 try {
                     workflowService = nexusClient.getSubsystem(StagingWorkflowV2Service.class);
+                    getLog().debug("Using staging v2 service");
                 }
                 catch (IllegalArgumentException e) {
                     throw new MojoExecutionException(

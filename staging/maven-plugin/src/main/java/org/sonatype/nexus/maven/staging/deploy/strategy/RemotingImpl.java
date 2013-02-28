@@ -165,6 +165,7 @@ public class RemotingImpl
             // First try v3
             try {
                 workflowService = nexusClient.getSubsystem( StagingWorkflowV3Service.class );
+                log.debug("Using staging v3 service");
             }
             catch (Exception e) {
                 log.debug("Unable to resolve staging v3 service; falling back to v2", e);
@@ -175,6 +176,7 @@ public class RemotingImpl
                 try
                 {
                     workflowService = nexusClient.getSubsystem( StagingWorkflowV2Service.class );
+                    log.debug("Using staging v2 service");
                 }
                 catch ( IllegalArgumentException e )
                 {
