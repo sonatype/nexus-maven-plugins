@@ -16,11 +16,15 @@ import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.sonatype.nexus.staging.client.StagingWorkflowV3Service;
+import com.sonatype.nexus.staging.client.rest.JerseyStagingWorkflowV3SubsystemFactory;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Server;
 import org.codehaus.plexus.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sonatype.maven.mojo.settings.MavenSettings;
 import org.sonatype.nexus.client.core.NexusClient;
 import org.sonatype.nexus.client.rest.BaseUrl;
@@ -39,6 +43,8 @@ import com.sun.jersey.api.client.UniformInterfaceException;
 public class RemotingImpl
     implements Remoting
 {
+    private static final Logger log = LoggerFactory.getLogger(RemotingImpl.class);
+
     private final MavenSession mavenSession;
 
     private final StagingParameters parameters;
@@ -146,20 +152,43 @@ public class RemotingImpl
         return nexusClient;
     }
 
+    // FIXME: This is duplicated in AbstractStagingActionMojo
+
+    private StagingWorkflowV2Service workflowService;
+
     public StagingWorkflowV2Service getStagingWorkflowV2Service()
         throws MojoExecutionException
     {
-        try
-        {
-            return getNexusClient().getSubsystem( StagingWorkflowV2Service.class );
+        NexusClient nexusClient = getNexusClient();
+
+        if (workflowService == null) {
+            // First try v3
+            try {
+                workflowService = nexusClient.getSubsystem( StagingWorkflowV3Service.class );
+            }
+            catch (Exception e) {
+                log.debug("Unable to resolve staging v3 service; falling back to v2", e);
+            }
+
+            if (workflowService == null) {
+                // fallback to v2 if v3 not available
+                try
+                {
+                    workflowService = nexusClient.getSubsystem( StagingWorkflowV2Service.class );
+                }
+                catch ( IllegalArgumentException e )
+                {
+                    throw new MojoExecutionException(
+                        String.format("Nexus instance at base URL %s does not support staging v2; reported status: %s, reason:%s",
+                            nexusClient.getConnectionInfo().getBaseUrl(),
+                            nexusClient.getNexusStatus(),
+                            e.getMessage()),
+                        e);
+                }
+            }
         }
-        catch ( IllegalArgumentException e )
-        {
-            throw new MojoExecutionException( "Nexus instance at base URL "
-                + getNexusClient().getConnectionInfo().getBaseUrl().toString()
-                + " does not support Staging V2 Reported status: " + getNexusClient().getNexusStatus() + ", reason:"
-                + e.getMessage(), e );
-        }
+
+        return workflowService;
     }
 
     protected void createNexusClient()
@@ -200,8 +229,12 @@ public class RemotingImpl
             }
 
             final ConnectionInfo connectionInfo = new ConnectionInfo( baseUrl, authenticationInfo, proxyInfos );
-            this.nexusClient =
-                new JerseyNexusClientFactory( new JerseyStagingWorkflowV2SubsystemFactory() ).createFor( connectionInfo );
+            this.nexusClient = new JerseyNexusClientFactory(
+                // support v2 and v3
+                new JerseyStagingWorkflowV2SubsystemFactory(),
+                new JerseyStagingWorkflowV3SubsystemFactory()
+            )
+            .createFor(connectionInfo);
         }
         catch ( MalformedURLException e )
         {

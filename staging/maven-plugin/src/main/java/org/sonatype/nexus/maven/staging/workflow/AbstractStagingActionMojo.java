@@ -16,7 +16,8 @@ import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.sonatype.nexus.staging.client.StagingWorkflowV1Service.ProgressMonitor;
+import com.sonatype.nexus.staging.client.StagingWorkflowV3Service;
+import com.sonatype.nexus.staging.client.rest.JerseyStagingWorkflowV3SubsystemFactory;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -202,17 +203,14 @@ public abstract class AbstractStagingActionMojo
 
                 final ConnectionInfo connectionInfo = new ConnectionInfo( baseUrl, authenticationInfo, proxyInfos );
 
-                this.nexusClient =
-                    new JerseyNexusClientFactory( new JerseyStagingWorkflowV2SubsystemFactory() ).createFor( connectionInfo );
+                this.nexusClient = new JerseyNexusClientFactory(
+                    // support v2 and v3
+                    new JerseyStagingWorkflowV2SubsystemFactory(),
+                    new JerseyStagingWorkflowV3SubsystemFactory()
+                )
+                .createFor(connectionInfo);
+
                 getLog().debug( "NexusClient created against Nexus instance on URL: " + baseUrl.toString() + "." );
-
-                // install and configure progress monitor
-                StagingWorkflowV2Service service = nexusClient.getSubsystem(StagingWorkflowV2Service.class);
-                service.setProgressMonitor(new ProgressMonitorImpl(getLog()));
-
-                // TODO: Configure these bits
-                //service.setProgressTimeoutMinutes();
-                //service.setProgressPauseDurationSeconds();
             }
             catch ( MalformedURLException e )
             {
@@ -238,19 +236,47 @@ public abstract class AbstractStagingActionMojo
         }
     }
 
+    // FIXME: This is duplicated in RemotingImpl
+
+    private StagingWorkflowV2Service workflowService;
+
     protected StagingWorkflowV2Service getStagingWorkflowService()
         throws MojoExecutionException
     {
-        try
-        {
-            return nexusClient.getSubsystem( StagingWorkflowV2Service.class );
+        if (workflowService == null) {
+            // First try v3
+            try {
+                StagingWorkflowV3Service service = nexusClient.getSubsystem(StagingWorkflowV3Service.class);
+
+                // configure progress monitor
+                service.setProgressMonitor(new ProgressMonitorImpl(getLog()));
+
+                // TODO: Configure these bits
+                //service.setProgressTimeoutMinutes();
+                //service.setProgressPauseDurationSeconds();
+
+                workflowService = service;
+            }
+            catch (Exception e) {
+                getLog().debug("Unable to resolve staging v3 service; falling back to v2", e);
+            }
+
+            if (workflowService == null) {
+                // fallback to v2 if v3 not available
+                try {
+                    workflowService = nexusClient.getSubsystem(StagingWorkflowV2Service.class);
+                }
+                catch (IllegalArgumentException e) {
+                    throw new MojoExecutionException(
+                        String.format("Nexus instance at base URL %s does not support staging v2; reported status: %s, reason:%s",
+                            nexusClient.getConnectionInfo().getBaseUrl(),
+                            nexusClient.getNexusStatus(),
+                            e.getMessage()),
+                        e);
+                }
+            }
         }
-        catch ( IllegalArgumentException e )
-        {
-            throw new MojoExecutionException( "Nexus instance at base URL "
-                + nexusClient.getConnectionInfo().getBaseUrl().toString()
-                + " does not support Staging V2 Reported status: " + nexusClient.getNexusStatus() + ", reason:"
-                + e.getMessage(), e );
-        }
+
+        return workflowService;
     }
 }

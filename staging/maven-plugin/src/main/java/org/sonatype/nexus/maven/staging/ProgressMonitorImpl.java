@@ -13,7 +13,7 @@
 
 package org.sonatype.nexus.maven.staging;
 
-import com.sonatype.nexus.staging.client.StagingWorkflowV1Service.ProgressMonitor;
+import com.sonatype.nexus.staging.client.StagingWorkflowV3Service.ProgressMonitor;
 import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.logging.console.ConsoleLogger;

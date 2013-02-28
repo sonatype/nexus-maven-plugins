@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import com.sonatype.nexus.staging.client.StagingWorkflowV3Service;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.InvalidRepositoryException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -91,13 +92,19 @@ public abstract class AbstractStagingDeployStrategy
                     + remoting.getProxy().getId() + "\" from Maven settings." );
         }
 
-        // install and configure progress monitor
-        StagingWorkflowV2Service service = remoting.getStagingWorkflowV2Service();
-        service.setProgressMonitor(new ProgressMonitorImpl(getLogger()));
+        // HACK: Maybe install the progress monitor if the service supports v3
+        // HACK: Each subsystem is its own singleton object, so asking for v2 and v3 would return 2 different objects
+        // HACK: If we configure the factory to return v3 impl for request for v2, then we don't get the version condition validation for v3
 
-        // TODO: Configure these bits
-        //service.setProgressTimeoutMinutes();
-        //service.setProgressPauseDurationSeconds();
+        StagingWorkflowV2Service service = remoting.getStagingWorkflowV2Service();
+        if (service instanceof StagingWorkflowV3Service) {
+            StagingWorkflowV3Service v3 = (StagingWorkflowV3Service)service;
+            v3.setProgressMonitor(new ProgressMonitorImpl(getLogger()));
+
+            // TODO: Configure these bits
+            //v3.setProgressTimeoutMinutes();
+            //v3.setProgressPauseDurationSeconds();
+        }
     }
 
     protected synchronized Remoting getRemoting()
