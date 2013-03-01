@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import com.sonatype.nexus.staging.client.StagingWorkflowV3Service;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.DefaultModelReader;
@@ -163,7 +164,8 @@ public abstract class StagingMavenPluginITSupport
 
     public StagingWorkflowV2Service getStagingWorkflowV2Service()
     {
-        return nexusDeploymentClient.getSubsystem( StagingWorkflowV2Service.class );
+        // HACK: Ask for V3 instead, fucking crazy versioning system
+        return nexusDeploymentClient.getSubsystem( StagingWorkflowV3Service.class );
     }
 
     /**
