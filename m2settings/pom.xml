@@ -37,13 +37,13 @@
       <dependency>
         <groupId>com.sonatype.nexus.m2-settings-template</groupId>
         <artifactId>nexus-m2-settings-template-client</artifactId>
-        <version>2.4-SNAPSHOT</version>
+        <version>2.4.0-1</version>
       </dependency>
 
       <dependency>
         <groupId>com.sonatype.nexus.usertoken</groupId>
         <artifactId>nexus-usertoken-client</artifactId>
-        <version>1.3-SNAPSHOT</version>
+        <version>1.3</version>
       </dependency>
 
       <!-- INTERNAL -->
