@@ -85,7 +85,8 @@ public class RemotingImpl
     protected void init( MavenSession mavenSession, StagingParameters parameters )
         throws MojoExecutionException
     {
-        if ( StringUtils.isBlank( parameters.getNexusUrl() ) )
+        String nexusUrl = parameters.getNexusUrl();
+        if ( StringUtils.isBlank( nexusUrl ) )
         {
             throw new MojoExecutionException(
                 "The URL against which transport should be established is not defined! (use \"-DnexusUrl=http://host/nexus\" on CLI or configure it in POM)" );
@@ -113,7 +114,7 @@ public class RemotingImpl
                     "Server credentials to use in transport are not defined! (use \"-DserverId=someServerId\" on CLI or configure it in POM)" );
             }
 
-            final Proxy proxy = MavenSettings.selectProxy( getMavenSession().getSettings(), parameters.getNexusUrl() );
+            final Proxy proxy = MavenSettings.selectProxy( getMavenSession().getSettings(), nexusUrl );
             if ( proxy != null )
             {
                 this.proxy = MavenSettings.decrypt( getSecDispatcher(), proxy );
@@ -125,8 +126,8 @@ public class RemotingImpl
         }
         catch ( MalformedURLException e )
         {
-            throw new MojoExecutionException( "Malformed Nexus base URL!", e );
-        }
+            throw new MojoExecutionException( "Malformed Nexus base URL [" + nexusUrl + "]", e );
+            }
     }
 
     @Override
@@ -201,9 +202,10 @@ public class RemotingImpl
     protected void createNexusClient()
         throws MojoExecutionException
     {
+        String nexusUrl = getParameters().getNexusUrl();
         try
         {
-            final BaseUrl baseUrl = BaseUrl.baseUrlFrom( getParameters().getNexusUrl() );
+            final BaseUrl baseUrl = BaseUrl.baseUrlFrom( nexusUrl );
             final UsernamePasswordAuthenticationInfo authenticationInfo;
             final Map<Protocol, ProxyInfo> proxyInfos = new HashMap<Protocol, ProxyInfo>( 1 );
 
@@ -245,16 +247,16 @@ public class RemotingImpl
         }
         catch ( MalformedURLException e )
         {
-            throw new MojoExecutionException( "Malformed Nexus base URL!", e );
+            throw new MojoExecutionException( "Malformed Nexus base URL [" + nexusUrl + "]", e );
         }
         catch ( UniformInterfaceException e )
         {
-            throw new MojoExecutionException( "Nexus base URL does not point to a valid Nexus location: "
+            throw new MojoExecutionException( "Nexus base URL ["+ nexusUrl + "] does not point to a valid Nexus location: "
                 + e.getMessage(), e );
         }
         catch ( Exception e )
         {
-            throw new MojoExecutionException( "Nexus connection problem: " + e.getMessage(), e );
+            throw new MojoExecutionException( "Nexus connection problem to URL [" + nexusUrl+ " ]: " + e.getMessage(), e );
         }
     }
 }
