@@ -16,6 +16,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
@@ -69,12 +70,26 @@ public class PreparedVerifier
     }
 
     @Override
+    public void executeGoals(List goals, Map envVars)
+        throws VerificationException
+    {
+        try {
+            super.executeGoals(goals, envVars);
+        }
+        catch (VerificationException e) {
+            // HACK: Strip out the entire log which is included in the message by default! :-(
+            File logFile = new File( getBasedir(), getLogFileName() );
+            throw new VerificationException("Goals execution failed: " + goals + "; see log for more details: " + logFile.getAbsolutePath(), e.getCause());
+        }
+    }
+
+    @Override
     @SuppressWarnings( "rawtypes" )
     public void executeGoals( final List goals )
         throws VerificationException
     {
         setLogFileName( String.format( logNameTemplate, ++numberOfRuns ) );
-        super.executeGoals( goals );
+        super.executeGoals(goals);
     }
 
     public int getNumberOfRuns()

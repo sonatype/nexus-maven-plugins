@@ -23,14 +23,11 @@ import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Server;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
-import org.sonatype.maven.mojo.logback.LogbackUtils;
 import org.sonatype.nexus.client.core.NexusClient;
 import org.sonatype.nexus.client.core.NexusStatus;
 import org.sonatype.nexus.maven.staging.deploy.StagingRepository;
 import org.sonatype.nexus.maven.staging.zapper.Zapper;
 import org.sonatype.nexus.maven.staging.zapper.ZapperRequest;
-
-import ch.qos.logback.classic.Level;
 
 import com.sonatype.nexus.staging.client.Profile;
 import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
@@ -93,13 +90,7 @@ public class ImageDeployStrategy
             getLogger().info( " * Upload of locally staged artifacts finished." );
             afterUpload( parameters, stagingRepository );
         }
-        catch ( StagingRuleFailuresException e )
-        {
-            afterUploadFailure( parameters, Collections.singletonList( stagingRepository ), e );
-            getLogger().error( "Remote staging finished with a failure." );
-            throw new ArtifactDeploymentException( "Remote staging failed: " + e.getMessage(), e );
-        }
-        catch ( IOException e )
+        catch ( Exception e )
         {
             afterUploadFailure( parameters, Collections.singletonList( stagingRepository ), e );
             getLogger().error( "Remote staging finished with a failure." );
@@ -139,26 +130,7 @@ public class ImageDeployStrategy
             request.setProxyPassword( proxy.getPassword() );
         }
 
-        // Zapper is a bit "chatty", if no Maven debug session is ongoing, then up logback to WARN
-        if ( getLogger().isDebugEnabled() )
-        {
-            LogbackUtils.syncLogLevelWithLevel( Level.DEBUG );
-        }
-        else
-        {
-            LogbackUtils.syncLogLevelWithLevel( Level.WARN );
-        }
-
         zapper.deployDirectory( request );
-
-        if ( getLogger().isDebugEnabled() )
-        {
-            LogbackUtils.syncLogLevelWithLevel( Level.DEBUG );
-        }
-        else
-        {
-            LogbackUtils.syncLogLevelWithLevel( Level.INFO );
-        }
     }
 
 }

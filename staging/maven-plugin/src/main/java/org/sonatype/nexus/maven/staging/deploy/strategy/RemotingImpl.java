@@ -16,11 +16,15 @@ import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.sonatype.nexus.staging.client.StagingWorkflowV3Service;
+import com.sonatype.nexus.staging.client.rest.JerseyStagingWorkflowV3SubsystemFactory;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Server;
 import org.codehaus.plexus.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sonatype.maven.mojo.settings.MavenSettings;
 import org.sonatype.nexus.client.core.NexusClient;
 import org.sonatype.nexus.client.rest.BaseUrl;
@@ -39,6 +43,8 @@ import com.sun.jersey.api.client.UniformInterfaceException;
 public class RemotingImpl
     implements Remoting
 {
+    private static final Logger log = LoggerFactory.getLogger(RemotingImpl.class);
+
     private final MavenSession mavenSession;
 
     private final StagingParameters parameters;
@@ -79,7 +85,8 @@ public class RemotingImpl
     protected void init( MavenSession mavenSession, StagingParameters parameters )
         throws MojoExecutionException
     {
-        if ( StringUtils.isBlank( parameters.getNexusUrl() ) )
+        String nexusUrl = parameters.getNexusUrl();
+        if ( StringUtils.isBlank( nexusUrl ) )
         {
             throw new MojoExecutionException(
                 "The URL against which transport should be established is not defined! (use \"-DnexusUrl=http://host/nexus\" on CLI or configure it in POM)" );
@@ -107,7 +114,7 @@ public class RemotingImpl
                     "Server credentials to use in transport are not defined! (use \"-DserverId=someServerId\" on CLI or configure it in POM)" );
             }
 
-            final Proxy proxy = MavenSettings.selectProxy( getMavenSession().getSettings(), parameters.getNexusUrl() );
+            final Proxy proxy = MavenSettings.selectProxy( getMavenSession().getSettings(), nexusUrl );
             if ( proxy != null )
             {
                 this.proxy = MavenSettings.decrypt( getSecDispatcher(), proxy );
@@ -119,8 +126,8 @@ public class RemotingImpl
         }
         catch ( MalformedURLException e )
         {
-            throw new MojoExecutionException( "Malformed Nexus base URL!", e );
-        }
+            throw new MojoExecutionException( "Malformed Nexus base URL [" + nexusUrl + "]", e );
+            }
     }
 
     @Override
@@ -146,28 +153,59 @@ public class RemotingImpl
         return nexusClient;
     }
 
+    // FIXME: This is duplicated in AbstractStagingActionMojo
+
+    private StagingWorkflowV2Service workflowService;
+
     public StagingWorkflowV2Service getStagingWorkflowV2Service()
         throws MojoExecutionException
     {
-        try
-        {
-            return getNexusClient().getSubsystem( StagingWorkflowV2Service.class );
+        NexusClient nexusClient = getNexusClient();
+
+        if (workflowService == null) {
+            // First try v3
+            try {
+                StagingWorkflowV3Service service = nexusClient.getSubsystem( StagingWorkflowV3Service.class );
+                log.debug("Using staging v3 service");
+
+                // NOTE: Configuring progress monitor in AbstractStagingDeployStrategy, so we can get access to Plexus Logger
+                // NOTE: Can't assume slf4j logger will actually output properly to user
+
+                workflowService = service;
+            }
+            catch (Exception e) {
+                log.debug("Unable to resolve staging v3 service; falling back to v2", e);
+            }
+
+            if (workflowService == null) {
+                // fallback to v2 if v3 not available
+                try
+                {
+                    workflowService = nexusClient.getSubsystem( StagingWorkflowV2Service.class );
+                    log.debug("Using staging v2 service");
+                }
+                catch ( IllegalArgumentException e )
+                {
+                    throw new MojoExecutionException(
+                        String.format("Nexus instance at base URL %s does not support staging v2; reported status: %s, reason:%s",
+                            nexusClient.getConnectionInfo().getBaseUrl(),
+                            nexusClient.getNexusStatus(),
+                            e.getMessage()),
+                        e);
+                }
+            }
         }
-        catch ( IllegalArgumentException e )
-        {
-            throw new MojoExecutionException( "Nexus instance at base URL "
-                + getNexusClient().getConnectionInfo().getBaseUrl().toString()
-                + " does not support Staging V2 Reported status: " + getNexusClient().getNexusStatus() + ", reason:"
-                + e.getMessage(), e );
-        }
+
+        return workflowService;
     }
 
     protected void createNexusClient()
         throws MojoExecutionException
     {
+        String nexusUrl = getParameters().getNexusUrl();
         try
         {
-            final BaseUrl baseUrl = BaseUrl.baseUrlFrom( getParameters().getNexusUrl() );
+            final BaseUrl baseUrl = BaseUrl.baseUrlFrom( nexusUrl );
             final UsernamePasswordAuthenticationInfo authenticationInfo;
             final Map<Protocol, ProxyInfo> proxyInfos = new HashMap<Protocol, ProxyInfo>( 1 );
 
@@ -200,21 +238,25 @@ public class RemotingImpl
             }
 
             final ConnectionInfo connectionInfo = new ConnectionInfo( baseUrl, authenticationInfo, proxyInfos );
-            this.nexusClient =
-                new JerseyNexusClientFactory( new JerseyStagingWorkflowV2SubsystemFactory() ).createFor( connectionInfo );
+            this.nexusClient = new JerseyNexusClientFactory(
+                // support v2 and v3
+                new JerseyStagingWorkflowV2SubsystemFactory(),
+                new JerseyStagingWorkflowV3SubsystemFactory()
+            )
+            .createFor(connectionInfo);
         }
         catch ( MalformedURLException e )
         {
-            throw new MojoExecutionException( "Malformed Nexus base URL!", e );
+            throw new MojoExecutionException( "Malformed Nexus base URL [" + nexusUrl + "]", e );
         }
         catch ( UniformInterfaceException e )
         {
-            throw new MojoExecutionException( "Nexus base URL does not point to a valid Nexus location: "
+            throw new MojoExecutionException( "Nexus base URL ["+ nexusUrl + "] does not point to a valid Nexus location: "
                 + e.getMessage(), e );
         }
         catch ( Exception e )
         {
-            throw new MojoExecutionException( "Nexus connection problem: " + e.getMessage(), e );
+            throw new MojoExecutionException( "Nexus connection problem to URL [" + nexusUrl+ " ]: " + e.getMessage(), e );
         }
     }
 }

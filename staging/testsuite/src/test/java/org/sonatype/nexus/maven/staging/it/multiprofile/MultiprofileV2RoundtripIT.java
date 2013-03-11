@@ -12,6 +12,9 @@
  */
 package org.sonatype.nexus.maven.staging.it.multiprofile;
 
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 import static org.sonatype.nexus.testsuite.support.NexusStartAndStopStrategy.Strategy.EACH_METHOD;
 import static org.sonatype.sisu.filetasks.builder.FileRef.file;
 import static org.sonatype.sisu.filetasks.builder.FileRef.path;
@@ -23,6 +26,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import com.sonatype.nexus.staging.client.StagingRepository.State;
 import junit.framework.Assert;
 
 import org.apache.maven.it.VerificationException;
@@ -113,10 +117,13 @@ public class MultiprofileV2RoundtripIT
         // post execution Nexus side asserts
         {
             final List<StagingRepository> stagingRepositories = getAllStagingRepositories();
-            if ( !stagingRepositories.isEmpty() )
-            {
-                Assert.fail( "Nexus should not have staging repositories, but it has: " + stagingRepositories );
-            }
+            assertThat("Should have 2 'released' staging repositories",
+                stagingRepositories, hasSize(2));
+
+            // ensure both are released
+            assertThat(stagingRepositories.get(0).getState(), is(State.RELEASED));
+            assertThat(stagingRepositories.get(1).getState(), is(State.RELEASED));
+
             // stuff we staged are released and found by indexer
             // TODO: this "assertion" is disabled for now as it shows as highly unreliable
             // final SearchResponse searchResponse =
@@ -183,10 +190,13 @@ public class MultiprofileV2RoundtripIT
         // post execution Nexus side asserts
         {
             final List<StagingRepository> stagingRepositories = getAllStagingRepositories();
-            if ( !stagingRepositories.isEmpty() )
-            {
-                Assert.fail( "Nexus should not have staging repositories, but it has: " + stagingRepositories );
-            }
+            assertThat("Should have 2 'released' staging repositories",
+                stagingRepositories, hasSize(2));
+
+            // ensure both are released
+            assertThat(stagingRepositories.get(0).getState(), is(State.RELEASED));
+            assertThat(stagingRepositories.get(1).getState(), is(State.RELEASED));
+
             // stuff we staged are released and found by indexer
             // TODO: this "assertion" is disabled for now as it shows as highly unreliable
             // final SearchResponse searchResponse =

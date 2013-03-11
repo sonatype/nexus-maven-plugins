@@ -15,6 +15,7 @@ package org.sonatype.nexus.maven.staging.it.simplev2roundtrip;
 import java.util.Arrays;
 import java.util.List;
 
+import com.sonatype.nexus.staging.client.StagingRepository.State;
 import junit.framework.Assert;
 
 import org.apache.maven.it.VerificationException;
@@ -23,6 +24,10 @@ import org.sonatype.nexus.maven.staging.it.SimpleRoundtripMatrixBaseTests;
 import org.sonatype.nexus.mindexer.client.SearchResponse;
 
 import com.sonatype.nexus.staging.client.StagingRepository;
+
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
 
 /**
  * IT that "implements" the Staging V2 testing guide's "One Shot" scenario followed by the "release" Post Staging Steps
@@ -55,12 +60,19 @@ public class SimpleV2RoundtripIT
     @Override
     protected void postNexusAssertions( final PreparedVerifier verifier )
     {
-        // there are no staging repositories
+        //
+        // FIXME: Maybe add the drop after release to super test methods, and then leave no repositories as success
+        //
+
         final List<StagingRepository> stagingRepositories = getAllStagingRepositories();
-        if ( !stagingRepositories.isEmpty() )
-        {
-            Assert.fail( "Nexus should not have staging repositories, but it has: " + stagingRepositories );
-        }
+        assertThat("Should have 1 'released' staging repositories",
+            stagingRepositories, hasSize(1));
+
+        StagingRepository repository = stagingRepositories.get(0);
+        assertThat(repository.getState(), is(State.RELEASED));
+
+        // drop the repository so the next test has empty repositories
+        getStagingWorkflowV2Service().dropStagingRepositories("cleanup", repository.getId());
 
         // stuff we staged are released and found by indexer
         final SearchResponse searchResponse =

@@ -37,5 +37,6 @@ public class ReleaseStageRepositoryMojo
         getLog().info( "Releasing staging repository with IDs=" + Arrays.toString( getStagingRepositoryIds() ) );
         stagingWorkflow.releaseStagingRepositories( getDescriptionWithDefaultsForAction( "Released" ),
                                                     getStagingRepositoryIds() );
+        getLog().info( "Released" );
     }
 }

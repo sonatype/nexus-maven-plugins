@@ -45,6 +45,7 @@ public class CloseStageRepositoryMojo
             getLog().info( "Closing staging repository with IDs=" + Arrays.toString( getStagingRepositoryIds() ) );
             stagingWorkflow.finishStagingRepositories( getDescriptionWithDefaultsForAction( "Closed" ),
                 stagingRepositoryIds );
+            getLog().info( "Closed" );
         }
         catch ( StagingRuleFailuresException e )
         {
@@ -57,7 +58,7 @@ public class CloseStageRepositoryMojo
                 final List<String> failedRepositories = new ArrayList<String>();
                 for ( StagingRuleFailures failures : e.getFailures() )
                 {
-                    failedRepositories.add( failures.getRepositoryName() + "(id=" + failures.getRepositoryId() + ")" );
+                    failedRepositories.add( failures.getRepositoryId() );
                 }
                 final String msg = "Rule failure during close of staging repositories: " + failedRepositories;
 

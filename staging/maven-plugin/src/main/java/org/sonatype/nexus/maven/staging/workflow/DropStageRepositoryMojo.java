@@ -36,5 +36,6 @@ public class DropStageRepositoryMojo
         getLog().info( "Dropping staging repository with IDs=" + Arrays.toString( getStagingRepositoryIds() ) );
         stagingWorkflow.dropStagingRepositories( getDescriptionWithDefaultsForAction( "Dropped" ),
             getStagingRepositoryIds() );
+        getLog().info( "Dropped" );
     }
 }

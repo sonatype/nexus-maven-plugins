@@ -56,8 +56,7 @@ public class ErrorDumper
         writer.writeln( "" );
         for ( StagingRuleFailures failure : e.getFailures() )
         {
-            writer.writeln( String.format( "Repository \"%s\" (id=%s) failures", failure.getRepositoryName(),
-                failure.getRepositoryId() ) );
+            writer.writeln( String.format( "Repository \"%s\" failures", failure.getRepositoryId() ) );
             for ( RuleFailure ruleFailure : failure.getFailures() )
             {
                 writer.writeln( String.format( "  Rule \"%s\" failures", ruleFailure.getRuleName() ) );

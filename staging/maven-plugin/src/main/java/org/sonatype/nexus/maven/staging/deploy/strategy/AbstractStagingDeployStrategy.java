@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import com.sonatype.nexus.staging.client.StagingWorkflowV3Service;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.InvalidRepositoryException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -27,11 +28,11 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
-import org.sonatype.maven.mojo.logback.LogbackUtils;
 import org.sonatype.nexus.client.core.NexusClient;
 import org.sonatype.nexus.client.core.NexusStatus;
 import org.sonatype.nexus.client.core.exception.NexusClientErrorResponseException;
 import org.sonatype.nexus.maven.staging.ErrorDumper;
+import org.sonatype.nexus.maven.staging.ProgressMonitorImpl;
 import org.sonatype.nexus.maven.staging.deploy.StagingRepository;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 import com.sonatype.nexus.staging.client.Profile;
@@ -39,7 +40,6 @@ import com.sonatype.nexus.staging.client.ProfileMatchingParameters;
 import com.sonatype.nexus.staging.client.StagingRuleFailures;
 import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
-import ch.qos.logback.classic.Level;
 
 public abstract class AbstractStagingDeployStrategy
     extends AbstractDeployStrategy
@@ -79,14 +79,6 @@ public abstract class AbstractStagingDeployStrategy
     protected void initRemoting( final MavenSession mavenSession, final StagingParameters parameters )
         throws MojoExecutionException
     {
-        if ( getLogger().isDebugEnabled() )
-        {
-            LogbackUtils.syncLogLevelWithLevel( Level.DEBUG );
-        }
-        else
-        {
-            LogbackUtils.syncLogLevelWithLevel( Level.WARN );
-        }
         remoting = new RemotingImpl( mavenSession, parameters, secDispatcher );
         if ( remoting.getServer() != null )
         {
@@ -98,6 +90,20 @@ public abstract class AbstractStagingDeployStrategy
             getLogger().info(
                 "Using " + remoting.getProxy().getProtocol().toUpperCase() + " Proxy with ID=\""
                     + remoting.getProxy().getId() + "\" from Maven settings." );
+        }
+
+        // HACK: Maybe install the progress monitor if the service supports v3
+        // HACK: Each subsystem is its own singleton object, so asking for v2 and v3 would return 2 different objects
+        // HACK: If we configure the factory to return v3 impl for request for v2, then we don't get the version condition validation for v3
+
+        StagingWorkflowV2Service service = remoting.getStagingWorkflowV2Service();
+        if (service instanceof StagingWorkflowV3Service) {
+            StagingWorkflowV3Service v3 = (StagingWorkflowV3Service)service;
+            v3.setProgressMonitor(new ProgressMonitorImpl(getLogger()));
+
+            // TODO: Configure these bits
+            //v3.setProgressTimeoutMinutes();
+            //v3.setProgressPauseDurationSeconds();
         }
     }
 
@@ -330,7 +336,7 @@ public abstract class AbstractStagingDeployStrategy
             final List<String> failedRepositories = new ArrayList<String>();
             for ( StagingRuleFailures failures : srfe.getFailures() )
             {
-                failedRepositories.add( failures.getRepositoryName() + "(id=" + failures.getRepositoryId() + ")" );
+                failedRepositories.add( failures.getRepositoryId() );
             }
             msg = "Rule failure during close of staging repositories: " + failedRepositories;
             keep = parameters.isKeepStagingRepositoryOnCloseRuleFailure();
