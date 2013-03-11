@@ -102,6 +102,29 @@ public class PrompterImpl
         return null;
     }
 
+    @Override
+    public Integer promptInteger(final String message, final @Nullable Integer min, final @Nullable Integer max) throws IOException {
+        while (true) {
+            String raw = prompt(message);
+            Integer value = parseInt(raw);
+            if (value != null) {
+                if (min != null && value < min) {
+                    console.println("Value must be greater than " + (min - 1) + ": " + raw);
+                    continue;
+                }
+                if (max != null && value > max) {
+                    console.println("Value must be less than " + max + ": " + raw);
+                    continue;
+                }
+
+                // valid
+                return value;
+            }
+            // else invalid, try again
+            console.println("Invalid value: " + raw);
+        }
+    }
+
     public String promptChoice(final String header, final String message, final List<String> choices) throws IOException {
         checkNotNull(header);
         checkNotNull(message);

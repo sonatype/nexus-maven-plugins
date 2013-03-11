@@ -46,4 +46,9 @@ public interface Prompter
      * At least 2 choices are required.
      */
     String promptChoice(String header, String message, List<String> choices) throws IOException;
+
+    /**
+     * Prompt user for an integer.
+     */
+    Integer promptInteger(String message, @Nullable Integer min, @Nullable Integer max) throws IOException;
 }
