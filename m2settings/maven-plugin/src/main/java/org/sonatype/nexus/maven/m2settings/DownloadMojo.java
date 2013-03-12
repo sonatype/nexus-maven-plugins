@@ -35,6 +35,7 @@ import org.sonatype.aether.version.VersionConstraint;
 import org.sonatype.aether.version.VersionScheme;
 import org.sonatype.nexus.client.core.NexusClient;
 import org.sonatype.nexus.client.core.NexusStatus;
+import org.sonatype.nexus.client.rest.AuthenticationInfo;
 import org.sonatype.nexus.client.rest.BaseUrl;
 import org.sonatype.nexus.client.rest.ConnectionInfo;
 import org.sonatype.nexus.client.rest.NexusClientFactory;
@@ -151,6 +152,24 @@ public class DownloadMojo
     @Parameter(property = "backup.timestampFormat", defaultValue = "-yyyyMMddHHmmss")
     private String backupTimestampFormat;
 
+    @Parameter(property = "proxy", defaultValue = "false")
+    private boolean proxyEnabled;
+
+    @Parameter(property = "proxy.protocol")
+    private String proxyProtocol;
+
+    @Parameter(property = "proxy.host")
+    private String proxyHost;
+
+    @Parameter(property = "proxy.port")
+    private Integer proxyPort;
+
+    @Parameter(property = "proxy.username")
+    private String proxyUsername;
+
+    @Parameter(property = "proxy.password")
+    private String proxyPassword;
+
     private NexusClient nexusClient;
 
     @Override
@@ -230,8 +249,54 @@ public class DownloadMojo
         // for now we assume we always have username/password
         UsernamePasswordAuthenticationInfo auth = new UsernamePasswordAuthenticationInfo(username, password);
 
+        // Configure proxy
         Map<Protocol, ProxyInfo> proxies = Maps.newHashMapWithExpectedSize(1);
-        // TODO: Configure proxy
+        if (proxyEnabled) {
+            if (StringUtils.isBlank(proxyProtocol)) {
+                proxyProtocol = prompter.promptChoice("Proxy Protocol", "Choose", Lists.newArrayList("http", "https"));
+            }
+            proxyProtocol = proxyProtocol.trim();
+
+            if (StringUtils.isBlank(proxyHost)) {
+                proxyHost = prompter.prompt("Proxy Host");
+            }
+            proxyHost = proxyHost.trim();
+
+            if (proxyPort == null) {
+                proxyPort = prompter.promptInteger("Proxy Port", 1, 65536);
+            }
+
+            AuthenticationInfo proxyAuth = null;
+            if (!StringUtils.isBlank(proxyUsername) && !StringUtils.isBlank(proxyUsername)) {
+                proxyAuth = new UsernamePasswordAuthenticationInfo(proxyUsername.trim(), proxyPassword);
+            }
+            else {
+                // FIXME: asis, when not using proxy auth, this will always get prompted
+                String answer = prompter.promptChoice("Proxy Authentication", "Choose", Lists.newArrayList("yes", "no"));
+                if ("yes".equals(answer)) {
+                    if (StringUtils.isBlank(proxyUsername)) {
+                        proxyUsername = prompter.promptWithDefaultValue("Proxy Username", System.getProperty("user.name"));
+                    }
+
+                    if (StringUtils.isBlank(proxyPassword)) {
+                        proxyPassword = prompter.prompt("Proxy Password", '*');
+                    }
+
+                    proxyAuth = new UsernamePasswordAuthenticationInfo(proxyUsername.trim(), proxyPassword);
+                }
+            }
+
+            if (proxyAuth != null) {
+                log.info("Proxy enabled: {}@{}:{}:{}", proxyUsername, proxyProtocol, proxyHost, proxyPort);
+            }
+            else {
+                log.info("Proxy enabled: {}:{}:{}", proxyProtocol, proxyHost, proxyPort);
+            }
+
+            Protocol protocol = Protocol.valueOf(proxyProtocol);
+            ProxyInfo proxy = new ProxyInfo(protocol, proxyHost, proxyPort, proxyAuth);
+            proxies.put(protocol, proxy);
+        }
 
         return factory.createFor(new ConnectionInfo(baseUrl, auth, proxies));
     }
