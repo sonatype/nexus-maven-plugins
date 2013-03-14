@@ -13,9 +13,12 @@
 package org.sonatype.nexus.maven.staging;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -27,7 +30,7 @@ import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 
 /**
  * Base class for nexus-staging-maven-plugin mojos, gathering the most common parameters.
- *
+ * 
  * @author cstamas
  */
 public abstract class AbstractStagingMojo
@@ -104,11 +107,27 @@ public abstract class AbstractStagingMojo
     private String serverId;
 
     /**
-     * The repository "description" to pass to Nexus when repository staging workflow step is made. If none passed in,
-     * plugin defaults are applied.
+     * The repository "description" to pass to Nexus when repository staging workflow step is made. This property is
+     * meant for direct CLI invocations mostly, as it "takes it all", this description if given will override any other
+     * set in the POM.
      */
     @Parameter( property = "stagingDescription" )
     private String stagingDescription;
+
+    /**
+     * The key-value pairs to map staging steps to some meaningful descriptions. If no key mapped, description will be
+     * defaulted to {@link #getRootProjectGav()} (which is {@code groupId:artifactId:version} of parent POM in reactor).
+     * Keys to be mapped are members of the {@link StagingAction} enum (case insensitive), and they are:
+     * <ul>
+     * <li>START- to be used when staging repository is created (staging is started).</li>
+     * <li>FINISH - to be used when staging repository is being sealed/closed (staging upload finished).</li>
+     * <li>DROP - to be used when staging repository is being dropped (staging repository removed).</li>
+     * <li>RELEASE - to be used when staging repository is being released</li>
+     * <li>PROMOTE - to be used when staging repository is being promoted</li>
+     * </ul>
+     */
+    @Parameter
+    private Map<String, String> stagingDescriptions;
 
     /**
      * Controls whether the staging repository is kept or not (it will be dropped) in case of staging rule failure when
@@ -130,9 +149,29 @@ public abstract class AbstractStagingMojo
         return serverId;
     }
 
-    protected String getStagingDescription()
+    protected StagingActionMessages getStagingActionMessages()
+        throws MojoExecutionException
     {
-        return stagingDescription;
+        final HashMap<StagingAction, String> messages = new HashMap<StagingAction, String>();
+        if ( stagingDescriptions != null )
+        {
+            for ( Map.Entry<String, String> entry : stagingDescriptions.entrySet() )
+            {
+                try
+                {
+                    // this will IllegalArgumentEx if key is not within allowed value set
+                    // so catch it, and emit MojoExecutionEx as that means clearly user error, misconfiguration
+                    messages.put( StagingAction.valueOf( entry.getKey().toUpperCase() ), entry.getValue() );
+                }
+                catch ( IllegalArgumentException e )
+                {
+                    throw new MojoExecutionException( "stagingDescriptions map contains unmappable key: "
+                        + entry.getKey() );
+                }
+
+            }
+        }
+        return new StagingActionMessages( stagingDescription, messages, getRootProjectGav() );
     }
 
     public boolean isKeepStagingRepositoryOnCloseRuleFailure()
@@ -158,14 +197,21 @@ public abstract class AbstractStagingMojo
     protected String getRootProjectGav()
     {
         final MavenProject rootProject = getFirstProjectWithThisPluginDefined();
-        return rootProject.getGroupId() + ":" + rootProject.getArtifactId() + ":" + rootProject.getVersion();
+        if ( rootProject != null )
+        {
+            return rootProject.getGroupId() + ":" + rootProject.getArtifactId() + ":" + rootProject.getVersion();
+        }
+        else
+        {
+            return "unknown";
+        }
     }
 
     // == common methods
 
     /**
      * Throws {@link MojoFailureException} if Maven is invoked offline, as nexus-staging-maven-plugin MUST WORK online.
-     *
+     * 
      * @throws MojoFailureException if Maven is invoked offline.
      */
     protected void failIfOffline()
@@ -180,7 +226,7 @@ public abstract class AbstractStagingMojo
 
     /**
      * Returns the first project in reactor that has this plugin defined.
-     *
+     * 
      * @return
      */
     protected MavenProject getFirstProjectWithThisPluginDefined()
@@ -192,7 +238,7 @@ public abstract class AbstractStagingMojo
      * In case of "ordinary" (reactor) build, it returns {@code true} if the current project is the last one being
      * executed in this build that has this Mojo defined. In case of direct invocation of this Mojo over CLI, it returns
      * {@code true} if the current project is the last one being executed in this build.
-     *
+     * 
      * @return true if last project is being built.
      */
     protected boolean isThisLastProjectWithThisMojoInExecution()
@@ -211,20 +257,20 @@ public abstract class AbstractStagingMojo
     /**
      * Returns true if the current project is the last one being executed in this build that has passed in goal
      * execution defined.
-     *
+     * 
      * @return true if last project is being built.
      */
     protected boolean isThisLastProjectWithMojoInExecution( final String goal )
     {
         return MojoExecution.isCurrentTheLastProjectWithMojoInExecution( mavenSession, pluginGroupId, pluginArtifactId,
-                                                                         goal );
+            goal );
     }
 
     /**
      * Returns the staging directory root, that is either set explictly by user in plugin configuration (see
      * {@link #altStagingDirectory} parameter), or it's location is calculated taking as base the first project in this
      * reactor that will/was executing this plugin.
-     *
+     * 
      * @return
      */
     protected File getStagingDirectoryRoot()

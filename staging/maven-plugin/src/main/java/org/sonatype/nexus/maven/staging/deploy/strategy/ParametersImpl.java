@@ -13,9 +13,6 @@
 package org.sonatype.nexus.maven.staging.deploy.strategy;
 
 import java.io.File;
-import java.util.Map;
-
-import org.codehaus.plexus.util.StringUtils;
 
 import com.google.common.base.Preconditions;
 
