@@ -25,6 +25,7 @@ import org.sonatype.nexus.mindexer.client.SearchResponse;
 
 import com.sonatype.nexus.staging.client.StagingRepository;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -86,6 +87,20 @@ public class SimpleV2RoundtripIT
         }
     }
 
+    protected void verifyDescription( )
+    {
+        final List<StagingRepository> stagingRepositories = getAllStagingRepositories();
+        assertThat("Should have 1 'released' staging repositories",
+            stagingRepositories, hasSize(1));
+
+        StagingRepository repository = stagingRepositories.get(0);
+        assertThat(repository.getState(), is(State.CLOSED));
+
+        // see corresponding POM for mapping:
+        // maven2-project and maven3-project
+        assertThat( repository.getDescription(), equalTo( "finish" ) );
+    }
+
     /**
      * Simulates separate invocation of commands. Deploy then release.
      *
@@ -100,6 +115,8 @@ public class SimpleV2RoundtripIT
         verifier.executeGoals( Arrays.asList( "clean", "deploy" ) );
         // should not fail
         verifier.verifyErrorFreeLog();
+        // verify the description
+        verifyDescription();
         // v2 release
         verifier.executeGoals( Arrays.asList( "nexus-staging:release" ) );
         // should not fail

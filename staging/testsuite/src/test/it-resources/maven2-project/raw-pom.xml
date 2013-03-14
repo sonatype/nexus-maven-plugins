@@ -116,6 +116,10 @@
         <configuration>
           <nexusUrl>http://localhost:${nexus.port}/nexus/</nexusUrl>
           <serverId>local-nexus</serverId>
+          <stagingDescriptions>
+            <start>start</start>
+            <finish>finish</finish>
+          </stagingDescriptions>
         </configuration>
       </plugin>
     </plugins>

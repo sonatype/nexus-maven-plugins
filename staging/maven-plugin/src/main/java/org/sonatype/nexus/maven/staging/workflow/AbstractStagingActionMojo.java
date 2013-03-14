@@ -16,14 +16,11 @@ import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.sonatype.nexus.staging.client.StagingWorkflowV3Service;
-import com.sonatype.nexus.staging.client.rest.JerseyStagingWorkflowV3SubsystemFactory;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Server;
-import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.maven.mojo.settings.MavenSettings;
 import org.sonatype.nexus.client.core.NexusClient;
 import org.sonatype.nexus.client.core.exception.NexusClientErrorResponseException;
@@ -36,11 +33,14 @@ import org.sonatype.nexus.client.rest.jersey.JerseyNexusClientFactory;
 import org.sonatype.nexus.maven.staging.AbstractStagingMojo;
 import org.sonatype.nexus.maven.staging.ErrorDumper;
 import org.sonatype.nexus.maven.staging.ProgressMonitorImpl;
+import org.sonatype.nexus.maven.staging.StagingAction;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
 
 import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
+import com.sonatype.nexus.staging.client.StagingWorkflowV3Service;
 import com.sonatype.nexus.staging.client.rest.JerseyStagingWorkflowV2SubsystemFactory;
+import com.sonatype.nexus.staging.client.rest.JerseyStagingWorkflowV3SubsystemFactory;
 import com.sun.jersey.api.client.UniformInterfaceException;
 
 /**
@@ -90,19 +90,10 @@ public abstract class AbstractStagingActionMojo
         }
     }
 
-    protected String getDefaultDescriptionForAction( final String action )
+    protected String getDescriptionWithDefaultsForAction( final StagingAction action )
+        throws MojoExecutionException
     {
-        return action + " by " + getPluginGav();
-    }
-
-    protected String getDescriptionWithDefaultsForAction( final String action )
-    {
-        String result = getDescription();
-        if ( StringUtils.isBlank( result ) )
-        {
-            result = getDefaultDescriptionForAction( action );
-        }
-        return result;
+        return getStagingActionMessages().getMessageForAction( action );
     }
 
     protected boolean shouldExecute()
@@ -203,12 +194,10 @@ public abstract class AbstractStagingActionMojo
 
                 final ConnectionInfo connectionInfo = new ConnectionInfo( baseUrl, authenticationInfo, proxyInfos );
 
-                this.nexusClient = new JerseyNexusClientFactory(
+                this.nexusClient =
+                    new JerseyNexusClientFactory(
                     // support v2 and v3
-                    new JerseyStagingWorkflowV2SubsystemFactory(),
-                    new JerseyStagingWorkflowV3SubsystemFactory()
-                )
-                .createFor(connectionInfo);
+                        new JerseyStagingWorkflowV2SubsystemFactory(), new JerseyStagingWorkflowV3SubsystemFactory() ).createFor( connectionInfo );
 
                 getLog().debug( "NexusClient created against Nexus instance on URL: " + baseUrl.toString() + "." );
             }
@@ -243,39 +232,42 @@ public abstract class AbstractStagingActionMojo
     protected StagingWorkflowV2Service getStagingWorkflowService()
         throws MojoExecutionException
     {
-        if (workflowService == null) {
+        if ( workflowService == null )
+        {
             // First try v3
-            try {
-                StagingWorkflowV3Service service = nexusClient.getSubsystem(StagingWorkflowV3Service.class);
+            try
+            {
+                StagingWorkflowV3Service service = nexusClient.getSubsystem( StagingWorkflowV3Service.class );
 
-                getLog().debug("Using staging v3 service");
+                getLog().debug( "Using staging v3 service" );
 
                 // configure progress monitor
-                service.setProgressMonitor(new ProgressMonitorImpl(getLog()));
+                service.setProgressMonitor( new ProgressMonitorImpl( getLog() ) );
 
                 // TODO: Configure these bits
-                //service.setProgressTimeoutMinutes();
-                //service.setProgressPauseDurationSeconds();
+                // service.setProgressTimeoutMinutes();
+                // service.setProgressPauseDurationSeconds();
 
                 workflowService = service;
             }
-            catch (Exception e) {
-                getLog().debug("Unable to resolve staging v3 service; falling back to v2", e);
+            catch ( Exception e )
+            {
+                getLog().debug( "Unable to resolve staging v3 service; falling back to v2", e );
             }
 
-            if (workflowService == null) {
+            if ( workflowService == null )
+            {
                 // fallback to v2 if v3 not available
-                try {
-                    workflowService = nexusClient.getSubsystem(StagingWorkflowV2Service.class);
-                    getLog().debug("Using staging v2 service");
+                try
+                {
+                    workflowService = nexusClient.getSubsystem( StagingWorkflowV2Service.class );
+                    getLog().debug( "Using staging v2 service" );
                 }
-                catch (IllegalArgumentException e) {
-                    throw new MojoExecutionException(
-                        String.format("Nexus instance at base URL %s does not support staging v2; reported status: %s, reason:%s",
-                            nexusClient.getConnectionInfo().getBaseUrl(),
-                            nexusClient.getNexusStatus(),
-                            e.getMessage()),
-                        e);
+                catch ( IllegalArgumentException e )
+                {
+                    throw new MojoExecutionException( String.format(
+                        "Nexus instance at base URL %s does not support staging v2; reported status: %s, reason:%s",
+                        nexusClient.getConnectionInfo().getBaseUrl(), nexusClient.getNexusStatus(), e.getMessage() ), e );
                 }
             }
         }
