@@ -119,7 +119,7 @@ public abstract class AbstractDeployMojo
             try
             {
                 final StagingParameters parameters =
-                    new StagingParametersImpl( getPluginGav(), getRootProjectGav(), getNexusUrl(), getServerId(), getStagingDirectoryRoot(),
+                    new StagingParametersImpl( getPluginGav(), getNexusUrl(), getServerId(), getStagingDirectoryRoot(),
                                                isKeepStagingRepositoryOnCloseRuleFailure(),
                                                isKeepStagingRepositoryOnFailure(),
                                                isSkipStagingRepositoryClose(), getStagingProfileId(),
@@ -140,7 +140,7 @@ public abstract class AbstractDeployMojo
             try
             {
                 final Parameters parameters =
-                    new ParametersImpl( getPluginGav(), getRootProjectGav(), getStagingDirectoryRoot() );
+                    new ParametersImpl( getPluginGav(), getStagingDirectoryRoot() );
 
                 getLog().debug( parameters.toString() );
                 return parameters;

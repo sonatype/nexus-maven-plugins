@@ -21,14 +21,11 @@ public class ParametersImpl
 {
     private final String pluginGav;
     
-    private final String rootProjectGav;
-
     private final File stagingDirectoryRoot;
 
-    public ParametersImpl( String pluginGav, String rootProjectGav, File stagingDirectoryRoot )
+    public ParametersImpl( String pluginGav, File stagingDirectoryRoot )
     {
         this.pluginGav = Preconditions.checkNotNull( pluginGav );
-        this.rootProjectGav = Preconditions.checkNotNull( rootProjectGav );
         this.stagingDirectoryRoot = Preconditions.checkNotNull( stagingDirectoryRoot );
     }
 
@@ -36,12 +33,6 @@ public class ParametersImpl
     public String getPluginGav()
     {
         return pluginGav;
-    }
-
-    @Override
-    public String getRootProjectGav()
-    {
-        return rootProjectGav;
     }
 
     @Override
@@ -55,7 +46,6 @@ public class ParametersImpl
     {
         return "ParametersImpl{" +
             "pluginGav='" + pluginGav + '\'' +
-            ", rootProjectGav=" + rootProjectGav +
             ", stagingDirectoryRoot=" + stagingDirectoryRoot +
             '}';
     }

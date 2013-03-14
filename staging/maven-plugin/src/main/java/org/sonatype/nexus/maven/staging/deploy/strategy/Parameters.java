@@ -23,7 +23,5 @@ public interface Parameters
 {
     String getPluginGav();
     
-    String getRootProjectGav();
-
     File getStagingDirectoryRoot();
 }

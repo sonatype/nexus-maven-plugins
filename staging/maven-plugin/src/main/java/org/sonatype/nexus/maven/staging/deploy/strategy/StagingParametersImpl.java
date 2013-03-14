@@ -45,12 +45,12 @@ public class StagingParametersImpl
 
     private final Map<String, String> tags;
 
-    public StagingParametersImpl( String pluginGav, String rootProjectGav, String nexusUrl, String serverId, File stagingDirectoryRoot,
+    public StagingParametersImpl( String pluginGav, String nexusUrl, String serverId, File stagingDirectoryRoot,
         boolean keepStagingRepositoryOnCloseRuleFailure, boolean keepStagingRepositoryOnFailure,
         boolean skipStagingRepositoryClose, String stagingProfileId, String stagingRepositoryId,
         StagingActionMessages stagingActionMessages, Map<String, String> tags )
     {
-        super( pluginGav, rootProjectGav, stagingDirectoryRoot );
+        super( pluginGav, stagingDirectoryRoot );
         this.nexusUrl = Preconditions.checkNotNull( nexusUrl );
         this.serverId = Preconditions.checkNotNull( serverId );
         this.keepStagingRepositoryOnCloseRuleFailure = keepStagingRepositoryOnCloseRuleFailure;
@@ -120,7 +120,6 @@ public class StagingParametersImpl
     {
         return "ParametersImpl{" +
             "pluginGav='" + getPluginGav() + '\'' +
-            ", rootProjectGav=" + getRootProjectGav() +
             ", nexusUrl='" + nexusUrl + '\'' +
             ", serverId='" + serverId + '\'' +
             ", stagingDirectoryRoot=" + getStagingDirectoryRoot() +
