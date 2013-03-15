@@ -17,6 +17,8 @@ import java.util.Arrays;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.sonatype.nexus.maven.staging.StagingAction;
+
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
 /**
@@ -34,7 +36,7 @@ public class RcCloseStageRepositoryMojo
         throws MojoExecutionException, MojoFailureException
     {
         getLog().info( "RC-Closing staging repository with IDs=" + Arrays.toString( getStagingRepositoryIds() ) );
-        stagingWorkflow.finishStagingRepositories( getDescriptionWithDefaultsForAction( "RC-Closed" ),
+        stagingWorkflow.finishStagingRepositories( getDescriptionWithDefaultsForAction( StagingAction.FINISH ),
             getStagingRepositoryIds() );
         getLog().info( "Closed" );
     }

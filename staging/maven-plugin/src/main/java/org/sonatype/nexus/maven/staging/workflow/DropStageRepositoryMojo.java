@@ -17,6 +17,8 @@ import java.util.Arrays;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.sonatype.nexus.maven.staging.StagingAction;
+
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
 /**
@@ -34,7 +36,7 @@ public class DropStageRepositoryMojo
         throws MojoExecutionException, MojoFailureException
     {
         getLog().info( "Dropping staging repository with IDs=" + Arrays.toString( getStagingRepositoryIds() ) );
-        stagingWorkflow.dropStagingRepositories( getDescriptionWithDefaultsForAction( "Dropped" ),
+        stagingWorkflow.dropStagingRepositories( getDescriptionWithDefaultsForAction( StagingAction.DROP ),
             getStagingRepositoryIds() );
         getLog().info( "Dropped" );
     }

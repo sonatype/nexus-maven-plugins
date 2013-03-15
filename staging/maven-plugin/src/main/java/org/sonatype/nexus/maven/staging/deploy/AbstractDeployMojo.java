@@ -124,7 +124,7 @@ public abstract class AbstractDeployMojo
                                                isKeepStagingRepositoryOnFailure(),
                                                isSkipStagingRepositoryClose(), getStagingProfileId(),
                                                getStagingRepositoryId(),
-                                               getDescription(),
+                                               getStagingActionMessages(),
                                                getTags() );
 
                 getLog().debug( parameters.toString() );

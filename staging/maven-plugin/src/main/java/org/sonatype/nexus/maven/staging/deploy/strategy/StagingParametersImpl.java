@@ -12,10 +12,14 @@
  */
 package org.sonatype.nexus.maven.staging.deploy.strategy;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.io.File;
 import java.util.Map;
 
-import org.codehaus.plexus.util.StringUtils;
+import org.sonatype.nexus.maven.staging.StagingAction;
+import org.sonatype.nexus.maven.staging.StagingActionMessages;
+
 import com.google.common.base.Preconditions;
 
 public class StagingParametersImpl
@@ -37,14 +41,14 @@ public class StagingParametersImpl
 
     private final String stagingRepositoryId;
 
-    private final String userDescriptionOfAction;
+    private final StagingActionMessages stagingActionMessages;
 
     private final Map<String, String> tags;
 
     public StagingParametersImpl( String pluginGav, String nexusUrl, String serverId, File stagingDirectoryRoot,
         boolean keepStagingRepositoryOnCloseRuleFailure, boolean keepStagingRepositoryOnFailure,
         boolean skipStagingRepositoryClose, String stagingProfileId, String stagingRepositoryId,
-        String userDescriptionOfAction, Map<String, String> tags )
+        StagingActionMessages stagingActionMessages, Map<String, String> tags )
     {
         super( pluginGav, stagingDirectoryRoot );
         this.nexusUrl = Preconditions.checkNotNull( nexusUrl );
@@ -54,7 +58,7 @@ public class StagingParametersImpl
         this.skipStagingRepositoryClose = skipStagingRepositoryClose;
         this.stagingProfileId = stagingProfileId;
         this.stagingRepositoryId = stagingRepositoryId;
-        this.userDescriptionOfAction = userDescriptionOfAction;
+        this.stagingActionMessages = checkNotNull( stagingActionMessages );
         this.tags = tags;
     }
 
@@ -101,25 +105,14 @@ public class StagingParametersImpl
     }
 
     @Override
-    public String getUserDescriptionOfAction()
+    public String getActionDescription( final StagingAction action )
     {
-        return userDescriptionOfAction;
+        return stagingActionMessages.getMessageForAction( action );
     }
 
     public Map<String, String> getTags()
     {
         return tags;
-    }
-
-    @Override
-    public String getDefaultedUserDescriptionOfAction( String action )
-    {
-        String result = getUserDescriptionOfAction();
-        if ( StringUtils.isBlank( result ) )
-        {
-            result = action + " by " + getPluginGav();
-        }
-        return result;
     }
 
     @Override
@@ -135,7 +128,6 @@ public class StagingParametersImpl
             ", skipStagingRepositoryClose=" + skipStagingRepositoryClose +
             ", stagingProfileId='" + stagingProfileId + '\'' +
             ", stagingRepositoryId='" + stagingRepositoryId + '\'' +
-            ", userDescriptionOfAction='" + userDescriptionOfAction + '\'' +
             ", tags=" + tags +
             '}';
     }

@@ -17,6 +17,8 @@ import java.util.Arrays;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.sonatype.nexus.maven.staging.StagingAction;
+
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
 /**
@@ -35,7 +37,7 @@ public class RcReleaseStageRepositoryMojo
         throws MojoExecutionException, MojoFailureException
     {
         getLog().info( "RC-Releasing staging repository with IDs=" + Arrays.toString( getStagingRepositoryIds() ) );
-        stagingWorkflow.releaseStagingRepositories( getDescriptionWithDefaultsForAction( "RC-Released" ),
+        stagingWorkflow.releaseStagingRepositories( getDescriptionWithDefaultsForAction( StagingAction.RELEASE ),
                                                     getStagingRepositoryIds() );
         getLog().info( "Released" );
     }

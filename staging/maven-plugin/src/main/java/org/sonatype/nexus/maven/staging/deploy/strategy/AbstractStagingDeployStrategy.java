@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import com.sonatype.nexus.staging.client.StagingWorkflowV3Service;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.InvalidRepositoryException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -33,13 +32,16 @@ import org.sonatype.nexus.client.core.NexusStatus;
 import org.sonatype.nexus.client.core.exception.NexusClientErrorResponseException;
 import org.sonatype.nexus.maven.staging.ErrorDumper;
 import org.sonatype.nexus.maven.staging.ProgressMonitorImpl;
+import org.sonatype.nexus.maven.staging.StagingAction;
 import org.sonatype.nexus.maven.staging.deploy.StagingRepository;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
+
 import com.sonatype.nexus.staging.client.Profile;
 import com.sonatype.nexus.staging.client.ProfileMatchingParameters;
 import com.sonatype.nexus.staging.client.StagingRuleFailures;
 import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
+import com.sonatype.nexus.staging.client.StagingWorkflowV3Service;
 
 public abstract class AbstractStagingDeployStrategy
     extends AbstractDeployStrategy
@@ -173,7 +175,7 @@ public abstract class AbstractStagingDeployStrategy
             {
                 String createdStagingRepositoryId =
                     stagingService.startStaging( stagingProfile,
-                                                 parameters.getDefaultedUserDescriptionOfAction( "Started" ),
+                                                 parameters.getActionDescription( StagingAction.START ),
                                                  parameters.getTags() );
                 // store the one just created for us, as it means we need to "babysit" it (close or drop, depending
                 // on outcome)
@@ -281,7 +283,7 @@ public abstract class AbstractStagingDeployStrategy
                             " * Closing staging repository with ID \"" + stagingRepository.getRepositoryId() + "\"." );
                         stagingService.finishStaging( stagingRepository.getProfile(),
                                                       stagingRepository.getRepositoryId(),
-                                                      parameters.getDefaultedUserDescriptionOfAction( "Closed" ) );
+                                                      parameters.getActionDescription( StagingAction.FINISH ) );
                     }
                     catch ( StagingRuleFailuresException e )
                     {
@@ -384,7 +386,7 @@ public abstract class AbstractStagingDeployStrategy
                     getLogger().error(
                         " * Dropping failed staging repository with ID \"" + stagingRepository.getRepositoryId()
                             + "\" (" + msg + ")." );
-                    stagingService.dropStagingRepositories( parameters.getDefaultedUserDescriptionOfAction( "Dropped" )
+                    stagingService.dropStagingRepositories( parameters.getActionDescription( StagingAction.DROP )
                                                                 + " (" + msg + ").",
                                                             stagingRepository.getRepositoryId() );
                 }

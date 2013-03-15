@@ -20,6 +20,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.sonatype.nexus.maven.staging.ErrorDumper;
+import org.sonatype.nexus.maven.staging.StagingAction;
 
 import com.sonatype.nexus.staging.client.StagingRuleFailures;
 import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
@@ -43,7 +44,7 @@ public class CloseStageRepositoryMojo
         try
         {
             getLog().info( "Closing staging repository with IDs=" + Arrays.toString( getStagingRepositoryIds() ) );
-            stagingWorkflow.finishStagingRepositories( getDescriptionWithDefaultsForAction( "Closed" ),
+            stagingWorkflow.finishStagingRepositories( getDescriptionWithDefaultsForAction( StagingAction.FINISH ),
                 stagingRepositoryIds );
             getLog().info( "Closed" );
         }
@@ -63,7 +64,7 @@ public class CloseStageRepositoryMojo
                 final String msg = "Rule failure during close of staging repositories: " + failedRepositories;
 
                 getLog().error( "Cleaning up remote stage repositories after a " + msg );
-                stagingWorkflow.dropStagingRepositories( getDefaultDescriptionForAction( "Dropped" ) + " ("
+                stagingWorkflow.dropStagingRepositories( getDescriptionWithDefaultsForAction( StagingAction.DROP ) + " ("
                                 + msg + ").", stagingRepositoryIds );
             }
             // fail the build
