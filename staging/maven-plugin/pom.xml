@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.sonatype.nexus.maven</groupId>
     <artifactId>nexus-staging</artifactId>
-    <version>1.4.1</version>
+    <version>1.4.2-SNAPSHOT</version>
   </parent>
 
   <groupId>org.sonatype.plugins</groupId>
