@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.sonatype.forge</groupId>
     <artifactId>forge-parent</artifactId>
-    <version>31</version>
+    <version>32</version>
     <relativePath/>
   </parent>
 
@@ -55,7 +55,7 @@
   </scm>
 
   <properties>
-    <nexus.version>2.4.0-1</nexus.version>
+    <nexus.version>2.4.0-05</nexus.version>
     <!--<sisu-inject.version>2.3.2</sisu-inject.version>-->
     <!--<slf4j.version>1.7.2</slf4j.version>-->
     <maven.version>3.0.4</maven.version>
