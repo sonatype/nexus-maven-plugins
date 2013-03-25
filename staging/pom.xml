@@ -27,7 +27,7 @@
   <packaging>pom</packaging>
 
   <properties>
-    <staging.version>2.3-SNAPSHOT</staging.version>
+    <staging.version>2.3.0-02</staging.version>
   </properties>
 
   <dependencyManagement>
