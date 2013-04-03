@@ -26,6 +26,14 @@
   <artifactId>nexus-staging-maven-plugin</artifactId>
   <packaging>maven-plugin</packaging>
 
+  <!--
+  NOTE: Name and description is required here to configure proper details in the plugin.xml, there is no other mechanism to configure these.
+  -->
+  <name>Nexus Staging Maven Plugin</name>
+  <description>
+    Provides support to access staging functionality in a remote Nexus Professional server.
+  </description>
+
   <dependencies>
     <dependency>
       <groupId>org.sonatype.maven</groupId>

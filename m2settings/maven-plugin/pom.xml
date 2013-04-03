@@ -26,6 +26,14 @@
   <artifactId>nexus-m2settings-maven-plugin</artifactId>
   <packaging>maven-plugin</packaging>
 
+  <!--
+  NOTE: Name and description is required here to configure proper details in the plugin.xml, there is no other mechanism to configure these.
+  -->
+  <name>Nexus M2-Settings Maven Plugin</name>
+  <description>
+    Provides support to download m2-settings templates from a remote Nexus Professional server.
+  </description>
+
   <dependencies>
     <dependency>
       <groupId>org.slf4j</groupId>
