@@ -107,6 +107,9 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
+        <configuration>
+            <goalPrefix>nexus-m2settings</goalPrefix>
+        </configuration>
         <executions>
           <execution>
             <goals>
