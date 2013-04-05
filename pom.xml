@@ -66,6 +66,9 @@
 
     <!-- See 'idea' profile. -->
     <nexus-plugin.type>nexus-plugin</nexus-plugin.type>
+
+    <!-- Disable cobertura, this is picked up from parent and causes serious problems building site docs for these maven-plugins -->
+    <cobertura.skip>true</cobertura.skip>
   </properties>
 
   <dependencyManagement>
@@ -398,6 +401,16 @@
     <!--</plugin>-->
     <!--</plugins>-->
   </build>
+
+  <reporting>
+     <plugins>
+       <plugin>
+         <groupId>org.codehaus.mojo</groupId>
+         <artifactId>cobertura-maven-plugin</artifactId>
+         <version>2.5.2</version>
+       </plugin>
+     </plugins>
+   </reporting>
 
   <profiles>
     <profile>
