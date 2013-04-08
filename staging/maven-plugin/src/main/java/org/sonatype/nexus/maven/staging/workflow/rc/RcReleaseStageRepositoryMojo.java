@@ -14,9 +14,12 @@ package org.sonatype.nexus.maven.staging.workflow.rc;
 
 import java.util.Arrays;
 
+import com.sonatype.nexus.staging.api.dto.StagingActionDTO;
+import com.sonatype.nexus.staging.client.StagingWorkflowV3Service;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.sonatype.nexus.maven.staging.StagingAction;
 
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
@@ -31,14 +34,38 @@ import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 public class RcReleaseStageRepositoryMojo
     extends AbstractStagingRcActionMojo
 {
+    /**
+     * Automatically drop repository after it has been successfully released.
+     *
+     * @since 1.4.3
+     */
+    @Parameter( property = "autoDropAfterRelease", defaultValue = "true")
+    private boolean autoDropAfterRelease;
 
     @Override
     public void doExecute( final StagingWorkflowV2Service stagingWorkflow )
         throws MojoExecutionException, MojoFailureException
     {
+        // FIXME: Some duplication here between RcReleaseStageRepositoryMojo and ReleaseStageRepositoryMojo
+
         getLog().info( "RC-Releasing staging repository with IDs=" + Arrays.toString( getStagingRepositoryIds() ) );
-        stagingWorkflow.releaseStagingRepositories( getDescriptionWithDefaultsForAction( StagingAction.RELEASE ),
-                                                    getStagingRepositoryIds() );
+
+        String description = getDescriptionWithDefaultsForAction( StagingAction.RELEASE );
+
+        if (stagingWorkflow instanceof StagingWorkflowV3Service) {
+            StagingWorkflowV3Service v3 = (StagingWorkflowV3Service)stagingWorkflow;
+
+            StagingActionDTO action = new StagingActionDTO();
+            action.setDescription(description);
+            action.setStagedRepositoryIds(Arrays.asList(getStagingRepositoryIds()));
+            action.setAutoDropAfterRelease(autoDropAfterRelease);
+
+            v3.releaseStagingRepositories(action);
+        }
+        else {
+            stagingWorkflow.releaseStagingRepositories( description, getStagingRepositoryIds() );
+        }
+
         getLog().info( "Released" );
     }
 }
