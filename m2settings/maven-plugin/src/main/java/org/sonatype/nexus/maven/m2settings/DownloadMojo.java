@@ -152,21 +152,39 @@ public class DownloadMojo
     @Parameter(property = "backup.timestampFormat", defaultValue = "-yyyyMMddHHmmss")
     private String backupTimestampFormat;
 
+    /**
+     * Enable proxy support.
+     */
     @Parameter(property = "proxy", defaultValue = "false")
     private boolean proxyEnabled;
 
+    /**
+     * Proxy protocol, either http or https.
+     */
     @Parameter(property = "proxy.protocol")
     private String proxyProtocol;
 
+    /**
+     * Proxy host or ip address.
+     */
     @Parameter(property = "proxy.host")
     private String proxyHost;
 
+    /**
+     * Proxy port.
+     */
     @Parameter(property = "proxy.port")
     private Integer proxyPort;
 
+    /**
+     * Proxy username when authentication is required.
+     */
     @Parameter(property = "proxy.username")
     private String proxyUsername;
 
+    /**
+     * Proxy password when authentication is required.
+     */
     @Parameter(property = "proxy.password")
     private String proxyPassword;
 
