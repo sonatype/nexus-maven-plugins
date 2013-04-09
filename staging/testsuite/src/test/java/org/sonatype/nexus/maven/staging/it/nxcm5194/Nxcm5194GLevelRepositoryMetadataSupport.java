@@ -166,11 +166,11 @@ public abstract class Nxcm5194GLevelRepositoryMetadataSupport
         }
         catch ( XmlPullParserException e )
         {
-            throw new AssertionError( "The metadata parse failed", e );
+            throw new AssertionError( "The metadata parse failed: " + e.getMessage() );
         }
         catch ( IOException e )
         {
-            throw new AssertionError( "The metadata download failed", e );
+            throw new AssertionError( "The metadata download failed: " + e.getMessage() );
         }
         finally
         {
