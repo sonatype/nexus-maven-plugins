@@ -14,7 +14,6 @@ package org.sonatype.nexus.maven.staging.it.nxcm5194;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 
 import org.apache.maven.it.VerificationException;
 import org.sonatype.nexus.maven.staging.it.PreparedVerifier;
@@ -49,15 +48,5 @@ public class Nxcm5194GLevelRMDDeferredDeployIT
     protected String getTargetedRepositoryId()
     {
         return "snapshots";
-    }
-
-    @Override
-    protected void invokeMaven( final PreparedVerifier verifier )
-        throws VerificationException
-    {
-        // the workflow
-        verifier.executeGoals( Arrays.asList( "clean", "deploy" ) );
-        // should not fail
-        verifier.verifyErrorFreeLog();
     }
 }

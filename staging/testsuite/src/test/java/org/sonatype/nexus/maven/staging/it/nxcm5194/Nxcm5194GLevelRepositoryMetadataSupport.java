@@ -15,6 +15,7 @@ package org.sonatype.nexus.maven.staging.it.nxcm5194;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 import javax.annotation.Nullable;
 
@@ -100,6 +101,21 @@ public abstract class Nxcm5194GLevelRepositoryMetadataSupport
         roundtrip( createMavenVerifier( M3_VERSION, new File( getBasedir(),
             "target/test-classes/maven3-maven-plugin-project" ) ) );
     }
+    
+    // we always invoke the same, but results will be different: with deferred deploy
+    // they will land into snapshots, with staging they will land in some
+    // (closed) staging repo. That's why we have getTargetedRepositoryId() that will
+    // tell us from where to fetch the G level MD
+
+    @Override
+    protected void invokeMaven( final PreparedVerifier verifier )
+        throws VerificationException
+    {
+        // the workflow
+        verifier.executeGoals( Arrays.asList( "clean", "deploy" ) );
+        // should not fail
+        verifier.verifyErrorFreeLog();
+    }
 
     // == Scenario specific methods
 
@@ -108,10 +124,6 @@ public abstract class Nxcm5194GLevelRepositoryMetadataSupport
         throws VerificationException, IOException;
 
     protected abstract String getTargetedRepositoryId();
-
-    @Override
-    protected abstract void invokeMaven( final PreparedVerifier verifier )
-        throws VerificationException;
 
     // == Assertions
 

@@ -14,7 +14,6 @@ package org.sonatype.nexus.maven.staging.it.nxcm5194;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 
 import org.apache.maven.it.VerificationException;
 import org.sonatype.nexus.maven.staging.it.PreparedVerifier;
@@ -55,16 +54,6 @@ public class Nxcm5194GLevelRMDStagingIT
     {
         // this is the "target" group, so we will fetch the staged MD over it to not have to guess the repo
         return "public";
-    }
-
-    @Override
-    protected void invokeMaven( final PreparedVerifier verifier )
-        throws VerificationException
-    {
-        // the workflow
-        verifier.executeGoals( Arrays.asList( "clean", "deploy" ) );
-        // should not fail
-        verifier.verifyErrorFreeLog();
     }
 
     // == Assertions (we do use staging, so we need a bit "extra" work here)
