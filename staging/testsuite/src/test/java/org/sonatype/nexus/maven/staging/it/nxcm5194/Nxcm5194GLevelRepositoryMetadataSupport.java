@@ -170,7 +170,7 @@ public abstract class Nxcm5194GLevelRepositoryMetadataSupport
                 + Lists.transform( md.getPlugins(), new Function<Plugin, String>()
                 {
                     @Override
-                    public String apply( @Nullable Plugin input )
+                    public String apply( Plugin input )
                     {
                         return input.getArtifactId();
                     }
