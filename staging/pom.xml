@@ -19,14 +19,14 @@
   <parent>
     <groupId>org.sonatype.nexus.maven</groupId>
     <artifactId>nexus-maven-plugins</artifactId>
-    <version>1.4.3-SNAPSHOT</version>
+    <version>1.4.4-SNAPSHOT</version>
   </parent>
 
   <artifactId>nexus-staging</artifactId>
   <packaging>pom</packaging>
 
   <properties>
-    <staging.version>2.3.3</staging.version>
+    <staging.version>2.3.4</staging.version>
   </properties>
 
   <dependencyManagement>
@@ -82,7 +82,7 @@
       <dependency>
         <groupId>org.sonatype.plugins</groupId>
         <artifactId>nexus-staging-maven-plugin</artifactId>
-        <version>1.4.3-SNAPSHOT</version>
+        <version>1.4.4-SNAPSHOT</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
