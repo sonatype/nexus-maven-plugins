@@ -97,6 +97,7 @@
           <!-- all module will end up in 1st profile, except for m2 module -->
           <nexusUrl>http://localhost:${nexus.port}/nexus/</nexusUrl>
           <serverId>local-nexus</serverId>
+          <autoDropAfterRelease>false</autoDropAfterRelease>
         </configuration>
       </plugin>
     </plugins>
