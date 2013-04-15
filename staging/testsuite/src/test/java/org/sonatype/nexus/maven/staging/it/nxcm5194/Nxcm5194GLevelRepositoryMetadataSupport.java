@@ -172,6 +172,10 @@ public abstract class Nxcm5194GLevelRepositoryMetadataSupport
                     @Override
                     public String apply( Plugin input )
                     {
+                        if ( null == input ) 
+                        {
+                            return "invalid-plugin-null-value";
+                        }
                         return input.getArtifactId();
                     }
                 } ) );
