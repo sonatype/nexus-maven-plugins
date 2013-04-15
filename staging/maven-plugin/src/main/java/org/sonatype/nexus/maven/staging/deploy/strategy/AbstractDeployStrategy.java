@@ -24,7 +24,6 @@ import java.util.regex.Pattern;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
-import org.apache.maven.artifact.InvalidRepositoryException;
 import org.apache.maven.artifact.deployer.ArtifactDeployer;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
@@ -34,6 +33,8 @@ import org.apache.maven.artifact.metadata.ArtifactMetadata;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
 import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
+import org.apache.maven.artifact.repository.metadata.GroupRepositoryMetadata;
+import org.apache.maven.artifact.repository.metadata.Plugin;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -42,7 +43,7 @@ import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
-import org.sonatype.nexus.maven.staging.deploy.StagingRepository;
+
 import com.google.common.base.Preconditions;
 
 public abstract class AbstractDeployStrategy
@@ -88,7 +89,7 @@ public abstract class AbstractDeployStrategy
     /**
      * Performs an "install" (not to be confused with "install into local repository!) into the staging repository. It
      * will retain snapshot versions, and no metadata is created at all. In short: performs a simple file copy.
-     *
+     * 
      * @param source
      * @param artifact
      * @param stagingRepository
@@ -97,13 +98,26 @@ public abstract class AbstractDeployStrategy
      * @throws MojoExecutionException
      */
     protected void install( final File source, final Artifact artifact, final ArtifactRepository stagingRepository,
-        final File stagingDirectory )
+                            final File stagingDirectory )
         throws ArtifactInstallationException, MojoExecutionException
     {
         final String path = stagingRepository.pathOf( artifact );
         try
         {
             artifactInstaller.install( source, artifact, stagingRepository );
+
+            String pluginPrefix = null;
+            // String pluginName = null;
+            for ( ArtifactMetadata artifactMetadata : artifact.getMetadataList() )
+            {
+                if ( artifactMetadata instanceof GroupRepositoryMetadata )
+                {
+                    final Plugin plugin =
+                        ( (GroupRepositoryMetadata) artifactMetadata ).getMetadata().getPlugins().get( 0 );
+                    pluginPrefix = plugin.getPrefix();
+                    // pluginName = plugin.getName();
+                }
+            }
 
             // append the index file
             final FileOutputStream fos = new FileOutputStream( new File( stagingDirectory, ".index" ), true );
@@ -117,13 +131,11 @@ public abstract class AbstractDeployStrategy
                     pomFileName = ( (ProjectArtifactMetadata) artifactMetadata ).getLocalFilename( stagingRepository );
                 }
             }
-            pw.println( String.format( "%s=%s:%s:%s:%s:%s:%s:%s", path, artifact.getGroupId(),
-                                       artifact.getArtifactId(), artifact.getVersion(),
-                                       StringUtils.isBlank( artifact.getClassifier() )
-                                           ? "n/a"
-                                           : artifact.getClassifier(), artifact.getType(),
-                                       artifact.getArtifactHandler().getExtension(),
-                                       StringUtils.isBlank( pomFileName ) ? "n/a" : pomFileName ) );
+            pw.println( String.format( "%s=%s:%s:%s:%s:%s:%s:%s:%s", path, artifact.getGroupId(),
+                artifact.getArtifactId(), artifact.getVersion(),
+                StringUtils.isBlank( artifact.getClassifier() ) ? "n/a" : artifact.getClassifier(), artifact.getType(),
+                artifact.getArtifactHandler().getExtension(), StringUtils.isBlank( pomFileName ) ? "n/a" : pomFileName,
+                StringUtils.isBlank( pluginPrefix ) ? "n/a" : pluginPrefix ) );
             pw.flush();
             pw.close();
         }
@@ -133,11 +145,11 @@ public abstract class AbstractDeployStrategy
         }
     }
 
-    // G:A:V:C:P:Ext:PomFileName
-    private final Pattern indexProps = Pattern.compile( "(.*):(.*):(.*):(.*):(.*):(.*):(.*)" );
+    // G:A:V:C:P:Ext:PomFileName:PluginPrefix
+    private final Pattern indexProps = Pattern.compile( "(.*):(.*):(.*):(.*):(.*):(.*):(.*):(.*)" );
 
     protected void deployUp( final MavenSession mavenSession, final File sourceDirectory,
-        final ArtifactRepository remoteRepository )
+                             final ArtifactRepository remoteRepository )
         throws ArtifactDeploymentException, IOException
     {
         // I'd need Aether RepoSystem and create one huge DeployRequest will _all_ artifacts (would be FAST as it would
@@ -161,8 +173,7 @@ public abstract class AbstractDeployStrategy
             if ( !matcher.matches() )
             {
                 throw new ArtifactDeploymentException( "Internal error! Line \"" + includedFileProps
-                                                           + "\" does not match pattern \"" + indexProps.toString()
-                                                           + "\"?" );
+                    + "\" does not match pattern \"" + indexProps.toString() + "\"?" );
             }
 
             final String groupId = matcher.group( 1 );
@@ -172,18 +183,33 @@ public abstract class AbstractDeployStrategy
             final String packaging = matcher.group( 5 );
             final String extension = matcher.group( 6 );
             final String pomFileName = "n/a".equals( matcher.group( 7 ) ) ? null : matcher.group( 7 );
+            final String pluginPrefix = "n/a".equals( matcher.group( 8 ) ) ? null : matcher.group( 8 );
 
             // just a synthetic one, to properly set extension
             final FakeArtifactHandler artifactHandler = new FakeArtifactHandler( packaging, extension );
 
             final DefaultArtifact artifact =
                 new DefaultArtifact( groupId, artifactId, VersionRange.createFromVersion( version ), null, packaging,
-                                     classifier, artifactHandler );
+                    classifier, artifactHandler );
             if ( pomFileName != null )
             {
                 final File pomFile = new File( includedFile.getParentFile(), pomFileName );
                 final ProjectArtifactMetadata pom = new ProjectArtifactMetadata( artifact, pomFile );
                 artifact.addMetadata( pom );
+                if ( "maven-plugin".equals( artifact.getType() ) )
+                {
+                    // So, we have a "main" artifact with type of "maven-plugin"
+                    // Hence, this is a Maven Plugin, Group level MD needs to be added too
+                    final GroupRepositoryMetadata groupMetadata = new GroupRepositoryMetadata( groupId );
+                    // TODO: we "simulate" the name with artifactId, same what maven-plugin-plugin
+                    // would do. Impact is minimal, as we don't know any tool that _uses_ the name
+                    // from Plugin entries. Once the "index file" is properly solved,
+                    // or, we are able to properly persist Artifact instances above
+                    // (to preserve attached metadatas like this G level, and reuse
+                    // deployer without reimplementing it), all this will become unneeded.
+                    groupMetadata.addPluginMapping( pluginPrefix, artifactId, artifactId );
+                    artifact.addMetadata( groupMetadata );
+                }
             }
             artifactDeployer.deploy( includedFile, artifact, remoteRepository, mavenSession.getLocalRepository() );
         }
@@ -203,7 +229,7 @@ public abstract class AbstractDeployStrategy
 
         /**
          * Constructor.
-         *
+         * 
          * @param type
          * @param extension
          */
@@ -224,7 +250,7 @@ public abstract class AbstractDeployStrategy
 
     /**
      * Returns the ArtifactRepository created from passed in maven session's current project's distribution management.
-     *
+     * 
      * @param mavenSession
      * @return
      * @throws MojoExecutionException
