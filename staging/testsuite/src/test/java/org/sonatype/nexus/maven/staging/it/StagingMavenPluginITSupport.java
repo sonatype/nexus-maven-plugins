@@ -156,6 +156,11 @@ public abstract class StagingMavenPluginITSupport
         logger.info( "Creating NexusClient..." );
         nexusDeploymentClient = createNexusClient( nexus(), "deployment", "deployment123" );
     }
+    
+    public NexusClient getNexusClient()
+    {
+        return nexusDeploymentClient;
+    }
 
     public MavenIndexer getMavenIndexer()
     {
