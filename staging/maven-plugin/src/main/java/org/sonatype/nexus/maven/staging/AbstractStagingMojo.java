@@ -95,7 +95,9 @@ public abstract class AbstractStagingMojo
     private File altStagingDirectory;
 
     /**
-     * The base URL for a Nexus Professional instance that includes the nexus-staging-plugin.
+     * The base URL for a Nexus Professional instance that includes the nexus-staging-plugin. For example, if Nexus is
+     * mounted at the server context of {@code /nexus} and running on localhost at port 8081 ( the default install ),
+     * then this value should be {@code http://localhost:8081/nexus/}.
      */
     @Parameter( property = "nexusUrl" )
     private String nexusUrl;
