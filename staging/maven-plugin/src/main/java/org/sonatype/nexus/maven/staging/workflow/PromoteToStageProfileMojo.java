@@ -20,10 +20,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.sonatype.nexus.maven.staging.StagingAction;
 
-import com.sonatype.nexus.staging.client.StagingRepository;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
-import com.sonatype.nexus.staging.client.StagingWorkflowV3Service;
-import com.sonatype.nexus.staging.client.TransitioningListener;
 
 /**
  * Promotes a closed Nexus staging repository into a Nexus Build Promotion Profile.
@@ -62,38 +59,9 @@ public class PromoteToStageProfileMojo
         getLog().info(
             "Promoting staging repository with IDs=" + Arrays.toString( getStagingRepositoryIds() )
                 + " to build profile ID=\"" + getBuildPromotionProfileId() + "\"" );
-        if ( stagingWorkflow instanceof StagingWorkflowV3Service )
-        {
-            final StagingWorkflowV3Service stagingWorkflowV3 = (StagingWorkflowV3Service) stagingWorkflow;
-            final PromotionGroupIdCollector collector = new PromotionGroupIdCollector();
-            stagingWorkflowV3.promoteStagingRepositories( getDescriptionWithDefaultsForAction( StagingAction.PROMOTE ),
-                getBuildPromotionProfileId(), collector, getStagingRepositoryIds() );
-            getLog().info( "Promoted, created promotion group with ID " + collector.getPromotionGroupId() );
-        }
-        else
-        {
+        final String promotionGroupId =
             stagingWorkflow.promoteStagingRepositories( getDescriptionWithDefaultsForAction( StagingAction.PROMOTE ),
                 getBuildPromotionProfileId(), getStagingRepositoryIds() );
-            getLog().info( "Promoted" );
-        }
-    }
-
-    // ==
-
-    public static class PromotionGroupIdCollector
-        extends TransitioningListener
-    {
-        private String groupId = "unknown";
-
-        @Override
-        public void onTransitionedSuccessfully( final String repositoryId, final StagingRepository repository )
-        {
-            groupId = repository.getParentGroupId();
-        }
-
-        public String getPromotionGroupId()
-        {
-            return groupId;
-        }
+        getLog().info( "Promoted, created promotion group with ID " + promotionGroupId );
     }
 }
