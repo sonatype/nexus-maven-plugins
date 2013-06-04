@@ -84,7 +84,7 @@
     </dependency>
 
     <dependency>
-      <groupId>com.sonatype.nexus.staging</groupId>
+      <groupId>com.sonatype.nexus.plugins</groupId>
       <artifactId>nexus-staging-client</artifactId>
     </dependency>
 
