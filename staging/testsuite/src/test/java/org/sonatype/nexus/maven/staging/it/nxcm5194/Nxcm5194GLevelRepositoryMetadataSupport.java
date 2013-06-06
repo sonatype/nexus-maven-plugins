@@ -17,8 +17,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
-import javax.annotation.Nullable;
-
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Plugin;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;

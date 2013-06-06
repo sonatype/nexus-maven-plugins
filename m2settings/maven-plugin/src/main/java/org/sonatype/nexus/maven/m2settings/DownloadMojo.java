@@ -12,13 +12,23 @@
  */
 package org.sonatype.nexus.maven.m2settings;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.io.Files;
-import com.sonatype.nexus.rest.templates.settings.api.dto.M2SettingsTemplateListResponseDto;
-import com.sonatype.nexus.templates.client.M2SettingsTemplates;
-import com.sonatype.nexus.templates.client.rest.JerseyTemplatesSubsystemFactory;
-import com.sonatype.nexus.usertoken.client.rest.JerseyUserTokenSubsystemFactory;
+import static org.sonatype.nexus.client.rest.BaseUrl.baseUrlFrom;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.StringReader;
+import java.io.Writer;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -27,7 +37,6 @@ import org.apache.maven.settings.Settings;
 import org.codehaus.plexus.interpolation.Interpolator;
 import org.codehaus.plexus.interpolation.InterpolatorFilterReader;
 import org.codehaus.plexus.interpolation.StringSearchInterpolator;
-import org.codehaus.plexus.util.IOUtil;
 import org.sonatype.aether.util.version.GenericVersionScheme;
 import org.sonatype.aether.version.Version;
 import org.sonatype.aether.version.VersionConstraint;
@@ -44,21 +53,15 @@ import org.sonatype.nexus.client.rest.UsernamePasswordAuthenticationInfo;
 import org.sonatype.nexus.client.rest.jersey.JerseyNexusClientFactory;
 import org.sonatype.nexus.maven.m2settings.template.TemplateInterpolatorCustomizer;
 
-import javax.annotation.Nullable;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.StringReader;
-import java.io.Writer;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
-import static org.sonatype.nexus.client.rest.BaseUrl.baseUrlFrom;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.io.CharStreams;
+import com.google.common.io.Closeables;
+import com.google.common.io.Files;
+import com.sonatype.nexus.rest.templates.settings.api.dto.M2SettingsTemplateListResponseDto;
+import com.sonatype.nexus.templates.client.M2SettingsTemplates;
+import com.sonatype.nexus.templates.client.rest.JerseyTemplatesSubsystemFactory;
+import com.sonatype.nexus.usertoken.client.rest.JerseyUserTokenSubsystemFactory;
 
 /**
  * Download Nexus m2settings template content and save to local settings file.
@@ -409,11 +412,11 @@ public class DownloadMojo
             Writer writer = createWriter(outputFile, encoding);
             try {
                 InterpolatorFilterReader reader = new InterpolatorFilterReader(new StringReader(content), interpolator, START_EXPR, END_EXPR);
-                IOUtil.copy(reader, writer);
+                CharStreams.copy(reader, writer);
                 writer.flush();
             }
             finally {
-                IOUtil.close(writer);
+                Closeables.closeQuietly(writer);
             }
         }
         catch (Exception e) {

@@ -25,10 +25,6 @@
   <artifactId>nexus-staging</artifactId>
   <packaging>pom</packaging>
 
-  <properties>
-    <staging.version>2.3.5-SNAPSHOT</staging.version>
-  </properties>
-
   <dependencyManagement>
     <dependencies>
 
@@ -39,16 +35,16 @@
       </dependency>
 
       <dependency>
-        <groupId>com.sonatype.nexus.staging</groupId>
+        <groupId>com.sonatype.nexus.plugins</groupId>
         <artifactId>nexus-staging-plugin</artifactId>
         <type>${nexus-plugin.type}</type>
-        <version>${staging.version}</version>
+        <version>${nexus.version}</version>
       </dependency>
 
       <dependency>
-        <groupId>com.sonatype.nexus.staging</groupId>
+        <groupId>com.sonatype.nexus.plugins</groupId>
         <artifactId>nexus-staging-client</artifactId>
-        <version>${staging.version}</version>
+        <version>${nexus.version}</version>
       </dependency>
 
       <dependency>
@@ -64,14 +60,14 @@
       </dependency>
 
       <dependency>
-        <groupId>com.sonatype.nexus.plugin</groupId>
+        <groupId>com.sonatype.nexus.plugins</groupId>
         <artifactId>nexus-procurement-plugin</artifactId>
         <type>${nexus-plugin.type}</type>
         <version>${nexus.version}</version>
       </dependency>
 
       <dependency>
-        <groupId>com.sonatype.nexus.plugin</groupId>
+        <groupId>com.sonatype.nexus.plugins</groupId>
         <artifactId>nexus-pgp-plugin</artifactId>
         <type>${nexus-plugin.type}</type>
         <version>${nexus.version}</version>

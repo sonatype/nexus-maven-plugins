@@ -23,27 +23,24 @@
   </parent>
 
   <artifactId>nexus-staging-maven-plugin-testsuite</artifactId>
+  
+  <dependencyManagement>
+    <dependencies>
+     <dependency>
+        <groupId>com.sonatype.nexus.plugins</groupId>
+        <artifactId>nexuspro-plugins</artifactId>
+        <type>pom</type>
+        <version>${nexus.version}</version>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
-    <!--
-    FIXME: Probably should not have this dependency here, as this pollutes the test classes environment.
-    -->
-
-    <dependency>
-      <groupId>org.sonatype.plugins</groupId>
-      <artifactId>nexus-staging-maven-plugin</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-simple</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
 
     <!--
     NOTE: Not using scope=test here, as the maven-invoker-plugin does not include artifacts in that scope when its populating the local repository.
     -->
-
     <dependency>
       <groupId>org.sonatype.sisu</groupId>
       <artifactId>sisu-inject-bean</artifactId>
@@ -66,12 +63,12 @@
     </dependency>
 
     <dependency>
-      <groupId>org.sonatype.nexus.client</groupId>
+      <groupId>org.sonatype.nexus</groupId>
       <artifactId>nexus-client-core</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>com.sonatype.nexus.staging</groupId>
+      <groupId>com.sonatype.nexus.plugins</groupId>
       <artifactId>nexus-staging-client</artifactId>
     </dependency>
 
@@ -81,12 +78,12 @@
     </dependency>
 
     <dependency>
-      <groupId>com.sonatype.nexus.pluginkit</groupId>
-      <artifactId>nexus-testsuite-support</artifactId>
+      <groupId>com.sonatype.nexus</groupId>
+      <artifactId>nexuspro-testsuite-support</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>org.sonatype.nexus.indexer-lucene</groupId>
+      <groupId>org.sonatype.nexus.plugins</groupId>
       <artifactId>nexus-indexer-lucene-client</artifactId>
     </dependency>
 
@@ -129,7 +126,8 @@
                   <!-- Caused by: https://jira.codehaus.org/browse/MINVOKER-115 -->
                   <!-- Once this above fixed, hopefully this section below will not be needed anymore -->
                   <extraArtifacts>
-                    <extraArtifact>org.sonatype.nexus:nexus-runtime-platform:${nexus.version}:pom</extraArtifact>
+                    <!-- The plugin we test needs to be installed -->
+                    <extraArtifact>org.sonatype.plugins:nexus-staging-maven-plugin:${project.version}</extraArtifact>
                     <extraArtifact>org.apache.maven:apache-maven:2.2.1:zip:bin</extraArtifact>
                     <extraArtifact>org.apache.maven:apache-maven:3.0.4:zip:bin</extraArtifact>
                     <extraArtifact>org.apache.maven.plugins:maven-clean-plugin:2.2</extraArtifact>
