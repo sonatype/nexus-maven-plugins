@@ -19,13 +19,14 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.codehaus.plexus.component.annotations.Component;
-import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.spice.zapper.Client;
 import org.sonatype.spice.zapper.IOSourceListable;
 import org.sonatype.spice.zapper.Parameters;
 import org.sonatype.spice.zapper.ParametersBuilder;
 import org.sonatype.spice.zapper.client.hc4.Hc4ClientBuilder;
 import org.sonatype.spice.zapper.fs.DirectoryIOSource;
+
+import com.google.common.base.Strings;
 
 /**
  * Default imple of Zapper encapsulating component.
@@ -45,13 +46,13 @@ public class ZapperImpl
         {
             HttpHost proxyServer = null;
             BasicCredentialsProvider credentialsProvider = null;
-            if ( !StringUtils.isBlank( zapperRequest.getProxyProtocol() ) )
+            if ( !Strings.isNullOrEmpty( zapperRequest.getProxyProtocol() ) )
             {
                 proxyServer =
                     new HttpHost( zapperRequest.getProxyHost(), zapperRequest.getProxyPort(),
                         zapperRequest.getProxyProtocol() );
 
-                if ( !StringUtils.isBlank( zapperRequest.getProxyUsername() ) )
+                if ( !Strings.isNullOrEmpty( zapperRequest.getProxyUsername() ) )
                 {
                     UsernamePasswordCredentials proxyCredentials =
                         new UsernamePasswordCredentials( zapperRequest.getProxyUsername(),
@@ -62,7 +63,7 @@ public class ZapperImpl
                 }
             }
 
-            if ( !StringUtils.isBlank( zapperRequest.getRemoteUsername() ) )
+            if ( !Strings.isNullOrEmpty( zapperRequest.getRemoteUsername() ) )
             {
                 UsernamePasswordCredentials remoteCredentials =
                     new UsernamePasswordCredentials( zapperRequest.getRemoteUsername(),

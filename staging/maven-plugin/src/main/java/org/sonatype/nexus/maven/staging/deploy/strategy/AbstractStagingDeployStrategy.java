@@ -25,8 +25,6 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.component.annotations.Requirement;
-import org.codehaus.plexus.util.IOUtil;
-import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.nexus.client.core.NexusClient;
 import org.sonatype.nexus.client.core.NexusStatus;
 import org.sonatype.nexus.client.core.exception.NexusClientErrorResponseException;
@@ -36,6 +34,8 @@ import org.sonatype.nexus.maven.staging.StagingAction;
 import org.sonatype.nexus.maven.staging.deploy.StagingRepository;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 
+import com.google.common.base.Strings;
+import com.google.common.io.Closeables;
 import com.sonatype.nexus.staging.client.Profile;
 import com.sonatype.nexus.staging.client.ProfileMatchingParameters;
 import com.sonatype.nexus.staging.client.StagingRuleFailures;
@@ -140,7 +140,7 @@ public abstract class AbstractStagingDeployStrategy
 
             Profile stagingProfile;
             // if profile is not "targeted", perform a match and save the result
-            if ( StringUtils.isBlank( parameters.getStagingProfileId() ) )
+            if ( Strings.isNullOrEmpty( parameters.getStagingProfileId() ) )
             {
                 final ProfileMatchingParameters params =
                     new ProfileMatchingParameters( artifact.getGroupId(), artifact.getArtifactId(),
@@ -171,7 +171,7 @@ public abstract class AbstractStagingDeployStrategy
         try
         {
             final StagingWorkflowV2Service stagingService = getRemoting().getStagingWorkflowV2Service();
-            if ( StringUtils.isBlank( parameters.getStagingRepositoryId() ) )
+            if ( Strings.isNullOrEmpty( parameters.getStagingRepositoryId() ) )
             {
                 String createdStagingRepositoryId =
                     stagingService.startStaging( stagingProfile,
@@ -266,7 +266,7 @@ public abstract class AbstractStagingDeployStrategy
         }
         finally
         {
-            IOUtil.close( fout );
+            Closeables.closeQuietly( fout );
         }
 
         // if repository is managed, then manage it

@@ -14,8 +14,10 @@ package org.sonatype.nexus.maven.staging.workflow.rc;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.nexus.maven.staging.workflow.AbstractStagingActionMojo;
+
+import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
 
 /**
  * Super class for "RC" mojos, that are always configured from CLI, as none of them requires project.
@@ -42,7 +44,7 @@ public abstract class AbstractStagingRcActionMojo
                 "The staging repository to operate against is not defined! (use \"-DstagingRepositoryId=foo1,foo2\" on CLI)" );
         }
 
-        final String[] result = StringUtils.split( stagingRepositoryId, "," );
+        final String[] result = Iterables.toArray( Splitter.on( "," ).split( stagingRepositoryId ), String.class );
 
         if ( result == null || result.length == 0 )
         {

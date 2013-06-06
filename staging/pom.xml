@@ -25,10 +25,6 @@
   <artifactId>nexus-staging</artifactId>
   <packaging>pom</packaging>
 
-  <properties>
-    <staging.version>2.6.0-SNAPSHOT</staging.version>
-  </properties>
-
   <dependencyManagement>
     <dependencies>
 
@@ -42,13 +38,13 @@
         <groupId>com.sonatype.nexus.plugins</groupId>
         <artifactId>nexus-staging-plugin</artifactId>
         <type>${nexus-plugin.type}</type>
-        <version>${staging.version}</version>
+        <version>${nexus.version}</version>
       </dependency>
 
       <dependency>
         <groupId>com.sonatype.nexus.plugins</groupId>
         <artifactId>nexus-staging-client</artifactId>
-        <version>${staging.version}</version>
+        <version>${nexus.version}</version>
       </dependency>
 
       <dependency>

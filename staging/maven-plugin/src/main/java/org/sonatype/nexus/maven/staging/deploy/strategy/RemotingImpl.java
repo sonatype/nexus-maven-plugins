@@ -16,13 +16,10 @@ import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.sonatype.nexus.staging.client.StagingWorkflowV3Service;
-import com.sonatype.nexus.staging.client.rest.JerseyStagingWorkflowV3SubsystemFactory;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Server;
-import org.codehaus.plexus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.maven.mojo.settings.MavenSettings;
@@ -35,9 +32,13 @@ import org.sonatype.nexus.client.rest.UsernamePasswordAuthenticationInfo;
 import org.sonatype.nexus.client.rest.jersey.JerseyNexusClientFactory;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
+
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
+import com.sonatype.nexus.staging.client.StagingWorkflowV3Service;
 import com.sonatype.nexus.staging.client.rest.JerseyStagingWorkflowV2SubsystemFactory;
+import com.sonatype.nexus.staging.client.rest.JerseyStagingWorkflowV3SubsystemFactory;
 import com.sun.jersey.api.client.UniformInterfaceException;
 
 public class RemotingImpl
@@ -86,7 +87,7 @@ public class RemotingImpl
         throws MojoExecutionException
     {
         String nexusUrl = parameters.getNexusUrl();
-        if ( StringUtils.isBlank( nexusUrl ) )
+        if ( Strings.isNullOrEmpty( nexusUrl ) )
         {
             throw new MojoExecutionException(
                 "The URL against which transport should be established is not defined! (use \"-DnexusUrl=http://host/nexus\" on CLI or configure it in POM)" );
@@ -94,7 +95,7 @@ public class RemotingImpl
 
         try
         {
-            if ( !StringUtils.isBlank( parameters.getServerId() ) )
+            if ( !Strings.isNullOrEmpty( parameters.getServerId() ) )
             {
                 final Server server =
                     MavenSettings.selectServer( getMavenSession().getSettings(), parameters.getServerId() );

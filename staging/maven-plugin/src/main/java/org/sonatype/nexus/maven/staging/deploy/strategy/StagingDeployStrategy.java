@@ -13,11 +13,9 @@
 package org.sonatype.nexus.maven.staging.deploy.strategy;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.maven.artifact.InvalidRepositoryException;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
 import org.apache.maven.artifact.installer.ArtifactInstallationException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -27,8 +25,8 @@ import org.sonatype.nexus.client.core.NexusClient;
 import org.sonatype.nexus.client.core.NexusStatus;
 import org.sonatype.nexus.maven.staging.deploy.DeployableArtifact;
 import org.sonatype.nexus.maven.staging.deploy.StagingRepository;
+
 import com.sonatype.nexus.staging.client.Profile;
-import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
 
 /**
  * Full staging V2 deploy strategy. It perform local staging and remote staging (on remote Nexus).

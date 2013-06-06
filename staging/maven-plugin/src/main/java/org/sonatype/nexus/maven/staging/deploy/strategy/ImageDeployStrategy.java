@@ -30,7 +30,6 @@ import org.sonatype.nexus.maven.staging.zapper.Zapper;
 import org.sonatype.nexus.maven.staging.zapper.ZapperRequest;
 
 import com.sonatype.nexus.staging.client.Profile;
-import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
 
 /**
  * Image deploy strategy, that stages the locally present directory structure to remote in "as is" form. It uses
