@@ -41,7 +41,6 @@
     <!--
     NOTE: Not using scope=test here, as the maven-invoker-plugin does not include artifacts in that scope when its populating the local repository.
     -->
-
     <dependency>
       <groupId>org.sonatype.sisu</groupId>
       <artifactId>sisu-inject-bean</artifactId>
@@ -127,6 +126,8 @@
                   <!-- Caused by: https://jira.codehaus.org/browse/MINVOKER-115 -->
                   <!-- Once this above fixed, hopefully this section below will not be needed anymore -->
                   <extraArtifacts>
+                    <!-- The plugin we test needs to be installed -->
+                    <extraArtifact>org.sonatype.plugins:nexus-staging-maven-plugin:${project.version}</extraArtifact>
                     <extraArtifact>org.apache.maven:apache-maven:2.2.1:zip:bin</extraArtifact>
                     <extraArtifact>org.apache.maven:apache-maven:3.0.4:zip:bin</extraArtifact>
                     <extraArtifact>org.apache.maven.plugins:maven-clean-plugin:2.2</extraArtifact>
