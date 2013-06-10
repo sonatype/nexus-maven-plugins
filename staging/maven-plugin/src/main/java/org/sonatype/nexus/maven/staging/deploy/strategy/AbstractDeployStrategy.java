@@ -41,10 +41,10 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.artifact.ProjectArtifactMetadata;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
-import org.codehaus.plexus.util.IOUtil;
-import org.codehaus.plexus.util.StringUtils;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
+import com.google.common.io.Closeables;
 
 public abstract class AbstractDeployStrategy
     extends AbstractLogEnabled
@@ -78,7 +78,7 @@ public abstract class AbstractDeployStrategy
         throws MojoExecutionException
     {
         final File root = stagingDirectoryRoot;
-        if ( StringUtils.isBlank( profileId ) )
+        if ( Strings.isNullOrEmpty( profileId ) )
         {
             throw new MojoExecutionException(
                 "Internal bug: passed in profileId must be non-null and non-empty string!" );
@@ -133,9 +133,9 @@ public abstract class AbstractDeployStrategy
             }
             pw.println( String.format( "%s=%s:%s:%s:%s:%s:%s:%s:%s", path, artifact.getGroupId(),
                 artifact.getArtifactId(), artifact.getVersion(),
-                StringUtils.isBlank( artifact.getClassifier() ) ? "n/a" : artifact.getClassifier(), artifact.getType(),
-                artifact.getArtifactHandler().getExtension(), StringUtils.isBlank( pomFileName ) ? "n/a" : pomFileName,
-                StringUtils.isBlank( pluginPrefix ) ? "n/a" : pluginPrefix ) );
+                Strings.isNullOrEmpty( artifact.getClassifier() ) ? "n/a" : artifact.getClassifier(), artifact.getType(),
+                artifact.getArtifactHandler().getExtension(),  Strings.isNullOrEmpty( pomFileName ) ? "n/a" : pomFileName,
+                    Strings.isNullOrEmpty( pluginPrefix ) ? "n/a" : pluginPrefix ) );
             pw.flush();
             pw.close();
         }
@@ -162,7 +162,7 @@ public abstract class AbstractDeployStrategy
         }
         finally
         {
-            IOUtil.close( fis );
+            Closeables.closeQuietly( fis );
         }
 
         for ( String includedFilePath : index.stringPropertyNames() )

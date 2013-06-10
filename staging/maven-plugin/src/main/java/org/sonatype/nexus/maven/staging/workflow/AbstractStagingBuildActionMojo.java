@@ -20,9 +20,11 @@ import java.util.Properties;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.nexus.maven.staging.deploy.DeployMojo;
 import org.sonatype.nexus.maven.staging.deploy.strategy.AbstractStagingDeployStrategy;
+
+import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
 
 /**
  * Super class for "non RC" mojos, that are usable from within the build (if you want more than default V2 actions to
@@ -51,7 +53,7 @@ public abstract class AbstractStagingBuildActionMojo
         if ( stagingRepositoryId != null )
         {
             // explicitly configured either via config or CLI, use that
-            result = StringUtils.split( stagingRepositoryId, "," );
+            result = Iterables.toArray( Splitter.on( "," ).split( stagingRepositoryId ), String.class );
         }
         if ( result == null )
         {

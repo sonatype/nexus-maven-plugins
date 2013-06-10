@@ -40,6 +40,11 @@
       <artifactId>mojo-commons</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+
     <!--
     NOTE: Using provided deps on Maven bits, since we have to work in Maven 2 and Maven 3, and we can't pull in a specific version.
     -->
@@ -47,11 +52,23 @@
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-plugin-api</artifactId>
       <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.sonatype.sisu</groupId>
+          <artifactId>sisu-guava</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-core</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-model</artifactId>
       <scope>provided</scope>
     </dependency>
 
@@ -74,17 +91,12 @@
     </dependency>
 
     <dependency>
-      <groupId>org.sonatype.nexus.client</groupId>
+      <groupId>org.sonatype.nexus</groupId>
       <artifactId>nexus-client-core</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>commons-beanutils</groupId>
-      <artifactId>commons-beanutils-core</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.sonatype.nexus.staging</groupId>
+      <groupId>com.sonatype.nexus.plugins</groupId>
       <artifactId>nexus-staging-client</artifactId>
     </dependency>
 
@@ -94,18 +106,8 @@
     </dependency>
 
     <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>org.sonatype.sisu</groupId>
       <artifactId>sisu-charger</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-utils</artifactId>
     </dependency>
 
     <dependency>
@@ -191,8 +193,8 @@
                 <includes>
                   <include>org.sonatype.plexus:plexus-sec-dispatcher</include>
                   <include>org.sonatype.plexus:plexus-cipher</include>
-                  <include>com.sonatype.nexus.staging:nexus-staging-model</include>
-                  <include>com.sonatype.nexus.staging:nexus-staging-client</include>
+                  <include>com.sonatype.nexus.plugins:nexus-staging-model</include>
+                  <include>com.sonatype.nexus.plugins:nexus-staging-client</include>
                 </includes>
               </artifactSet>
               <relocations>

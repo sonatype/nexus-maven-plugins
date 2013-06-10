@@ -46,10 +46,22 @@
       <promoteTargetRepository>releases</promoteTargetRepository>
       <mode>BOTH</mode>
     </profile>
+    <profile>
+      <id>13051056fe421cf8</id>
+      <name>Group1</name>
+      <repositoryTemplateId>default_group</repositoryTemplateId>
+      <repositoryType>maven2</repositoryType>
+      <targetGroups>
+        <targetGroup>public</targetGroup>
+      </targetGroups>
+      <mode>GROUP</mode>
+      <repositoriesSearchable>false</repositoriesSearchable>
+    </profile>
   </profiles>
   <profileOrder>
     <profileOrder>12a2439c79f79c6f</profileOrder>
     <profileOrder>23b3440d80080d70</profileOrder>
+    <profileOrder>13051056fe421cf8</profileOrder>
   </profileOrder>
   <ruleSets>
     <ruleSet>

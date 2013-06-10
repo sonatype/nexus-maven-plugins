@@ -19,8 +19,6 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.sonatype.nexus.maven.staging.deploy.strategy.DeployStrategy;
 import org.sonatype.nexus.maven.staging.deploy.strategy.FinalizeDeployRequest;
 import org.sonatype.nexus.maven.staging.deploy.strategy.Parameters;
-import org.sonatype.nexus.maven.staging.deploy.strategy.StagingParameters;
-import org.sonatype.nexus.maven.staging.deploy.strategy.StagingParametersImpl;
 import org.sonatype.nexus.maven.staging.deploy.strategy.Strategies;
 
 /**

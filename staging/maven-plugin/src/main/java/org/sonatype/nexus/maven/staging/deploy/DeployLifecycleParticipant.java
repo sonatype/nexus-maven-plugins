@@ -25,8 +25,9 @@ import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.logging.LogEnabled;
 import org.codehaus.plexus.logging.Logger;
-import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
+
+import com.google.common.base.Strings;
 
 /**
  * Lifecycle participant that is meant to kick in Maven3 to lessen the needed POM changes. It will silently "scan" the
@@ -270,8 +271,8 @@ public class DeployLifecycleParticipant
         Plugin result = null;
         for ( Plugin plugin : pluginContainer.getPlugins() )
         {
-            if ( StringUtils.equals( groupId, plugin.getGroupId() )
-                && StringUtils.equals( artifactId, plugin.getArtifactId() ) )
+            if ( Strings.nullToEmpty( groupId ).equals( Strings.nullToEmpty( plugin.getGroupId() ) )
+                && Strings.nullToEmpty( artifactId ).equals( Strings.nullToEmpty( plugin.getArtifactId() ) ) )
             {
                 if ( result != null )
                 {

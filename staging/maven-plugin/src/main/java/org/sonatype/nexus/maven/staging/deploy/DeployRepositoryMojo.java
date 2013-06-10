@@ -19,14 +19,12 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.nexus.maven.staging.deploy.strategy.DeployStrategy;
 import org.sonatype.nexus.maven.staging.deploy.strategy.FinalizeDeployRequest;
 import org.sonatype.nexus.maven.staging.deploy.strategy.Parameters;
-import org.sonatype.nexus.maven.staging.deploy.strategy.ParametersImpl;
-import org.sonatype.nexus.maven.staging.deploy.strategy.StagingParameters;
-import org.sonatype.nexus.maven.staging.deploy.strategy.StagingParametersImpl;
 import org.sonatype.nexus.maven.staging.deploy.strategy.Strategies;
+
+import com.google.common.base.Strings;
 
 /**
  * Deploys the (previously) staged artifacts from some local repository, that were staged using
@@ -75,7 +73,7 @@ public class DeployRepositoryMojo
                 "Staged repository path is not pointing to an existing (or readable?) directory! Path set is "
                     + repositoryDirectory.getAbsolutePath() );
         }
-        if ( StringUtils.isBlank( getStagingProfileId() ) )
+        if ( Strings.isNullOrEmpty( getStagingProfileId() ) )
         {
             throw new MojoFailureException(
                 "Stage profile ID is not set, use \"-DstagingProfileId=XXXX\" on CLI to set it." );

@@ -20,11 +20,12 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.sonatype.nexus.maven.staging.StagingAction;
 
+import com.google.common.base.Strings;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
 /**
  * Promotes a closed Nexus staging repository into a Nexus Build Promotion Profile.
- *
+ * 
  * @author cstamas
  * @since 1.0
  */
@@ -59,8 +60,16 @@ public class PromoteToStageProfileMojo
         getLog().info(
             "Promoting staging repository with IDs=" + Arrays.toString( getStagingRepositoryIds() )
                 + " to build profile ID=\"" + getBuildPromotionProfileId() + "\"" );
-        stagingWorkflow.promoteStagingRepositories( getDescriptionWithDefaultsForAction( StagingAction.PROMOTE ),
-                                                    getBuildPromotionProfileId(), getStagingRepositoryIds() );
-        getLog().info( "Promoted" );
+        final String promotionGroupId =
+            stagingWorkflow.promoteStagingRepositories( getDescriptionWithDefaultsForAction( StagingAction.PROMOTE ),
+                getBuildPromotionProfileId(), getStagingRepositoryIds() );
+        if ( Strings.isNullOrEmpty( promotionGroupId ) )
+        {
+            getLog().info( "Promoted, but created promotion group ID unknown (needs Nexus Pro version 2.4+)." );
+        }
+        else
+        {
+            getLog().info( "Promoted, created promotion group with ID " + promotionGroupId );
+        }
     }
 }
