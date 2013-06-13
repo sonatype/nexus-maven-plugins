@@ -59,7 +59,7 @@ public abstract class AbstractStagingBuildActionMojo
         {
             // collect all the repositories we created
             final ArrayList<String> resultNames = new ArrayList<String>();
-            final File stageRoot = getStagingDirectoryRoot();
+            final File stageRoot = new File( getStagingDirectoryRoot(), "staging" );
             final File[] localStageRepositories = stageRoot.listFiles();
             if ( localStageRepositories == null )
             {
