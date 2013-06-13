@@ -33,8 +33,6 @@ import org.sonatype.nexus.maven.staging.deploy.DeployableArtifact;
 public class DeferredDeployStrategy
     extends AbstractDeployStrategy
 {
-    private static final String DEFERRED_UPLOAD = "deferred";
-
     /**
      * Performs local install plus maintains the index file, that contains needed informations needed to perform remote
      * deploys.
@@ -44,13 +42,12 @@ public class DeferredDeployStrategy
         throws ArtifactInstallationException, ArtifactDeploymentException, MojoExecutionException
     {
         getLogger().info(
-            "Performing deferred deploys (local stagingDirectory=\""
-                + request.getParameters().getStagingDirectoryRoot().getAbsolutePath() + "\")..." );
+            "Performing deferred deploys (gathering into \""
+                + request.getParameters().getDeferredDirectoryRoot().getAbsolutePath() + "\")..." );
         if ( !request.getDeployableArtifacts().isEmpty() )
         {
             // deploys always to same stagingDirectory
-            final File stagingDirectory =
-                getStagingDirectory( request.getParameters().getStagingDirectoryRoot(), DEFERRED_UPLOAD );
+            final File stagingDirectory = request.getParameters().getDeferredDirectoryRoot();
             final ArtifactRepository stagingRepository = getArtifactRepositoryForDirectory( stagingDirectory );
             for ( DeployableArtifact deployableArtifact : request.getDeployableArtifacts() )
             {
@@ -72,8 +69,7 @@ public class DeferredDeployStrategy
         throws ArtifactDeploymentException, MojoExecutionException
     {
         getLogger().info( "Deploying remotely..." );
-        final File stagingDirectory =
-            getStagingDirectory( request.getParameters().getStagingDirectoryRoot(), DEFERRED_UPLOAD );
+        final File stagingDirectory = request.getParameters().getDeferredDirectoryRoot();
         if ( !stagingDirectory.isDirectory() )
         {
             getLogger().warn(
@@ -95,8 +91,8 @@ public class DeferredDeployStrategy
         }
         catch ( IOException e )
         {
-            getLogger().error( "Upload of locally staged directory finished with a failure." );
-            throw new ArtifactDeploymentException( "Remote staging failed: " + e.getMessage(), e );
+            getLogger().error( "Upload of locally deferred directory finished with a failure." );
+            throw new ArtifactDeploymentException( "Remote deploy failed: " + e.getMessage(), e );
         }
 
         getLogger().info( "Remote deploy finished with success." );

@@ -1,4 +1,5 @@
 /*
+
  * Sonatype Nexus (TM) Open Source Version
  * Copyright (c) 2007-2013 Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
@@ -216,7 +217,7 @@ public class DeployMojo
             if ( skipRemoteStaging )
             {
                 getLog().info(
-                    "Artifacts locally staged in directory " + parameters.getStagingDirectoryRoot().getAbsolutePath()
+                    "Artifacts locally gathered in directory " + getStagingDirectoryRoot().getAbsolutePath()
                         + ", skipping remote staging at user's demand." );
                 return;
             }

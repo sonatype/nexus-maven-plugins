@@ -21,18 +21,28 @@ public class ParametersImpl
 {
     private final String pluginGav;
     
+    private final File deferredDirectoryRoot;
+
     private final File stagingDirectoryRoot;
 
     public ParametersImpl( String pluginGav, File stagingDirectoryRoot )
     {
         this.pluginGav = Preconditions.checkNotNull( pluginGav );
-        this.stagingDirectoryRoot = Preconditions.checkNotNull( stagingDirectoryRoot );
+        Preconditions.checkNotNull( stagingDirectoryRoot );
+        this.deferredDirectoryRoot = new File( stagingDirectoryRoot, "deferred" );
+        this.stagingDirectoryRoot = new File( stagingDirectoryRoot, "staging" );
     }
 
     @Override
     public String getPluginGav()
     {
         return pluginGav;
+    }
+
+    @Override
+    public File getDeferredDirectoryRoot()
+    {
+        return deferredDirectoryRoot;
     }
 
     @Override
@@ -46,6 +56,7 @@ public class ParametersImpl
     {
         return "ParametersImpl{" +
             "pluginGav='" + pluginGav + '\'' +
+            ", deferredDirectoryRoot=" + deferredDirectoryRoot +
             ", stagingDirectoryRoot=" + stagingDirectoryRoot +
             '}';
     }
