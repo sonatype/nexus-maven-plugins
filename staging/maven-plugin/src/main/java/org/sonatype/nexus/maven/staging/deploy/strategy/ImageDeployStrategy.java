@@ -72,12 +72,10 @@ public class ImageDeployStrategy
         initRemoting( request.getMavenSession(), parameters );
 
         final NexusClient nexusClient = getRemoting().getNexusClient();
-
-        getLogger().info( " * Connecting to Nexus on URL " + nexusClient.getConnectionInfo().getBaseUrl() );
         final NexusStatus nexusStatus = nexusClient.getNexusStatus();
         getLogger().info(
-            String.format( " * Remote Nexus reported itself as version %s and edition \"%s\"",
-                nexusStatus.getVersion(), nexusStatus.getEditionLong() ) );
+            String.format( " * Connected to Nexus at %s, is version %s and edition \"%s\"",
+                nexusClient.getConnectionInfo().getBaseUrl(), nexusStatus.getVersion(), nexusStatus.getEditionLong() ) );
 
         final String profileId = parameters.getStagingProfileId();
         final Profile stagingProfile = getRemoting().getStagingWorkflowV2Service().selectProfile( profileId );

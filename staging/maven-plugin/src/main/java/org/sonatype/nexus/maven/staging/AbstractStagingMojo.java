@@ -269,13 +269,13 @@ public abstract class AbstractStagingMojo
     }
 
     /**
-     * Returns the staging directory root, that is either set explictly by user in plugin configuration (see
-     * {@link #altStagingDirectory} parameter), or it's location is calculated taking as base the first project in this
-     * reactor that will/was executing this plugin.
+     * Returns the working directory root (the one containing all the staged and deferred deploys), that is either set
+     * explicitly by user in plugin configuration (see {@link #altStagingDirectory} parameter), or it's location is
+     * calculated taking as base the first project in this reactor that will/was executing this plugin.
      * 
      * @return
      */
-    protected File getStagingDirectoryRoot()
+    protected File getWorkDirectoryRoot()
     {
         if ( altStagingDirectory != null )
         {
@@ -305,5 +305,29 @@ public abstract class AbstractStagingMojo
                 return new File( getMavenSession().getExecutionRootDirectory() + "/target/nexus-staging" );
             }
         }
+    }
+
+    /**
+     * Returns the staging directory root (directory containing the locally staged artifacts), that is either set
+     * explicitly by user in plugin configuration (see {@link #altStagingDirectory} parameter), or it's location is
+     * calculated taking as base the first project in this reactor that will/was executing this plugin.
+     * 
+     * @return
+     */
+    protected File getStagingDirectoryRoot()
+    {
+        return new File( getWorkDirectoryRoot(), "staging" );
+    }
+
+    /**
+     * Returns the deferred directory root (directory containing the accumulated artifacts for deferred deploy), that is
+     * either set explicitly by user in plugin configuration (see {@link #altStagingDirectory} parameter), or it's
+     * location is calculated taking as base the first project in this reactor that will/was executing this plugin.
+     * 
+     * @return
+     */
+    protected File getDeferredDirectoryRoot()
+    {
+        return new File( getWorkDirectoryRoot(), "deferred" );
     }
 }
