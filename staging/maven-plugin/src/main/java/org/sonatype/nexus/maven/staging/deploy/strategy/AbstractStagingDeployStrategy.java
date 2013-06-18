@@ -130,12 +130,10 @@ public abstract class AbstractStagingDeployStrategy
         try
         {
             final NexusClient nexusClient = getRemoting().getNexusClient();
-            getLogger().info(
-                "Preparing staging against Nexus on URL " + nexusClient.getConnectionInfo().getBaseUrl() );
             final NexusStatus nexusStatus = nexusClient.getNexusStatus();
             getLogger().info(
-                String.format( " * Remote Nexus reported itself as version %s and edition \"%s\"",
-                               nexusStatus.getVersion(), nexusStatus.getEditionLong() ) );
+                String.format( " * Connected to Nexus at %s, is version %s and edition \"%s\"",
+                    nexusClient.getConnectionInfo().getBaseUrl(), nexusStatus.getVersion(), nexusStatus.getEditionLong() ) );
             final StagingWorkflowV2Service stagingService = remoting.getStagingWorkflowV2Service();
 
             Profile stagingProfile;

@@ -216,7 +216,7 @@ public class DeployMojo
             if ( skipRemoteStaging )
             {
                 getLog().info(
-                    "Artifacts locally staged in directory " + parameters.getStagingDirectoryRoot().getAbsolutePath()
+                    "Artifacts locally gathered under directory " + getWorkDirectoryRoot().getAbsolutePath()
                         + ", skipping remote staging at user's demand." );
                 return;
             }

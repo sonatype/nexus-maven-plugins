@@ -12,27 +12,36 @@
  */
 package org.sonatype.nexus.maven.staging.deploy.strategy;
 
-import java.io.File;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.google.common.base.Preconditions;
+import java.io.File;
 
 public class ParametersImpl
     implements Parameters
 {
     private final String pluginGav;
     
+    private final File deferredDirectoryRoot;
+
     private final File stagingDirectoryRoot;
 
-    public ParametersImpl( String pluginGav, File stagingDirectoryRoot )
+    public ParametersImpl( final String pluginGav, final File deferredDirectoryRoot, final File stagingDirectoryRoot )
     {
-        this.pluginGav = Preconditions.checkNotNull( pluginGav );
-        this.stagingDirectoryRoot = Preconditions.checkNotNull( stagingDirectoryRoot );
+        this.pluginGav = checkNotNull( pluginGav );
+        this.deferredDirectoryRoot = checkNotNull( deferredDirectoryRoot );
+        this.stagingDirectoryRoot = checkNotNull( stagingDirectoryRoot );
     }
 
     @Override
     public String getPluginGav()
     {
         return pluginGav;
+    }
+
+    @Override
+    public File getDeferredDirectoryRoot()
+    {
+        return deferredDirectoryRoot;
     }
 
     @Override
@@ -46,6 +55,7 @@ public class ParametersImpl
     {
         return "ParametersImpl{" +
             "pluginGav='" + pluginGav + '\'' +
+            ", deferredDirectoryRoot=" + deferredDirectoryRoot +
             ", stagingDirectoryRoot=" + stagingDirectoryRoot +
             '}';
     }
