@@ -22,6 +22,8 @@ import java.io.File;
 public interface Parameters
 {
     String getPluginGav();
+
+    File getDeferredDirectoryRoot();
     
     File getStagingDirectoryRoot();
 }

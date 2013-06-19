@@ -26,7 +26,7 @@ import org.sonatype.nexus.maven.staging.deploy.strategy.StagingParametersImpl;
 
 /**
  * Abstract class for deploy related mojos.
- *
+ * 
  * @author cstamas
  * @since 1.0
  */
@@ -87,7 +87,7 @@ public abstract class AbstractDeployMojo
     /**
      * Returns the deploy strategy by key (plexus component hint). If no given strategy found,
      * {@link MojoExecutionException} is thrown.
-     *
+     * 
      * @param key
      * @return
      * @throws MojoExecutionException
@@ -106,7 +106,7 @@ public abstract class AbstractDeployMojo
     /**
      * Builds the parameters instance to pass to the {@link DeployStrategy}. This is mostly built from Mojo parameters,
      * but some strategies might have different input.
-     *
+     * 
      * @param strategy
      * @return
      * @throws MojoExecutionException
@@ -119,13 +119,14 @@ public abstract class AbstractDeployMojo
             try
             {
                 final StagingParameters parameters =
-                    new StagingParametersImpl( getPluginGav(), getNexusUrl(), getServerId(), getStagingDirectoryRoot(),
-                                               isKeepStagingRepositoryOnCloseRuleFailure(),
-                                               isKeepStagingRepositoryOnFailure(),
-                                               isSkipStagingRepositoryClose(), getStagingProfileId(),
-                                               getStagingRepositoryId(),
-                                               getStagingActionMessages(),
-                                               getTags() );
+                    new StagingParametersImpl( getPluginGav(), getNexusUrl(), getServerId(),
+                        getDeferredDirectoryRoot(), getStagingDirectoryRoot(),
+                        isKeepStagingRepositoryOnCloseRuleFailure(),
+                        isKeepStagingRepositoryOnFailure(),
+                        isSkipStagingRepositoryClose(), getStagingProfileId(),
+                        getStagingRepositoryId(),
+                        getStagingActionMessages(),
+                        getTags() );
 
                 getLog().debug( parameters.toString() );
                 return parameters;
@@ -140,7 +141,7 @@ public abstract class AbstractDeployMojo
             try
             {
                 final Parameters parameters =
-                    new ParametersImpl( getPluginGav(), getStagingDirectoryRoot() );
+                    new ParametersImpl( getPluginGav(), getDeferredDirectoryRoot(), getStagingDirectoryRoot() );
 
                 getLog().debug( parameters.toString() );
                 return parameters;
