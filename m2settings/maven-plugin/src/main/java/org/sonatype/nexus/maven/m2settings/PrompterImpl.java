@@ -42,6 +42,7 @@ public class PrompterImpl
     public PrompterImpl() throws IOException {
         this.console = new ConsoleReader();
         console.setHistoryEnabled(false);
+        console.setExpandEvents(false); // NXCM-5346: nexus-m2settings:download fails if password contains "!" character
     }
 
     public ConsoleReader getConsole() {
