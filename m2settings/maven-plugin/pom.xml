@@ -87,12 +87,12 @@
     </dependency>
 
     <dependency>
-      <groupId>com.sonatype.nexus.m2-settings-template</groupId>
+      <groupId>com.sonatype.nexus.plugins</groupId>
       <artifactId>nexus-m2-settings-template-client</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>com.sonatype.nexus.usertoken</groupId>
+      <groupId>com.sonatype.nexus.plugins</groupId>
       <artifactId>nexus-usertoken-client</artifactId>
     </dependency>
 
@@ -170,10 +170,10 @@
                 <includes>
                   <include>org.sonatype.plexus:plexus-sec-dispatcher</include>
                   <include>org.sonatype.plexus:plexus-cipher</include>
-                  <include>com.sonatype.nexus.m2-settings-template:nexus-m2-settings-template-model</include>
-                  <include>com.sonatype.nexus.m2-settings-template:nexus-m2-settings-template-client</include>
-                  <include>com.sonatype.nexus.usertoken:nexus-usertoken-model</include>
-                  <include>com.sonatype.nexus.usertoken:nexus-usertoken-client</include>
+                  <include>com.sonatype.nexus.plugins:nexus-m2-settings-template-model</include>
+                  <include>com.sonatype.nexus.plugins:nexus-m2-settings-template-client</include>
+                  <include>com.sonatype.nexus.plugins:nexus-usertoken-model</include>
+                  <include>com.sonatype.nexus.plugins:nexus-usertoken-client</include>
                 </includes>
               </artifactSet>
               <relocations>
@@ -205,7 +205,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
-        <version>3.2</version>
+        <version>${maven-plugin-plugin.version}</version>
       </plugin>
     </plugins>
   </reporting>
