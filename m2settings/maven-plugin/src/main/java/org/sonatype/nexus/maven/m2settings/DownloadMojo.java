@@ -37,12 +37,11 @@ import org.apache.maven.settings.Settings;
 import org.codehaus.plexus.interpolation.Interpolator;
 import org.codehaus.plexus.interpolation.InterpolatorFilterReader;
 import org.codehaus.plexus.interpolation.StringSearchInterpolator;
-import org.sonatype.aether.util.version.GenericVersionScheme;
-import org.sonatype.aether.version.Version;
-import org.sonatype.aether.version.VersionConstraint;
-import org.sonatype.aether.version.VersionScheme;
 import org.sonatype.nexus.client.core.NexusClient;
 import org.sonatype.nexus.client.core.NexusStatus;
+import org.sonatype.nexus.client.core.condition.EditionConditions;
+import org.sonatype.nexus.client.core.condition.LogicalConditions;
+import org.sonatype.nexus.client.core.condition.VersionConditions;
 import org.sonatype.nexus.client.rest.AuthenticationInfo;
 import org.sonatype.nexus.client.rest.BaseUrl;
 import org.sonatype.nexus.client.rest.ConnectionInfo;
@@ -81,11 +80,6 @@ public class DownloadMojo
      * End of expression for client-side template interpolation.
      */
     public static final String END_EXPR = "]";
-
-    /**
-     * Allows Nexus 2.3+
-     */
-    private static final String VERSION_CONSTRAINT = "[2.3,)";
 
     @Component
     private Settings settings;
@@ -243,8 +237,7 @@ public class DownloadMojo
         }
 
         // Validate the connection
-        NexusStatus status = nexusClient.getStatus();
-        ensureCompatibleNexus(status);
+        final NexusStatus status = nexusClient.getStatus();
         log.info("Connected: {} {}", status.getAppName(), status.getVersion());
     }
 
@@ -260,8 +253,9 @@ public class DownloadMojo
             }
         }
 
-        // configure client w/m2settings and usertoken support
-        NexusClientFactory factory = new JerseyNexusClientFactory(
+        // configure client w/m2settings and usertoken support, but allow to connect to Nexus Pro 2.3+ only
+        NexusClientFactory factory = new JerseyNexusClientFactory( 
+            LogicalConditions.and( VersionConditions.any23AndLaterVersion(), EditionConditions.anyProEdition() ),
             new JerseyTemplatesSubsystemFactory(),
             new JerseyUserTokenSubsystemFactory()
         );
@@ -319,28 +313,6 @@ public class DownloadMojo
         }
 
         return factory.createFor(new ConnectionInfo(baseUrl, auth, proxies));
-    }
-
-    /**
-     * Require Nexus PRO version 2.3+.
-     */
-    private void ensureCompatibleNexus(final NexusStatus status) throws Exception {
-        log.debug("Ensuring compatibility: {}", status);
-
-        String edition = status.getEditionShort();
-        if (!"PRO".equals(edition)) {
-            throw fail("Unsupported Nexus edition: " + edition);
-        }
-
-        VersionScheme scheme = new GenericVersionScheme();
-        VersionConstraint constraint = scheme.parseVersionConstraint(VERSION_CONSTRAINT);
-        Version version = scheme.parseVersion(status.getVersion());
-        log.debug("Version: {}", version);
-
-        if (!constraint.containsVersion(version)) {
-            log.error("Incompatible Nexus version detected: {} ({}) does not match: {}", version, status.getVersion(), constraint);
-            throw fail("Unsupported Nexus version: " + status.getVersion());
-        }
     }
 
     /**
