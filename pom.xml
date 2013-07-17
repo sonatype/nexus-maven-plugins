@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.sonatype.forge</groupId>
     <artifactId>forge-parent</artifactId>
-    <version>35</version>
+    <version>38</version>
   </parent>
 
   <groupId>org.sonatype.nexus.maven</groupId>
@@ -53,7 +53,7 @@
   </scm>
 
   <properties>
-    <nexus.version>2.6.1-SNAPSHOT</nexus.version>
+    <nexus.version>2.6.0-01</nexus.version>
     <maven.version>3.0.4</maven.version>
 
     <!-- Nexus integration-tests configuration -->
@@ -66,6 +66,10 @@
 
     <!-- Disable cobertura, this is picked up from parent and causes serious problems building site docs for these maven-plugins -->
     <cobertura.skip>true</cobertura.skip>
+
+    <!-- reporting section does not inherit report plugin versions, so we use a property to force the version -->
+    <maven-plugin-plugin.version>3.2</maven-plugin-plugin.version>
+
   </properties>
 
   <dependencyManagement>
@@ -273,17 +277,8 @@
 
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <configuration>
-            <source>1.6</source>
-            <target>1.6</target>
-          </configuration>
-        </plugin>
-
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-plugin-plugin</artifactId>
-          <version>3.2</version>
+          <version>${maven-plugin-plugin.version}</version>
           <configuration>
             <!--
             Works around bug in maven-plugin packaging lifecycle: http://jira.codehaus.org/browse/MNG-5346
@@ -295,7 +290,6 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-shade-plugin</artifactId>
-          <version>2.0</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
