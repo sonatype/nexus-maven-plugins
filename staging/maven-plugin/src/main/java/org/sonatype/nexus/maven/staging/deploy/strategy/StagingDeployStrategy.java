@@ -67,7 +67,7 @@ public class StagingDeployStrategy
             for ( DeployableArtifact deployableArtifact : request.getDeployableArtifacts() )
             {
                 final ArtifactRepository stagingRepository = getArtifactRepositoryForDirectory( stagingDirectory );
-                install( deployableArtifact.getFile(), deployableArtifact.getArtifact(), stagingRepository,
+                install( request.getMavenSession().getCurrentProject(), deployableArtifact.getFile(), deployableArtifact.getArtifact(), stagingRepository,
                     stagingDirectory );
             }
         }

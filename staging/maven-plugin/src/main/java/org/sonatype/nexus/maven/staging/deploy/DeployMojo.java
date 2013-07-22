@@ -141,10 +141,6 @@ public class DeployMojo
 
         // Deploy the POM
         boolean isPomArtifact = "pom".equals( packaging );
-        if ( !isPomArtifact )
-        {
-            artifact.addMetadata( new ProjectArtifactMetadata( artifact, pomFile ) );
-        }
 
         if ( updateReleaseInfo )
         {
@@ -153,35 +149,16 @@ public class DeployMojo
 
         try
         {
-            if ( isPomArtifact )
-            {
-                deployables.add( new DeployableArtifact( pomFile, artifact ) );
-            }
-            else
+            // the POM file
+            deployables.add( new DeployableArtifact( pomFile, artifact ) );
+
+            if ( !isPomArtifact )
             {
                 final File file = artifact.getFile();
-
                 if ( file != null && file.isFile() )
                 {
+                    // only if not PomArtifact, as then the main artifact is the POM, already added to deployables
                     deployables.add( new DeployableArtifact( file, artifact ) );
-                }
-                else if ( !attachedArtifacts.isEmpty() )
-                {
-                    getLog().info( "No primary artifact to deploy, deploying attached artifacts instead." );
-
-                    final Artifact pomArtifact =
-                        artifactFactory.createProjectArtifact( artifact.getGroupId(), artifact.getArtifactId(),
-                                                               artifact.getBaseVersion() );
-                    pomArtifact.setFile( pomFile );
-                    if ( updateReleaseInfo )
-                    {
-                        pomArtifact.setRelease( true );
-                    }
-
-                    deployables.add( new DeployableArtifact( pomFile, pomArtifact ) );
-
-                    // propagate the timestamped version to the main artifact for the attached artifacts to pick it up
-                    artifact.setResolvedVersion( pomArtifact.getVersion() );
                 }
                 else
                 {
@@ -190,6 +167,7 @@ public class DeployMojo
                 }
             }
 
+            // attached artifacts
             for ( Iterator<Artifact> i = attachedArtifacts.iterator(); i.hasNext(); )
             {
                 Artifact attached = i.next();

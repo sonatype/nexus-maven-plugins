@@ -12,13 +12,16 @@
  */
 package org.sonatype.nexus.maven.staging.deploy.strategy;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.util.Properties;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,13 +41,15 @@ import org.apache.maven.artifact.repository.metadata.Plugin;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.artifact.ProjectArtifactMetadata;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.io.Closeables;
+import com.google.common.collect.Maps;
+import com.google.common.io.Closer;
 
 public abstract class AbstractDeployStrategy
     extends AbstractLogEnabled
@@ -97,8 +102,8 @@ public abstract class AbstractDeployStrategy
      * @throws ArtifactInstallationException
      * @throws MojoExecutionException
      */
-    protected void install( final File source, final Artifact artifact, final ArtifactRepository stagingRepository,
-                            final File stagingDirectory )
+    protected void install( final MavenProject mavenProject, final File source, final Artifact artifact,
+                            final ArtifactRepository stagingRepository, final File stagingDirectory )
         throws ArtifactInstallationException, MojoExecutionException
     {
         final String path = stagingRepository.pathOf( artifact );
@@ -121,21 +126,33 @@ public abstract class AbstractDeployStrategy
 
             // append the index file
             final FileOutputStream fos = new FileOutputStream( new File( stagingDirectory, ".index" ), true );
-            final OutputStreamWriter osw = new OutputStreamWriter( fos, "ISO-8859-1" );
+            final OutputStreamWriter osw = new OutputStreamWriter( fos, "UTF-8" );
             final PrintWriter pw = new PrintWriter( osw );
+            final boolean isPomArtifact =
+                "pom".equals( mavenProject.getPackaging() ) && "pom".equals( artifact.getType() );
             String pomFileName = null;
-            for ( ArtifactMetadata artifactMetadata : artifact.getMetadataList() )
+            if ( !isPomArtifact )
             {
-                if ( artifactMetadata instanceof ProjectArtifactMetadata )
+                for ( ArtifactMetadata artifactMetadata : artifact.getMetadataList() )
                 {
-                    pomFileName = ( (ProjectArtifactMetadata) artifactMetadata ).getLocalFilename( stagingRepository );
+                    if ( artifactMetadata instanceof ProjectArtifactMetadata )
+                    {
+                        pomFileName =
+                            ( (ProjectArtifactMetadata) artifactMetadata ).getLocalFilename( stagingRepository );
+                    }
+                }
+                if ( pomFileName == null )
+                {
+                    // desperate try?
+                    pomFileName = mavenProject.getArtifactId() + "-" + mavenProject.getVersion() + ".pom";
                 }
             }
             pw.println( String.format( "%s=%s:%s:%s:%s:%s:%s:%s:%s", path, artifact.getGroupId(),
                 artifact.getArtifactId(), artifact.getVersion(),
-                Strings.isNullOrEmpty( artifact.getClassifier() ) ? "n/a" : artifact.getClassifier(), artifact.getType(),
-                artifact.getArtifactHandler().getExtension(),  Strings.isNullOrEmpty( pomFileName ) ? "n/a" : pomFileName,
-                    Strings.isNullOrEmpty( pluginPrefix ) ? "n/a" : pluginPrefix ) );
+                Strings.isNullOrEmpty( artifact.getClassifier() ) ? "n/a" : artifact.getClassifier(),
+                artifact.getType(), artifact.getArtifactHandler().getExtension(),
+                Strings.isNullOrEmpty( pomFileName ) ? "n/a" : pomFileName,
+                Strings.isNullOrEmpty( pluginPrefix ) ? "n/a" : pluginPrefix ) );
             pw.flush();
             pw.close();
         }
@@ -154,21 +171,32 @@ public abstract class AbstractDeployStrategy
     {
         // I'd need Aether RepoSystem and create one huge DeployRequest will _all_ artifacts (would be FAST as it would
         // go parallel), but we need to work in Maven2 too, so old compat and slow method remains: deploy one by one...
-        final FileInputStream fis = new FileInputStream( new File( sourceDirectory, ".index" ) );
-        final Properties index = new Properties();
+        final LinkedHashMap<String, String> index = Maps.newLinkedHashMap();
+        final Closer closer = Closer.create();
         try
         {
-            index.load( fis );
+            final BufferedReader br =
+                closer.register( new BufferedReader( new InputStreamReader( new FileInputStream( new File(
+                    sourceDirectory, ".index" ) ), "UTF-8" ) ) );
+            String line;
+            while ( ( line = br.readLine() ) != null )
+            {
+                final String key = line.substring( 0, line.indexOf( "=" ) );
+                final String value = line.substring( line.indexOf( "=" ) + 1, line.length() );
+                index.put( key, value );
+            }
         }
         finally
         {
-            Closeables.closeQuietly( fis );
+            closer.close();
         }
 
-        for ( String includedFilePath : index.stringPropertyNames() )
+        String ga = "";
+        String resolvedVersion = null;
+        for ( Map.Entry<String, String> indexEntry : index.entrySet() )
         {
-            final File includedFile = new File( sourceDirectory, includedFilePath );
-            final String includedFileProps = index.getProperty( includedFilePath );
+            final File includedFile = new File( sourceDirectory, indexEntry.getKey() );
+            final String includedFileProps = indexEntry.getValue();
             final Matcher matcher = indexProps.matcher( includedFileProps );
             if ( !matcher.matches() )
             {
@@ -185,12 +213,23 @@ public abstract class AbstractDeployStrategy
             final String pomFileName = "n/a".equals( matcher.group( 7 ) ) ? null : matcher.group( 7 );
             final String pluginPrefix = "n/a".equals( matcher.group( 8 ) ) ? null : matcher.group( 8 );
 
+            if ( !Strings.nullToEmpty( ga ).equals( groupId + ":" + artifactId ) )
+            {
+                resolvedVersion = null;
+                ga = groupId + ":" + artifactId;
+            }
+
             // just a synthetic one, to properly set extension
             final FakeArtifactHandler artifactHandler = new FakeArtifactHandler( packaging, extension );
 
             final DefaultArtifact artifact =
                 new DefaultArtifact( groupId, artifactId, VersionRange.createFromVersion( version ), null, packaging,
                     classifier, artifactHandler );
+            if ( resolvedVersion != null )
+            {
+                artifact.setResolvedVersion( resolvedVersion );
+                artifact.setResolved( true );
+            }
             if ( pomFileName != null )
             {
                 final File pomFile = new File( includedFile.getParentFile(), pomFileName );
@@ -212,6 +251,10 @@ public abstract class AbstractDeployStrategy
                 }
             }
             artifactDeployer.deploy( includedFile, artifact, remoteRepository, mavenSession.getLocalRepository() );
+            if ( resolvedVersion == null )
+            {
+                resolvedVersion = artifact.getVersion();
+            }
         }
     }
 

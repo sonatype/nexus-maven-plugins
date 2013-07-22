@@ -51,7 +51,7 @@ public class DeferredDeployStrategy
             final ArtifactRepository stagingRepository = getArtifactRepositoryForDirectory( stagingDirectory );
             for ( DeployableArtifact deployableArtifact : request.getDeployableArtifacts() )
             {
-                install( deployableArtifact.getFile(), deployableArtifact.getArtifact(), stagingRepository,
+                install( request.getMavenSession().getCurrentProject(), deployableArtifact.getFile(), deployableArtifact.getArtifact(), stagingRepository,
                     stagingDirectory );
             }
         }
