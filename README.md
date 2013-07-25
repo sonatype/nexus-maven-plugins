@@ -24,5 +24,5 @@ Collection of Apache Maven plugins supporting Nexus Suite.
 
 Unless noted otherwise in corresponding plugin documentation, following are the minimal requirements:
 
-* Apache Maven: supported versions are 2.2.1 or 3.0.3+
+* Apache Maven: supported versions are 2.2.1 or 3.0.4+
 * Java: Java 1.6+
