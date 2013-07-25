@@ -27,7 +27,7 @@
   <artifactId>nexus-maven-plugins</artifactId>
   <packaging>pom</packaging>
 
-  <version>1.4.6-SNAPSHOT</version>
+  <version>1.5-SNAPSHOT</version>
 
   <licenses>
     <license>
