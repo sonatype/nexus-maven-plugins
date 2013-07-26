@@ -36,8 +36,9 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.sonatype.maven</groupId>
-      <artifactId>mojo-commons</artifactId>
+      <groupId>org.sonatype.nexus.maven</groupId>
+      <artifactId>commons</artifactId>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>

@@ -247,6 +247,7 @@
   </dependencyManagement>
 
   <modules>
+    <module>commons</module>
     <module>m2settings</module>
     <module>staging</module>
   </modules>
