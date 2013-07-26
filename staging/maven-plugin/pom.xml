@@ -40,14 +40,6 @@
       <artifactId>mojo-commons</artifactId>
     </dependency>
 
-    <!--
-      NXCM-5424: Needed by org.sonatype.plexus:plexus-sec-dispatcher:1.4 used by mojo-commons above 
-    -->
-    <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-utils</artifactId>
-    </dependency>
-
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
@@ -126,6 +118,14 @@
     <dependency>
       <groupId>org.sonatype.plexus</groupId>
       <artifactId>plexus-sec-dispatcher</artifactId>
+    </dependency>
+
+    <!--
+      NXCM-5424: Needed by org.sonatype.plexus:plexus-sec-dispatcher:1.4 (used by mojo-commons) 
+    -->
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-utils</artifactId>
     </dependency>
 
     <dependency>
