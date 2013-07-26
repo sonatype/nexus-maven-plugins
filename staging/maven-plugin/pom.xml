@@ -120,6 +120,14 @@
       <artifactId>plexus-sec-dispatcher</artifactId>
     </dependency>
 
+    <!--
+      NXCM-5424: Needed by org.sonatype.plexus:plexus-sec-dispatcher:1.4 (used by mojo-commons) 
+    -->
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-utils</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-interpolation</artifactId>
