@@ -193,6 +193,7 @@ public abstract class AbstractDeployStrategy
 
         String ga = "";
         String resolvedVersion = null;
+        boolean pomDeployed = false;
         for ( Map.Entry<String, String> indexEntry : index.entrySet() )
         {
             final File includedFile = new File( sourceDirectory, indexEntry.getKey() );
@@ -217,6 +218,7 @@ public abstract class AbstractDeployStrategy
             {
                 resolvedVersion = null;
                 ga = groupId + ":" + artifactId;
+                pomDeployed = false;
             }
 
             // just a synthetic one, to properly set extension
@@ -230,24 +232,33 @@ public abstract class AbstractDeployStrategy
                 artifact.setResolvedVersion( resolvedVersion );
                 artifact.setResolved( true );
             }
+            if ( "pom".equals( packaging ) && "pom".equals( extension ) )
+            {
+                // we deploy a POM file (no main artifact)
+                pomDeployed = true;
+            }
             if ( pomFileName != null )
             {
-                final File pomFile = new File( includedFile.getParentFile(), pomFileName );
-                final ProjectArtifactMetadata pom = new ProjectArtifactMetadata( artifact, pomFile );
-                artifact.addMetadata( pom );
-                if ( "maven-plugin".equals( artifact.getType() ) )
+                if ( !pomDeployed )
                 {
-                    // So, we have a "main" artifact with type of "maven-plugin"
-                    // Hence, this is a Maven Plugin, Group level MD needs to be added too
-                    final GroupRepositoryMetadata groupMetadata = new GroupRepositoryMetadata( groupId );
-                    // TODO: we "simulate" the name with artifactId, same what maven-plugin-plugin
-                    // would do. Impact is minimal, as we don't know any tool that _uses_ the name
-                    // from Plugin entries. Once the "index file" is properly solved,
-                    // or, we are able to properly persist Artifact instances above
-                    // (to preserve attached metadatas like this G level, and reuse
-                    // deployer without reimplementing it), all this will become unneeded.
-                    groupMetadata.addPluginMapping( pluginPrefix, artifactId, artifactId );
-                    artifact.addMetadata( groupMetadata );
+                    pomDeployed = true;
+                    final File pomFile = new File( includedFile.getParentFile(), pomFileName );
+                    final ProjectArtifactMetadata pom = new ProjectArtifactMetadata( artifact, pomFile );
+                    artifact.addMetadata( pom );
+                    if ( "maven-plugin".equals( artifact.getType() ) )
+                    {
+                        // So, we have a "main" artifact with type of "maven-plugin"
+                        // Hence, this is a Maven Plugin, Group level MD needs to be added too
+                        final GroupRepositoryMetadata groupMetadata = new GroupRepositoryMetadata( groupId );
+                        // TODO: we "simulate" the name with artifactId, same what maven-plugin-plugin
+                        // would do. Impact is minimal, as we don't know any tool that _uses_ the name
+                        // from Plugin entries. Once the "index file" is properly solved,
+                        // or, we are able to properly persist Artifact instances above
+                        // (to preserve attached metadatas like this G level, and reuse
+                        // deployer without reimplementing it), all this will become unneeded.
+                        groupMetadata.addPluginMapping( pluginPrefix, artifactId, artifactId );
+                        artifact.addMetadata( groupMetadata );
+                    }
                 }
             }
             artifactDeployer.deploy( includedFile, artifact, remoteRepository, mavenSession.getLocalRepository() );
