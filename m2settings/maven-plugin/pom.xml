@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.sonatype.nexus.maven</groupId>
     <artifactId>nexus-m2settings</artifactId>
-    <version>1.4.6-SNAPSHOT</version>
+    <version>1.5-SNAPSHOT</version>
   </parent>
 
   <groupId>org.sonatype.plugins</groupId>
