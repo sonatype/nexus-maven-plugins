@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.sonatype.nexus.maven</groupId>
     <artifactId>nexus-staging</artifactId>
-    <version>1.4.7-SNAPSHOT</version>
+    <version>1.4.7</version>
   </parent>
 
   <artifactId>nexus-staging-maven-plugin-testsuite</artifactId>
