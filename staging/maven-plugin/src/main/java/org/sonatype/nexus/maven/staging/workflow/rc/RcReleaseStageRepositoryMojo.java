@@ -10,19 +10,21 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
+
 package org.sonatype.nexus.maven.staging.workflow.rc;
 
 import java.util.Arrays;
 
 import com.sonatype.nexus.staging.api.dto.StagingActionDTO;
+import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 import com.sonatype.nexus.staging.client.StagingWorkflowV3Service;
+
+import org.sonatype.nexus.maven.staging.StagingAction;
+
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.sonatype.nexus.maven.staging.StagingAction;
-
-import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
 /**
  * Releases a single closed Nexus staging repository into a permanent Nexus repository for general consumption.
@@ -30,42 +32,42 @@ import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
  * @author cstamas
  * @since 1.0
  */
-@Mojo( name = "rc-release", requiresProject = false, requiresDirectInvocation = true, requiresOnline = true )
+@Mojo(name = "rc-release", requiresProject = false, requiresDirectInvocation = true, requiresOnline = true)
 public class RcReleaseStageRepositoryMojo
     extends AbstractStagingRcActionMojo
 {
-    /**
-     * Automatically drop repository after it has been successfully released.
-     *
-     * @since 1.4.3
-     */
-    @Parameter( property = "autoDropAfterRelease", defaultValue = "true")
-    private boolean autoDropAfterRelease;
+  /**
+   * Automatically drop repository after it has been successfully released.
+   *
+   * @since 1.4.3
+   */
+  @Parameter(property = "autoDropAfterRelease", defaultValue = "true")
+  private boolean autoDropAfterRelease;
 
-    @Override
-    public void doExecute( final StagingWorkflowV2Service stagingWorkflow )
-        throws MojoExecutionException, MojoFailureException
-    {
-        // FIXME: Some duplication here between RcReleaseStageRepositoryMojo and ReleaseStageRepositoryMojo
+  @Override
+  public void doExecute(final StagingWorkflowV2Service stagingWorkflow)
+      throws MojoExecutionException, MojoFailureException
+  {
+    // FIXME: Some duplication here between RcReleaseStageRepositoryMojo and ReleaseStageRepositoryMojo
 
-        getLog().info( "RC-Releasing staging repository with IDs=" + Arrays.toString( getStagingRepositoryIds() ) );
+    getLog().info("RC-Releasing staging repository with IDs=" + Arrays.toString(getStagingRepositoryIds()));
 
-        String description = getDescriptionWithDefaultsForAction( StagingAction.RELEASE );
+    String description = getDescriptionWithDefaultsForAction(StagingAction.RELEASE);
 
-        if (stagingWorkflow instanceof StagingWorkflowV3Service) {
-            StagingWorkflowV3Service v3 = (StagingWorkflowV3Service)stagingWorkflow;
+    if (stagingWorkflow instanceof StagingWorkflowV3Service) {
+      StagingWorkflowV3Service v3 = (StagingWorkflowV3Service) stagingWorkflow;
 
-            StagingActionDTO action = new StagingActionDTO();
-            action.setDescription(description);
-            action.setStagedRepositoryIds(Arrays.asList(getStagingRepositoryIds()));
-            action.setAutoDropAfterRelease(autoDropAfterRelease);
+      StagingActionDTO action = new StagingActionDTO();
+      action.setDescription(description);
+      action.setStagedRepositoryIds(Arrays.asList(getStagingRepositoryIds()));
+      action.setAutoDropAfterRelease(autoDropAfterRelease);
 
-            v3.releaseStagingRepositories(action);
-        }
-        else {
-            stagingWorkflow.releaseStagingRepositories( description, getStagingRepositoryIds() );
-        }
-
-        getLog().info( "Released" );
+      v3.releaseStagingRepositories(action);
     }
+    else {
+      stagingWorkflow.releaseStagingRepositories(description, getStagingRepositoryIds());
+    }
+
+    getLog().info("Released");
+  }
 }

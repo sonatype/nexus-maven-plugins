@@ -10,34 +10,36 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
+
 package org.sonatype.nexus.maven.staging.workflow;
 
 import java.util.Arrays;
 
+import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
+
+import org.sonatype.nexus.maven.staging.StagingAction;
+
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
-import org.sonatype.nexus.maven.staging.StagingAction;
-
-import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
 /**
  * Drops a Nexus staging repository that is either open or closed.
- * 
+ *
  * @author cstamas
  * @since 1.0
  */
-@Mojo( name = "drop", requiresOnline = true )
+@Mojo(name = "drop", requiresOnline = true)
 public class DropStageRepositoryMojo
     extends AbstractStagingBuildActionMojo
 {
-    @Override
-    public void doExecute( final StagingWorkflowV2Service stagingWorkflow )
-        throws MojoExecutionException, MojoFailureException
-    {
-        getLog().info( "Dropping staging repository with IDs=" + Arrays.toString( getStagingRepositoryIds() ) );
-        stagingWorkflow.dropStagingRepositories( getDescriptionWithDefaultsForAction( StagingAction.DROP ),
-            getStagingRepositoryIds() );
-        getLog().info( "Dropped" );
-    }
+  @Override
+  public void doExecute(final StagingWorkflowV2Service stagingWorkflow)
+      throws MojoExecutionException, MojoFailureException
+  {
+    getLog().info("Dropping staging repository with IDs=" + Arrays.toString(getStagingRepositoryIds()));
+    stagingWorkflow.dropStagingRepositories(getDescriptionWithDefaultsForAction(StagingAction.DROP),
+        getStagingRepositoryIds());
+    getLog().info("Dropped");
+  }
 }

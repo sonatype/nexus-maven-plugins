@@ -10,60 +10,53 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.nexus.maven.staging;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+package org.sonatype.nexus.maven.staging;
 
 import java.util.Map;
 
 import com.google.common.base.Strings;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * Simple message source for all staging steps.
- * 
+ *
  * @author cstamas
  * @since 1.4
  */
 public class StagingActionMessages
 {
-    private final String stagingDescription;
+  private final String stagingDescription;
 
-    private final Map<StagingAction, String> stagingDescriptions;
+  private final Map<StagingAction, String> stagingDescriptions;
 
-    private final String defaultDescription;
+  private final String defaultDescription;
 
-    /**
-     * Constructor.
-     * 
-     * @param stagingDescription
-     * @param stagingDescriptions
-     * @param defaultDescription
-     */
-    public StagingActionMessages( final String stagingDescription,
-                                  final Map<StagingAction, String> stagingDescriptions, final String defaultDescription )
-    {
-        this.stagingDescription = stagingDescription;
-        this.stagingDescriptions = checkNotNull( stagingDescriptions );
-        this.defaultDescription = checkNotNull( defaultDescription );
+  /**
+   * Constructor.
+   */
+  public StagingActionMessages(final String stagingDescription,
+                               final Map<StagingAction, String> stagingDescriptions, final String defaultDescription)
+  {
+    this.stagingDescription = stagingDescription;
+    this.stagingDescriptions = checkNotNull(stagingDescriptions);
+    this.defaultDescription = checkNotNull(defaultDescription);
+  }
+
+  /**
+   * Returns the message corresponding to given action.
+   *
+   * @return message, never {@code null}.
+   */
+  public String getMessageForAction(final StagingAction action) {
+    checkNotNull(action);
+    if (!Strings.isNullOrEmpty(stagingDescription)) {
+      return stagingDescription;
     }
-
-    /**
-     * Returns the message corresponding to given action.
-     * 
-     * @param action
-     * @return message, never {@code null}.
-     */
-    public String getMessageForAction( final StagingAction action )
-    {
-        checkNotNull( action );
-        if ( !Strings.isNullOrEmpty( stagingDescription ) )
-        {
-            return stagingDescription;
-        }
-        if ( stagingDescriptions.containsKey( action ) )
-        {
-            return stagingDescriptions.get( action );
-        }
-        return defaultDescription;
+    if (stagingDescriptions.containsKey(action)) {
+      return stagingDescriptions.get(action);
     }
+    return defaultDescription;
+  }
 }

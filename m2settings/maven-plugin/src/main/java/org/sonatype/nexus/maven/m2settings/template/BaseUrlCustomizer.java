@@ -10,12 +10,14 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
+
 package org.sonatype.nexus.maven.m2settings.template;
+
+import org.sonatype.nexus.client.core.NexusClient;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.codehaus.plexus.component.annotations.Component;
 import org.jetbrains.annotations.NonNls;
-import org.sonatype.nexus.client.core.NexusClient;
 
 /**
  * Base URL {@link TemplateInterpolatorCustomizer}.
@@ -26,31 +28,31 @@ import org.sonatype.nexus.client.core.NexusClient;
 public class BaseUrlCustomizer
     extends TemplateInterpolatorCustomizerSupport
 {
-    @NonNls
-    public static final String baseUrl = "baseUrl";
+  @NonNls
+  public static final String baseUrl = "baseUrl";
 
-    // Constructor for Plexus
-    public BaseUrlCustomizer() {
-        super();
+  // Constructor for Plexus
+  public BaseUrlCustomizer() {
+    super();
+  }
+
+  @VisibleForTesting
+  public BaseUrlCustomizer(final NexusClient nexusClient) {
+    super(nexusClient);
+  }
+
+
+  @Override
+  protected String getValue(@NonNls String expression) {
+    String result = null;
+    if (expression.equalsIgnoreCase(baseUrl)) {
+      result = getBaseUrl();
     }
+    return result;
+  }
 
-    @VisibleForTesting
-    public BaseUrlCustomizer(final NexusClient nexusClient) {
-        super(nexusClient);
-    }
-
-
-    @Override
-    protected String getValue(@NonNls String expression) {
-        String result = null;
-        if (expression.equalsIgnoreCase(baseUrl)) {
-            result = getBaseUrl();
-        }
-        return result;
-    }
-
-    private String getBaseUrl() {
-        return getNexusClient().getConnectionInfo().getBaseUrl().toUrl();
-    }
+  private String getBaseUrl() {
+    return getNexusClient().getConnectionInfo().getBaseUrl().toUrl();
+  }
 }
 

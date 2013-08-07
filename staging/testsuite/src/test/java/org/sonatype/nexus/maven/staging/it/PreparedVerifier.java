@@ -10,9 +10,8 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.nexus.maven.staging.it;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+package org.sonatype.nexus.maven.staging.it;
 
 import java.io.File;
 import java.util.List;
@@ -21,80 +20,80 @@ import java.util.Map;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * A simple "wrapper" class that carried the {@link Verifier} but also some extra data about the project being built by
  * Verifier that makes easier the post-build assertions.
- * 
+ *
  * @author cstamas
  */
 public class PreparedVerifier
     extends Verifier
 {
 
-    private final String projectGroupId;
+  private final String projectGroupId;
 
-    private final String projectArtifactId;
+  private final String projectArtifactId;
 
-    private final String projectVersion;
+  private final String projectVersion;
 
-    private int numberOfRuns;
+  private int numberOfRuns;
 
-    private final String logNameTemplate;
+  private final String logNameTemplate;
 
-    public PreparedVerifier( final File baseDir, final String projectGroupId, final String projectArtifactId,
-                             final String projectVersion, final String logNameTemplate )
-        throws VerificationException
-    {
-        super( checkNotNull( baseDir ).getAbsolutePath(), false );
+  public PreparedVerifier(final File baseDir, final String projectGroupId, final String projectArtifactId,
+                          final String projectVersion, final String logNameTemplate)
+      throws VerificationException
+  {
+    super(checkNotNull(baseDir).getAbsolutePath(), false);
 
-        this.numberOfRuns = 0;
-        this.projectGroupId = checkNotNull( projectGroupId );
-        this.projectArtifactId = checkNotNull( projectArtifactId );
-        this.projectVersion = checkNotNull( projectVersion );
-        this.logNameTemplate = checkNotNull( logNameTemplate );
+    this.numberOfRuns = 0;
+    this.projectGroupId = checkNotNull(projectGroupId);
+    this.projectArtifactId = checkNotNull(projectArtifactId);
+    this.projectVersion = checkNotNull(projectVersion);
+    this.logNameTemplate = checkNotNull(logNameTemplate);
+  }
+
+  public String getProjectGroupId() {
+    return projectGroupId;
+  }
+
+  public String getProjectArtifactId() {
+    return projectArtifactId;
+  }
+
+  public String getProjectVersion() {
+    return projectVersion;
+  }
+
+  @Override
+  public void executeGoals(List goals, Map envVars)
+      throws VerificationException
+  {
+    try {
+      super.executeGoals(goals, envVars);
     }
-
-    public String getProjectGroupId()
-    {
-        return projectGroupId;
+    catch (VerificationException e) {
+      // HACK: Strip out the entire log which is included in the message by default! :-(
+      File logFile = new File(getBasedir(), getLogFileName());
+      throw new VerificationException(
+          "Goals execution failed: " + goals + "; see log for more details: " + logFile.getAbsolutePath(),
+          e.getCause());
     }
+  }
 
-    public String getProjectArtifactId()
-    {
-        return projectArtifactId;
-    }
+  @Override
+  @SuppressWarnings("rawtypes")
+  public void executeGoals(final List goals)
+      throws VerificationException
+  {
+    setLogFileName(String.format(logNameTemplate, ++numberOfRuns));
+    super.executeGoals(goals);
+  }
 
-    public String getProjectVersion()
-    {
-        return projectVersion;
-    }
-
-    @Override
-    public void executeGoals(List goals, Map envVars)
-        throws VerificationException
-    {
-        try {
-            super.executeGoals(goals, envVars);
-        }
-        catch (VerificationException e) {
-            // HACK: Strip out the entire log which is included in the message by default! :-(
-            File logFile = new File( getBasedir(), getLogFileName() );
-            throw new VerificationException("Goals execution failed: " + goals + "; see log for more details: " + logFile.getAbsolutePath(), e.getCause());
-        }
-    }
-
-    @Override
-    @SuppressWarnings( "rawtypes" )
-    public void executeGoals( final List goals )
-        throws VerificationException
-    {
-        setLogFileName( String.format( logNameTemplate, ++numberOfRuns ) );
-        super.executeGoals(goals);
-    }
-
-    public int getNumberOfRuns()
-    {
-        return numberOfRuns;
-    }
+  public int getNumberOfRuns() {
+    return numberOfRuns;
+  }
 
 }

@@ -10,6 +10,7 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
+
 package org.sonatype.nexus.maven.staging.it;
 
 import java.io.File;
@@ -25,47 +26,37 @@ public abstract class SimpleRoundtripMatrixBaseTests
     extends SimpleRoundtripMatrixSupport
 {
 
-    public SimpleRoundtripMatrixBaseTests(final String nexusBundleCoordinates)
-    {
-        super(nexusBundleCoordinates);
-    }
+  public SimpleRoundtripMatrixBaseTests(final String nexusBundleCoordinates) {
+    super(nexusBundleCoordinates);
+  }
 
-    /**
-     * Project set up in m2-way with m2.
-     *
-     * @throws VerificationException
-     * @throws IOException
-     */
-    @Test
-    public void roundtripWithM2ProjectUsingM2()
-        throws VerificationException, IOException
-    {
-        roundtrip( createMavenVerifier( M2_VERSION, new File( getBasedir(), "target/test-classes/maven2-project" ) ) );
-    }
+  /**
+   * Project set up in m2-way with m2.
+   */
+  @Test
+  public void roundtripWithM2ProjectUsingM2()
+      throws VerificationException, IOException
+  {
+    roundtrip(createMavenVerifier(M2_VERSION, new File(getBasedir(), "target/test-classes/maven2-project")));
+  }
 
-    /**
-     * Project set up in m2-way with m3.
-     *
-     * @throws VerificationException
-     * @throws IOException
-     */
-    @Test
-    public void roundtripWithM2ProjectUsingM3()
-        throws VerificationException, IOException
-    {
-        roundtrip( createMavenVerifier( M3_VERSION, new File( getBasedir(), "target/test-classes/maven2-project" ) ) );
-    }
+  /**
+   * Project set up in m2-way with m3.
+   */
+  @Test
+  public void roundtripWithM2ProjectUsingM3()
+      throws VerificationException, IOException
+  {
+    roundtrip(createMavenVerifier(M3_VERSION, new File(getBasedir(), "target/test-classes/maven2-project")));
+  }
 
-    /**
-     * Project set up in m3-way using m3.
-     *
-     * @throws VerificationException
-     * @throws IOException
-     */
-    @Test
-    public void roundtripWithM3ProjectUsingM3()
-        throws VerificationException, IOException
-    {
-        roundtrip( createMavenVerifier( M3_VERSION, new File( getBasedir(), "target/test-classes/maven3-project" ) ) );
-    }
+  /**
+   * Project set up in m3-way using m3.
+   */
+  @Test
+  public void roundtripWithM3ProjectUsingM3()
+      throws VerificationException, IOException
+  {
+    roundtrip(createMavenVerifier(M3_VERSION, new File(getBasedir(), "target/test-classes/maven3-project")));
+  }
 }

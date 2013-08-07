@@ -10,10 +10,12 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
+
 package org.sonatype.nexus.maven.m2settings.template;
 
-import org.codehaus.plexus.interpolation.Interpolator;
 import org.sonatype.nexus.client.core.NexusClient;
+
+import org.codehaus.plexus.interpolation.Interpolator;
 
 /**
  * Allows customization of the template {@link Interpolator}.
@@ -22,5 +24,5 @@ import org.sonatype.nexus.client.core.NexusClient;
  */
 public interface TemplateInterpolatorCustomizer
 {
-    void customize(NexusClient client, Interpolator interpolator);
+  void customize(NexusClient client, Interpolator interpolator);
 }

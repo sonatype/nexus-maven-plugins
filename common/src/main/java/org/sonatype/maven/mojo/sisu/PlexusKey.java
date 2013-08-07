@@ -10,27 +10,25 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
+
 package org.sonatype.maven.mojo.sisu;
 
 public class PlexusKey
 {
-    private final Class role;
+  private final Class role;
 
-    private final String hint;
+  private final String hint;
 
-    public PlexusKey( final Class role, final String hint )
-    {
-        this.role = role;
-        this.hint = hint;
-    }
+  public PlexusKey(final Class role, final String hint) {
+    this.role = role;
+    this.hint = hint;
+  }
 
-    protected Class getRole()
-    {
-        return role;
-    }
+  protected Class getRole() {
+    return role;
+  }
 
-    protected String getHint()
-    {
-        return hint;
-    }
+  protected String getHint() {
+    return hint;
+  }
 }

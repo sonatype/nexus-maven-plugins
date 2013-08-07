@@ -10,53 +10,49 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
+
 package org.sonatype.nexus.maven.staging.deploy.strategy;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.io.File;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class ParametersImpl
     implements Parameters
 {
-    private final String pluginGav;
-    
-    private final File deferredDirectoryRoot;
+  private final String pluginGav;
 
-    private final File stagingDirectoryRoot;
+  private final File deferredDirectoryRoot;
 
-    public ParametersImpl( final String pluginGav, final File deferredDirectoryRoot, final File stagingDirectoryRoot )
-    {
-        this.pluginGav = checkNotNull( pluginGav );
-        this.deferredDirectoryRoot = checkNotNull( deferredDirectoryRoot );
-        this.stagingDirectoryRoot = checkNotNull( stagingDirectoryRoot );
-    }
+  private final File stagingDirectoryRoot;
 
-    @Override
-    public String getPluginGav()
-    {
-        return pluginGav;
-    }
+  public ParametersImpl(final String pluginGav, final File deferredDirectoryRoot, final File stagingDirectoryRoot) {
+    this.pluginGav = checkNotNull(pluginGav);
+    this.deferredDirectoryRoot = checkNotNull(deferredDirectoryRoot);
+    this.stagingDirectoryRoot = checkNotNull(stagingDirectoryRoot);
+  }
 
-    @Override
-    public File getDeferredDirectoryRoot()
-    {
-        return deferredDirectoryRoot;
-    }
+  @Override
+  public String getPluginGav() {
+    return pluginGav;
+  }
 
-    @Override
-    public File getStagingDirectoryRoot()
-    {
-        return stagingDirectoryRoot;
-    }
+  @Override
+  public File getDeferredDirectoryRoot() {
+    return deferredDirectoryRoot;
+  }
 
-    @Override
-    public String toString()
-    {
-        return "ParametersImpl{" +
-            "pluginGav='" + pluginGav + '\'' +
-            ", deferredDirectoryRoot=" + deferredDirectoryRoot +
-            ", stagingDirectoryRoot=" + stagingDirectoryRoot +
-            '}';
-    }
+  @Override
+  public File getStagingDirectoryRoot() {
+    return stagingDirectoryRoot;
+  }
+
+  @Override
+  public String toString() {
+    return "ParametersImpl{" +
+        "pluginGav='" + pluginGav + '\'' +
+        ", deferredDirectoryRoot=" + deferredDirectoryRoot +
+        ", stagingDirectoryRoot=" + stagingDirectoryRoot +
+        '}';
+  }
 }

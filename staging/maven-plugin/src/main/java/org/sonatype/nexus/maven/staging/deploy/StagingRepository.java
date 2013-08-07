@@ -10,51 +10,48 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
+
 package org.sonatype.nexus.maven.staging.deploy;
 
-import com.google.common.base.Preconditions;
 import com.sonatype.nexus.staging.client.Profile;
+
+import com.google.common.base.Preconditions;
 
 /**
  * Encapsulation of Nexus side staging repository.
- * 
+ *
  * @author cstamas
  */
 public class StagingRepository
 {
-    private final Profile profile;
+  private final Profile profile;
 
-    private final String repositoryId;
+  private final String repositoryId;
 
-    private final String url;
+  private final String url;
 
-    private final boolean managed;
+  private final boolean managed;
 
-    public StagingRepository( final Profile profile, final String repositoryId, final String url, final boolean managed )
-    {
-        this.profile = Preconditions.checkNotNull( profile );
-        this.repositoryId = Preconditions.checkNotNull( repositoryId );
-        this.url = Preconditions.checkNotNull( url );
-        this.managed = managed;
-    }
+  public StagingRepository(final Profile profile, final String repositoryId, final String url, final boolean managed) {
+    this.profile = Preconditions.checkNotNull(profile);
+    this.repositoryId = Preconditions.checkNotNull(repositoryId);
+    this.url = Preconditions.checkNotNull(url);
+    this.managed = managed;
+  }
 
-    public Profile getProfile()
-    {
-        return profile;
-    }
+  public Profile getProfile() {
+    return profile;
+  }
 
-    public String getRepositoryId()
-    {
-        return repositoryId;
-    }
+  public String getRepositoryId() {
+    return repositoryId;
+  }
 
-    public String getUrl()
-    {
-        return url;
-    }
+  public String getUrl() {
+    return url;
+  }
 
-    public boolean isManaged()
-    {
-        return managed;
-    }
+  public boolean isManaged() {
+    return managed;
+  }
 }

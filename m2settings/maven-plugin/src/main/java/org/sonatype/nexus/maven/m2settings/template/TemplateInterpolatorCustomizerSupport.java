@@ -10,14 +10,16 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
+
 package org.sonatype.nexus.maven.m2settings.template;
+
+import org.sonatype.nexus.client.core.NexusClient;
+import org.sonatype.nexus.client.rest.UsernamePasswordAuthenticationInfo;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.codehaus.plexus.interpolation.AbstractValueSource;
 import org.codehaus.plexus.interpolation.Interpolator;
 import org.jetbrains.annotations.NonNls;
-import org.sonatype.nexus.client.core.NexusClient;
-import org.sonatype.nexus.client.rest.UsernamePasswordAuthenticationInfo;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -29,44 +31,43 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public abstract class TemplateInterpolatorCustomizerSupport
     implements TemplateInterpolatorCustomizer
 {
-    private NexusClient nexusClient;
+  private NexusClient nexusClient;
 
-    // Constructor for Plexus
-    public TemplateInterpolatorCustomizerSupport() {
-        super();
-    }
+  // Constructor for Plexus
+  public TemplateInterpolatorCustomizerSupport() {
+    super();
+  }
 
-    @VisibleForTesting
-    public TemplateInterpolatorCustomizerSupport(final NexusClient nexusClient)
+  @VisibleForTesting
+  public TemplateInterpolatorCustomizerSupport(final NexusClient nexusClient) {
+    this.nexusClient = checkNotNull(nexusClient);
+  }
+
+  protected NexusClient getNexusClient() {
+    return nexusClient;
+  }
+
+  @Override
+  public void customize(final NexusClient client, final Interpolator interpolator) {
+    this.nexusClient = checkNotNull(client);
+    checkNotNull(interpolator);
+
+    interpolator.addValueSource(new AbstractValueSource(false)
     {
-        this.nexusClient = checkNotNull(nexusClient);
-    }
+      @Override
+      public Object getValue(String expression) {
+        return TemplateInterpolatorCustomizerSupport.this.getValue(expression);
+      }
+    });
+  }
 
-    protected NexusClient getNexusClient() {
-        return nexusClient;
-    }
+  protected abstract String getValue(@NonNls String expression);
 
-    @Override
-    public void customize(final NexusClient client, final Interpolator interpolator) {
-        this.nexusClient = checkNotNull(client);
-        checkNotNull(interpolator);
-
-        interpolator.addValueSource(new AbstractValueSource(false)
-        {
-            @Override
-            public Object getValue(String expression) {
-                return TemplateInterpolatorCustomizerSupport.this.getValue(expression);
-            }
-        });
-    }
-
-    protected abstract String getValue(@NonNls String expression);
-
-    /**
-     * Helper to get {@link UsernamePasswordAuthenticationInfo} details for {@link NexusClient}.
-     */
-    protected UsernamePasswordAuthenticationInfo getAuthenticationInfo() {
-        return (UsernamePasswordAuthenticationInfo) getNexusClient().getConnectionInfo().getAuthenticationInfo();
-    }
+  /**
+   * Helper to get {@link UsernamePasswordAuthenticationInfo} details for {@link NexusClient}.
+   */
+  protected UsernamePasswordAuthenticationInfo getAuthenticationInfo() {
+    return (UsernamePasswordAuthenticationInfo) getNexusClient().getConnectionInfo().getAuthenticationInfo();
+  }
 }
 

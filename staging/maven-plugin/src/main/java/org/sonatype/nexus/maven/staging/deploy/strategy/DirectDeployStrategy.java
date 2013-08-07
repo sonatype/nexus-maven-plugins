@@ -10,7 +10,10 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
+
 package org.sonatype.nexus.maven.staging.deploy.strategy;
+
+import org.sonatype.nexus.maven.staging.deploy.DeployableArtifact;
 
 import org.apache.maven.artifact.deployer.ArtifactDeployer;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
@@ -19,45 +22,43 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
-import org.sonatype.nexus.maven.staging.deploy.DeployableArtifact;
 
 /**
  * Direct deploy strategy, one that totally mimics the "vanilla" maven-deploy-plugin behaviour.
- * 
+ *
  * @author cstamas
  * @since 1.1
  */
-@Component( role = DeployStrategy.class, hint = Strategies.DIRECT )
+@Component(role = DeployStrategy.class, hint = Strategies.DIRECT)
 public class DirectDeployStrategy
     extends AbstractDeployStrategy
 {
-    @Requirement
-    private ArtifactDeployer artifactDeployer;
+  @Requirement
+  private ArtifactDeployer artifactDeployer;
 
-    /**
-     * Remote deploy immediately all we have, at the end of the module build.
-     */
-    @Override
-    public void deployPerModule( final DeployPerModuleRequest request )
-        throws ArtifactInstallationException, ArtifactDeploymentException, MojoExecutionException
-    {
-        getLogger().info( "Performing direct deploys (maven-deploy-plugin like)..." );
-        final ArtifactRepository deploymentRepository = getDeploymentRepository( request.getMavenSession() );
-        final ArtifactRepository localRepository = request.getMavenSession().getLocalRepository();
-        for ( DeployableArtifact deployableArtifact : request.getDeployableArtifacts() )
-        {
-            artifactDeployer.deploy( deployableArtifact.getFile(), deployableArtifact.getArtifact(),
-                deploymentRepository, localRepository );
-        }
+  /**
+   * Remote deploy immediately all we have, at the end of the module build.
+   */
+  @Override
+  public void deployPerModule(final DeployPerModuleRequest request)
+      throws ArtifactInstallationException, ArtifactDeploymentException, MojoExecutionException
+  {
+    getLogger().info("Performing direct deploys (maven-deploy-plugin like)...");
+    final ArtifactRepository deploymentRepository = getDeploymentRepository(request.getMavenSession());
+    final ArtifactRepository localRepository = request.getMavenSession().getLocalRepository();
+    for (DeployableArtifact deployableArtifact : request.getDeployableArtifacts()) {
+      artifactDeployer.deploy(deployableArtifact.getFile(), deployableArtifact.getArtifact(),
+          deploymentRepository, localRepository);
     }
+  }
 
-    /**
-     * Doing nothing in this method, as everything is already remotely deployed.
-     */
-    @Override
-    public void finalizeDeploy( final FinalizeDeployRequest request )
-        throws ArtifactDeploymentException, MojoExecutionException
-    {
-        // nothing, all is up already
-    }
+  /**
+   * Doing nothing in this method, as everything is already remotely deployed.
+   */
+  @Override
+  public void finalizeDeploy(final FinalizeDeployRequest request)
+      throws ArtifactDeploymentException, MojoExecutionException
+  {
+    // nothing, all is up already
+  }
 }

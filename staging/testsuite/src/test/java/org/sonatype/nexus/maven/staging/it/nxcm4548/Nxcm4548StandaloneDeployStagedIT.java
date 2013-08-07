@@ -10,23 +10,24 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.nexus.maven.staging.it.nxcm4548;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
+package org.sonatype.nexus.maven.staging.it.nxcm4548;
 
 import java.io.File;
 import java.io.IOException;
 
+import org.sonatype.nexus.maven.staging.it.PreparedVerifier;
+import org.sonatype.nexus.maven.staging.it.SimpleRoundtripMatrixSupport;
+
+import com.google.common.collect.Lists;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.util.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.sonatype.nexus.maven.staging.it.PreparedVerifier;
-import org.sonatype.nexus.maven.staging.it.SimpleRoundtripMatrixSupport;
 
-import com.google.common.collect.Lists;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 
 /**
  * Test for 'standalone staging', mvn nexus-staging:deploy-staged
@@ -35,71 +36,68 @@ public class Nxcm4548StandaloneDeployStagedIT
     extends SimpleRoundtripMatrixSupport
 {
 
-    private File tmpDir;
+  private File tmpDir;
 
-    public Nxcm4548StandaloneDeployStagedIT( final String nexusBundleCoordinates )
-    {
-        super( nexusBundleCoordinates );
-    }
+  public Nxcm4548StandaloneDeployStagedIT(final String nexusBundleCoordinates) {
+    super(nexusBundleCoordinates);
+  }
 
-    @Before
-    public void setupTmpDir()
-        throws IOException
-    {
-        tmpDir = new File( util.getTmpDir(), String.valueOf( hashCode() ) );
-        tmpDir.mkdirs();
-    }
+  @Before
+  public void setupTmpDir()
+      throws IOException
+  {
+    tmpDir = new File(util.getTmpDir(), String.valueOf(hashCode()));
+    tmpDir.mkdirs();
+  }
 
-    @After
-    public void cleanup()
-        throws IOException
-    {
-        FileUtils.deleteDirectory( tmpDir );
-    }
+  @After
+  public void cleanup()
+      throws IOException
+  {
+    FileUtils.deleteDirectory(tmpDir);
+  }
 
-    @Override
-    protected void preNexusAssertions( final PreparedVerifier verifier )
-    {
-        assertThat( getAllStagingRepositories().toString(), getAllStagingRepositories(), hasSize( 0 ) );
-    }
+  @Override
+  protected void preNexusAssertions(final PreparedVerifier verifier) {
+    assertThat(getAllStagingRepositories().toString(), getAllStagingRepositories(), hasSize(0));
+  }
 
-    @Override
-    protected void postNexusAssertions( final PreparedVerifier verifier )
-    {
-        assertThat( getAllStagingRepositories().toString(), getAllStagingRepositories(), hasSize( 1 ) );
-    }
+  @Override
+  protected void postNexusAssertions(final PreparedVerifier verifier) {
+    assertThat(getAllStagingRepositories().toString(), getAllStagingRepositories(), hasSize(1));
+  }
 
-    @Override
-    protected void invokeMaven( final PreparedVerifier verifier )
-        throws VerificationException
-    {
-        final File localStagingDir = new File( tmpDir, "12a2439c79f79c6f" );
+  @Override
+  protected void invokeMaven(final PreparedVerifier verifier)
+      throws VerificationException
+  {
+    final File localStagingDir = new File(tmpDir, "12a2439c79f79c6f");
 
-        // for m-d-p to deploy the "image" here
-        verifier.addCliOption( "-DaltDeploymentRepository=dummy::default::" + localStagingDir.toURI() );
-        // for n-s-m-p
-        verifier.addCliOption( "-DserverId=local-nexus" );
-        verifier.addCliOption( "-DnexusUrl=" + nexus().getUrl().toExternalForm()
+    // for m-d-p to deploy the "image" here
+    verifier.addCliOption("-DaltDeploymentRepository=dummy::default::" + localStagingDir.toURI());
+    // for n-s-m-p
+    verifier.addCliOption("-DserverId=local-nexus");
+    verifier.addCliOption("-DnexusUrl=" + nexus().getUrl().toExternalForm()
         // verifier replaces "//" with "/", which will make nexus-client unable to parse the URL
-        .replace( "http://", "http:///" ) );
-        verifier.addCliOption( "-DrepositoryDirectory=" + tmpDir.getAbsolutePath() );
-        verifier.addCliOption( "-DstagingProfileId=12a2439c79f79c6f" );
+        .replace("http://", "http:///"));
+    verifier.addCliOption("-DrepositoryDirectory=" + tmpDir.getAbsolutePath());
+    verifier.addCliOption("-DstagingProfileId=12a2439c79f79c6f");
 
-        // this deploys to aldDeploymentRepository using vanilla m-d-p, no n-s-m-p invoked (is not bound in POM)
-        verifier.executeGoals( Lists.newArrayList( "clean", "deploy" ) );
-        verifier.verifyErrorFreeLog();
-        verifier.verifyTextInLog( "12a2439c79f79c6f" );
+    // this deploys to aldDeploymentRepository using vanilla m-d-p, no n-s-m-p invoked (is not bound in POM)
+    verifier.executeGoals(Lists.newArrayList("clean", "deploy"));
+    verifier.verifyErrorFreeLog();
+    verifier.verifyTextInLog("12a2439c79f79c6f");
 
-        // this stages the repository using n-s-m-p's new goal
-        verifier.executeGoal( "nexus-staging:deploy-staged-repository" );
+    // this stages the repository using n-s-m-p's new goal
+    verifier.executeGoal("nexus-staging:deploy-staged-repository");
 
-        verifier.verifyErrorFreeLog();
-    }
+    verifier.verifyErrorFreeLog();
+  }
 
-    @Test
-    public void testDeployStaged()
-        throws VerificationException, IOException
-    {
-        roundtrip( createMavenVerifier( M3_VERSION, new File( getBasedir(), "target/test-classes/plain-project" ) ) );
-    }
+  @Test
+  public void testDeployStaged()
+      throws VerificationException, IOException
+  {
+    roundtrip(createMavenVerifier(M3_VERSION, new File(getBasedir(), "target/test-classes/plain-project")));
+  }
 }

@@ -10,13 +10,9 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-import com.sonatype.nexus.plugins.smartproxy.internal.messaging.broker.*
-import org.sonatype.sisu.goodies.common.ByteSize
-import org.sonatype.sisu.goodies.common.Time
-
 // Force typing (for sanity & reference)
-def service = (ExtBrokerService)service
-def owner = (ExtBrokerServiceFactory)owner
+def service = (ExtBrokerService) service
+def owner = (ExtBrokerServiceFactory) owner
 
 // Enable advisory support
 // service.advisorySupport=true

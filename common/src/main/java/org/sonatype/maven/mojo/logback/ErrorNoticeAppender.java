@@ -10,6 +10,7 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
+
 package org.sonatype.maven.mojo.logback;
 
 import ch.qos.logback.classic.Level;
@@ -19,19 +20,16 @@ import ch.qos.logback.core.UnsynchronizedAppenderBase;
 class ErrorNoticeAppender
     extends UnsynchronizedAppenderBase<ILoggingEvent>
 {
-    private boolean errors = false;
+  private boolean errors = false;
 
-    @Override
-    protected void append( final ILoggingEvent logEvent )
-    {
-        if ( Level.WARN.isGreaterOrEqual( logEvent.getLevel() ) )
-        {
-            errors = true;
-        }
+  @Override
+  protected void append(final ILoggingEvent logEvent) {
+    if (Level.WARN.isGreaterOrEqual(logEvent.getLevel())) {
+      errors = true;
     }
+  }
 
-    public boolean hasErrors()
-    {
-        return errors;
-    }
+  public boolean hasErrors() {
+    return errors;
+  }
 }

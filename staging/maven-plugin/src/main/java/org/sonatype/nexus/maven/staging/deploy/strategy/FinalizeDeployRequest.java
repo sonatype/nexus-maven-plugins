@@ -10,6 +10,7 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
+
 package org.sonatype.nexus.maven.staging.deploy.strategy;
 
 import org.apache.maven.execution.MavenSession;
@@ -17,8 +18,7 @@ import org.apache.maven.execution.MavenSession;
 public class FinalizeDeployRequest
     extends AbstractDeployRequest
 {
-    public FinalizeDeployRequest( final MavenSession mavenSession, final Parameters parameters )
-    {
-        super( mavenSession, parameters );
-    }
+  public FinalizeDeployRequest(final MavenSession mavenSession, final Parameters parameters) {
+    super(mavenSession, parameters);
+  }
 }
