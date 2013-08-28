@@ -123,7 +123,7 @@ public abstract class AbstractDeployMojo
         return parameters;
       }
       catch (NullPointerException e) {
-        throw new MojoExecutionException("Bad config and/or validation!", e);
+        throw new MojoExecutionException("Bad configuration:" + e.getMessage(), e);
       }
     }
     else {
@@ -135,7 +135,7 @@ public abstract class AbstractDeployMojo
         return parameters;
       }
       catch (NullPointerException e) {
-        throw new MojoExecutionException("Bad config and/or validation!", e);
+        throw new MojoExecutionException("Bad configuration:" + e.getMessage(), e);
       }
     }
   }

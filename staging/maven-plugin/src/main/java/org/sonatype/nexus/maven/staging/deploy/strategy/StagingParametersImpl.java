@@ -55,14 +55,14 @@ public class StagingParametersImpl
                                StagingActionMessages stagingActionMessages, Map<String, String> tags)
   {
     super(pluginGav, deferredDirectoryRoot, stagingDirectoryRoot);
-    this.nexusUrl = Preconditions.checkNotNull(nexusUrl);
-    this.serverId = Preconditions.checkNotNull(serverId);
+    this.nexusUrl = Preconditions.checkNotNull(nexusUrl, "Mandatory plugin parameter 'nexusUrl' is missing");
+    this.serverId = Preconditions.checkNotNull(serverId, "Mandatory plugin parameter 'serverId' is missing");
     this.keepStagingRepositoryOnCloseRuleFailure = keepStagingRepositoryOnCloseRuleFailure;
     this.keepStagingRepositoryOnFailure = keepStagingRepositoryOnFailure;
     this.skipStagingRepositoryClose = skipStagingRepositoryClose;
     this.stagingProfileId = stagingProfileId;
     this.stagingRepositoryId = stagingRepositoryId;
-    this.stagingActionMessages = checkNotNull(stagingActionMessages);
+    this.stagingActionMessages = checkNotNull(stagingActionMessages, "Staging action messages is null");
     this.tags = tags;
   }
 

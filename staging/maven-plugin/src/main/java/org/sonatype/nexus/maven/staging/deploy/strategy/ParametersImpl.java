@@ -27,9 +27,9 @@ public class ParametersImpl
   private final File stagingDirectoryRoot;
 
   public ParametersImpl(final String pluginGav, final File deferredDirectoryRoot, final File stagingDirectoryRoot) {
-    this.pluginGav = checkNotNull(pluginGav);
-    this.deferredDirectoryRoot = checkNotNull(deferredDirectoryRoot);
-    this.stagingDirectoryRoot = checkNotNull(stagingDirectoryRoot);
+    this.pluginGav = checkNotNull(pluginGav, "Plugin GAV is null");
+    this.deferredDirectoryRoot = checkNotNull(deferredDirectoryRoot, "Deferred directory root is null");
+    this.stagingDirectoryRoot = checkNotNull(stagingDirectoryRoot, "Staging directory root is null");
   }
 
   @Override
