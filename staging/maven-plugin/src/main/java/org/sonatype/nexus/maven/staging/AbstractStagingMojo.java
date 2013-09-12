@@ -145,6 +145,22 @@ public abstract class AbstractStagingMojo
   @Parameter(property = "keepStagingRepositoryOnCloseRuleFailure")
   private boolean keepStagingRepositoryOnCloseRuleFailure;
 
+  /**
+   * Set the timeout in minutes for a staging operation.
+   *
+   * @since 1.5
+   */
+  @Parameter(property = "stagingProgressTimeoutMinutes", defaultValue = "5")
+  private int stagingProgressTimeoutMinutes = 5;
+
+  /**
+   * Set the staging operation polling pause duration in seconds.
+   *
+   * @since 1.5
+   */
+  @Parameter(property = "stagingProgressPauseDurationSeconds", defaultValue = "3")
+  private int stagingProgressPauseDurationSeconds = 3;
+
   // == getters for stuff above
 
   protected String getNexusUrl() {
@@ -200,6 +216,14 @@ public abstract class AbstractStagingMojo
     else {
       return "unknown";
     }
+  }
+
+  protected int getStagingProgressTimeoutMinutes() {
+    return stagingProgressTimeoutMinutes;
+  }
+
+  protected int getStagingProgressPauseDurationSeconds() {
+    return stagingProgressPauseDurationSeconds;
   }
 
   // == common methods

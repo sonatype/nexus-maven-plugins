@@ -98,10 +98,8 @@ public abstract class AbstractStagingDeployStrategy
     if (service instanceof StagingWorkflowV3Service) {
       StagingWorkflowV3Service v3 = (StagingWorkflowV3Service) service;
       v3.setProgressMonitor(new ProgressMonitorImpl(getLogger()));
-
-      // TODO: Configure these bits
-      //v3.setProgressTimeoutMinutes();
-      //v3.setProgressPauseDurationSeconds();
+      v3.setProgressTimeoutMinutes(parameters.getStagingProgressTimeoutMinutes());
+      v3.setProgressPauseDurationSeconds(parameters.getStagingProgressPauseDurationSeconds());
     }
   }
 
