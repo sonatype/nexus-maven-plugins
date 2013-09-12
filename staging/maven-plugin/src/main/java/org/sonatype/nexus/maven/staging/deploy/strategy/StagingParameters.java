@@ -42,4 +42,14 @@ public interface StagingParameters
   String getActionDescription(StagingAction action);
 
   Map<String, String> getTags();
+
+  /**
+   * @since 1.5
+   */
+  int getStagingProgressTimeoutMinutes();
+
+  /**
+   * @since 1.5
+   */
+  int getStagingProgressPauseDurationSeconds();
 }
