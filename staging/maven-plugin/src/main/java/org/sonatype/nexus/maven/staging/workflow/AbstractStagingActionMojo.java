@@ -39,7 +39,6 @@ import org.sonatype.nexus.maven.staging.StagingAction;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
 
 import com.sun.jersey.api.client.UniformInterfaceException;
-import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.settings.Proxy;
@@ -218,10 +217,8 @@ public abstract class AbstractStagingActionMojo
 
         // configure progress monitor
         service.setProgressMonitor(new ProgressMonitorImpl(getLog()));
-
-        // TODO: Configure these bits
-        // service.setProgressTimeoutMinutes();
-        // service.setProgressPauseDurationSeconds();
+        service.setProgressTimeoutMinutes(getStagingProgressTimeoutMinutes());
+        service.setProgressPauseDurationSeconds(getStagingProgressPauseDurationSeconds());
 
         workflowService = service;
       }
