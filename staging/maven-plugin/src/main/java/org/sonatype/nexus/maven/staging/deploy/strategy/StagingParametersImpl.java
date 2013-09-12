@@ -46,13 +46,24 @@ public class StagingParametersImpl
 
   private final Map<String, String> tags;
 
-  public StagingParametersImpl(String pluginGav, String nexusUrl, String serverId, final File deferredDirectoryRoot,
+  private final int stagingProgressTimeoutMinutes;
+
+  private final int stagingProgressPauseDurationSeconds;
+
+  public StagingParametersImpl(final String pluginGav,
+                               final String nexusUrl,
+                               final String serverId,
+                               final File deferredDirectoryRoot,
                                final File stagingDirectoryRoot,
-                               boolean keepStagingRepositoryOnCloseRuleFailure,
-                               boolean keepStagingRepositoryOnFailure,
-                               boolean skipStagingRepositoryClose, String stagingProfileId,
-                               String stagingRepositoryId,
-                               StagingActionMessages stagingActionMessages, Map<String, String> tags)
+                               final boolean keepStagingRepositoryOnCloseRuleFailure,
+                               final boolean keepStagingRepositoryOnFailure,
+                               final boolean skipStagingRepositoryClose,
+                               final String stagingProfileId,
+                               final String stagingRepositoryId,
+                               final StagingActionMessages stagingActionMessages,
+                               final Map<String, String> tags,
+                               final int stagingProgressTimeoutMinutes,
+                               final int stagingProgressPauseDurationSeconds)
   {
     super(pluginGav, deferredDirectoryRoot, stagingDirectoryRoot);
     this.nexusUrl = Preconditions.checkNotNull(nexusUrl);
@@ -64,6 +75,8 @@ public class StagingParametersImpl
     this.stagingRepositoryId = stagingRepositoryId;
     this.stagingActionMessages = checkNotNull(stagingActionMessages);
     this.tags = tags;
+    this.stagingProgressTimeoutMinutes = stagingProgressTimeoutMinutes;
+    this.stagingProgressPauseDurationSeconds = stagingProgressPauseDurationSeconds;
   }
 
   @Override
@@ -111,6 +124,16 @@ public class StagingParametersImpl
   }
 
   @Override
+  public int getStagingProgressTimeoutMinutes() {
+    return stagingProgressTimeoutMinutes;
+  }
+
+  @Override
+  public int getStagingProgressPauseDurationSeconds() {
+    return stagingProgressPauseDurationSeconds;
+  }
+
+  @Override
   public String toString() {
     return "ParametersImpl{" +
         "pluginGav='" + getPluginGav() + '\'' +
@@ -123,6 +146,8 @@ public class StagingParametersImpl
         ", stagingProfileId='" + stagingProfileId + '\'' +
         ", stagingRepositoryId='" + stagingRepositoryId + '\'' +
         ", tags=" + tags +
+        ", stagingProgressTimeoutMinutes=" + stagingProgressTimeoutMinutes +
+        ", stagingProgressPauseDurationSeconds=" + stagingProgressPauseDurationSeconds +
         '}';
   }
 }

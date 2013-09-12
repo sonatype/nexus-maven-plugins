@@ -109,15 +109,22 @@ public abstract class AbstractDeployMojo
   {
     if (strategy.needsNexusClient()) {
       try {
-        final StagingParameters parameters =
-            new StagingParametersImpl(getPluginGav(), getNexusUrl(), getServerId(),
-                getDeferredDirectoryRoot(), getStagingDirectoryRoot(),
-                isKeepStagingRepositoryOnCloseRuleFailure(),
-                isKeepStagingRepositoryOnFailure(),
-                isSkipStagingRepositoryClose(), getStagingProfileId(),
-                getStagingRepositoryId(),
-                getStagingActionMessages(),
-                getTags());
+        final StagingParameters parameters = new StagingParametersImpl(
+            getPluginGav(),
+            getNexusUrl(),
+            getServerId(),
+            getDeferredDirectoryRoot(),
+            getStagingDirectoryRoot(),
+            isKeepStagingRepositoryOnCloseRuleFailure(),
+            isKeepStagingRepositoryOnFailure(),
+            isSkipStagingRepositoryClose(),
+            getStagingProfileId(),
+            getStagingRepositoryId(),
+            getStagingActionMessages(),
+            getTags(),
+            getStagingProgressTimeoutMinutes(),
+            getStagingProgressPauseDurationSeconds()
+        );
 
         getLog().debug(parameters.toString());
         return parameters;
