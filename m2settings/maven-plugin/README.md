@@ -14,7 +14,7 @@
 -->
 # Nexus M2Settings Maven Plugin
 
-Maven Plugin to download Maven settings.xml files from templates stored in Nexus Professional.
+Maven Plugin to download Maven settings.xml files from templates stored in Nexus Professional. It replaces the same functionality previously available in the Nexus Maven Plugin, which is now deprecated.
 
 # Documentation
 

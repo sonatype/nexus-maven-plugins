@@ -14,7 +14,7 @@
 -->
 # Nexus Maven Plugins
 
-Collection of Apache Maven plugins supporting Nexus Suite.
+Collection of Apache Maven plugins supporting Nexus Suite. 
 
 ## Plugins available
 
@@ -27,3 +27,7 @@ Unless noted otherwise in corresponding plugin documentation, following are the 
 
 * Apache Maven: supported versions are 2.2.1 or 3.0.4+
 * Java: Java 1.6+
+
+## Warning
+
+Please not that the Nexus Maven Plugin is deprecated and replaced by the plugins in this project.
