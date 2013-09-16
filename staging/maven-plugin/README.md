@@ -33,6 +33,10 @@ Hence, the `nexus-staging-maven-plugin` is introduced, with vastly enhanced supp
 
 *Warning: the "artifactId" of the plugin is newly introduced! The old nexus-maven-plugin is deprecated!*
 
+Further user documentation is also available in the staging chapter of the free book Repository Management with Nexus:
+
+http://books.sonatype.com/nexus-book/reference/staging.html
+
 ## Operating modes
 
 Nexus Staging Maven plugin automatically (or explicitly configured) chooses the "mode" of operation.

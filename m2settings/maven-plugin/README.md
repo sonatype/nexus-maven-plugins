@@ -12,18 +12,12 @@
     Eclipse Foundation. All other trademarks are the property of their respective owners.
 
 -->
-# Nexus Maven Plugins
+# Nexus M2Settings Maven Plugin
 
-Collection of Apache Maven plugins supporting Nexus Suite.
+Maven Plugin to download Maven settings.xml files from templates stored in Nexus Professional.
 
-## Plugins available
+# Documentation
 
-* [Nexus Staging Plugin](https://github.com/sonatype/nexus-maven-plugins/tree/master/staging/maven-plugin) - Maven Plugin to perform Sonatype Nexus Staging Workflow steps from your build. 
-* [Nexus M2Settings Maven Plugin](https://github.com/sonatype/nexus-maven-plugins/tree/master/m2settings/maven-plugin) - Maven Plugin to download a settings.xml file templated stored in Nexus and potentially replace user token values.
+All user documentation is available in the Managing Maven Settings chapter of the free book Repository Management with Nexus:
 
-## System requirements
-
-Unless noted otherwise in corresponding plugin documentation, following are the minimal requirements:
-
-* Apache Maven: supported versions are 2.2.1 or 3.0.4+
-* Java: Java 1.6+
+http://books.sonatype.com/nexus-book/reference/settings.html
