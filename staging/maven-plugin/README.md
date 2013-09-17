@@ -448,7 +448,7 @@ Lists the staging profiles accessible by current user. Example invocation:
 
 Would list all the profiles (ID, accept mode, name) of the remote Nexus accessible to user.
 
-#### `rs-list`
+#### `rc-list`
 
 Lists the staging repositories accessible by current user. Example invocation:
 
