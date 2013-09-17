@@ -13,7 +13,9 @@
 
 package org.sonatype.nexus.maven.staging.workflow.rc;
 
-import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import com.sonatype.nexus.staging.client.Profile;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
@@ -34,19 +36,31 @@ import org.apache.maven.plugins.annotations.Mojo;
 public class RcListProfilesMojo
     extends AbstractStagingActionMojo
 {
-  private static final String FORMAT_MASK = "%-16s  %-26s  %-7s";
+  private static final String FORMAT_MASK = "%-15s %-6s %-30s";
 
   @Override
   public void doExecute(final StagingWorkflowV2Service stagingWorkflow) throws MojoExecutionException,
       MojoFailureException
   {
     getLog().info("Getting list of available staging profiles...");
-    final Collection<Profile> stagingProfiles = stagingWorkflow.listProfiles();
+    final List<Profile> stagingProfiles = stagingWorkflow.listProfiles();
+    Collections.sort(stagingProfiles, new ProfileComparator());
     getLog().info("");
-    getLog().info(String.format(FORMAT_MASK, "ID", "Name", "Mode"));
+    getLog().info(String.format(FORMAT_MASK, "ID", "Mode", "Name"));
     for (Profile stagingProfile : stagingProfiles) {
-      final String line = String.format(FORMAT_MASK, stagingProfile.id(), stagingProfile.name(), stagingProfile.mode());
+      final String line = String.format(FORMAT_MASK, stagingProfile.id(), stagingProfile.mode(), stagingProfile.name());
       getLog().info(line);
+    }
+  }
+
+  // ==
+
+  public static class ProfileComparator
+      implements Comparator<Profile>
+  {
+    @Override
+    public int compare(final Profile o1, final Profile o2) {
+      return o1.name().compareTo(o2.name());
     }
   }
 }
