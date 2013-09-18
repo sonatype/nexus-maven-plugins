@@ -15,7 +15,10 @@
 # Nexus Staging Maven Plugin
 
 Maven Plugin to control Nexus Staging workflow. While the maven plugin ("staging client") part is OSS, to use staging features it need a Sonatype Nexus Professional instance 2.1+ on the server side!
+
 Plugin is compatible with Maven 2.2.1 and Maven 3.0.x.
+
+This plugin replaces any staging functionality from the depreacted Nexus Maven Plugin. 
 
 Features:
  * it is meant to _completely replace_ (or buy out) the maven-deploy-plugin
@@ -32,6 +35,10 @@ Nexus Staging V2 focuses more on client-server automated interaction.
 Hence, the `nexus-staging-maven-plugin` is introduced, with vastly enhanced support.
 
 *Warning: the "artifactId" of the plugin is newly introduced! The old nexus-maven-plugin is deprecated!*
+
+Further user documentation is also available in the staging chapter of the free book Repository Management with Nexus:
+
+http://books.sonatype.com/nexus-book/reference/staging.html
 
 ## Operating modes
 
