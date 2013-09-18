@@ -440,7 +440,7 @@ Hence, all these goals might operate against *one or more staging repository* (b
 
 All of them accept optional `description` parameter, but it's not mandatory. If not specified, a default description will be applied.
 
-#### `rc-list-profiles`
+#### `rc-list-profiles` (since 1.5)
 
 Lists the staging profiles accessible by current user. Example invocation:
 
@@ -448,7 +448,7 @@ Lists the staging profiles accessible by current user. Example invocation:
 
 Would list all the profiles (ID, accept mode, name) of the remote Nexus accessible to user.
 
-#### `rc-list`
+#### `rc-list` (since 1.5)
 
 Lists the staging repositories accessible by current user. Example invocation:
 
