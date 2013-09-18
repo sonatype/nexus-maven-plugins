@@ -440,6 +440,23 @@ Hence, all these goals might operate against *one or more staging repository* (b
 
 All of them accept optional `description` parameter, but it's not mandatory. If not specified, a default description will be applied.
 
+#### `rc-list-profiles` (since 1.5)
+
+Lists the staging profiles accessible by current user. Example invocation:
+
+    mvn nexus-staging:rc-list-profiles -DserverId=local-nexus -DnexusUrl=http://localhost:8081/nexus
+
+Would list all the profiles (ID, accept mode, name) of the remote Nexus accessible to user.
+
+#### `rc-list` (since 1.5)
+
+Lists the staging repositories accessible by current user. Example invocation:
+
+    mvn nexus-staging:rc-list -DserverId=local-nexus -DnexusUrl=http://localhost:8081/nexus
+
+Would list all the staging repositories (ID, state, description) of the remote Nexus accessible to user. By default, RELEASED staging repositories are filtered out,
+to have them list them too, use `-DshowReleased=true` property.
+
 #### `rc-close`
 
 Closes the specified staging repositories.
