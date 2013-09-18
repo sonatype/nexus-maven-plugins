@@ -14,11 +14,12 @@
 -->
 # Nexus Maven Plugins
 
-Collection of Apache Maven plugins supporting Nexus Suite.
+Collection of Apache Maven plugins supporting Nexus Suite. 
 
 ## Plugins available
 
-* [Nexus Staging Plugin](https://github.com/sonatype/nexus-maven-plugins/tree/master/nexus-staging-maven-plugin) - Maven Plugin to perform Sonatype Nexus Staging Workflow steps from your build.
+* [Nexus Staging Plugin](https://github.com/sonatype/nexus-maven-plugins/tree/master/staging/maven-plugin) - Maven Plugin to perform Sonatype Nexus Staging Workflow steps from your build. 
+* [Nexus M2Settings Maven Plugin](https://github.com/sonatype/nexus-maven-plugins/tree/master/m2settings/maven-plugin) - Maven Plugin to download a settings.xml file templated stored in Nexus and potentially replace user token values.
 
 ## System requirements
 
@@ -26,3 +27,7 @@ Unless noted otherwise in corresponding plugin documentation, following are the 
 
 * Apache Maven: supported versions are 2.2.1 or 3.0.4+
 * Java: Java 1.6+
+
+## Warning
+
+Please not that the Nexus Maven Plugin is deprecated and replaced by the plugins in this project.
