@@ -10,30 +10,32 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
+
 package org.sonatype.nexus.maven.staging.deploy.strategy;
+
+import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
+
+import org.sonatype.nexus.client.core.NexusClient;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Server;
-import org.sonatype.nexus.client.core.NexusClient;
-
-import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
 /**
  * Remoting needed in deploy strategies.
- * 
+ *
  * @author cstamas
  * @since 1.1
  */
 public interface Remoting
 {
-    Server getServer();
+  Server getServer();
 
-    Proxy getProxy();
+  Proxy getProxy();
 
-    NexusClient getNexusClient()
-        throws MojoExecutionException;
+  NexusClient getNexusClient()
+      throws MojoExecutionException;
 
-    StagingWorkflowV2Service getStagingWorkflowV2Service()
-        throws MojoExecutionException;
+  StagingWorkflowV2Service getStagingWorkflowV2Service()
+      throws MojoExecutionException;
 }

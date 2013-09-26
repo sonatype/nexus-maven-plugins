@@ -10,14 +10,16 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
+
 package org.sonatype.nexus.maven.m2settings;
+
+import org.sonatype.nexus.client.core.exception.NexusClientException;
 
 import com.google.common.base.Throwables;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.sonatype.nexus.client.core.exception.NexusClientException;
 
 import static com.google.common.base.Preconditions.checkState;
 
@@ -29,53 +31,53 @@ import static com.google.common.base.Preconditions.checkState;
 public abstract class MojoSupport
     extends AbstractMojo
 {
-    protected final MojoLogger log = new MojoLogger(this);
+  protected final MojoLogger log = new MojoLogger(this);
 
-    @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
-        checkState(getLog() != null, "Mojo.log not installed");
-        try {
-            doExecute();
-        }
-        catch (Exception e) {
-            Throwables.propagateIfPossible(e, MojoExecutionException.class, MojoFailureException.class);
-            throw Throwables.propagate(e);
-        }
-        finally {
-            doCleanup();
-        }
+  @Override
+  public void execute() throws MojoExecutionException, MojoFailureException {
+    checkState(getLog() != null, "Mojo.log not installed");
+    try {
+      doExecute();
+    }
+    catch (Exception e) {
+      Throwables.propagateIfPossible(e, MojoExecutionException.class, MojoFailureException.class);
+      throw Throwables.propagate(e);
+    }
+    finally {
+      doCleanup();
+    }
+  }
+
+  /**
+   * Fail execution.
+   */
+  protected Exception fail(final String message) throws Exception {
+    log.debug("Failing: {}", message);
+    throw new MojoExecutionException(message);
+  }
+
+  /**
+   * Fail execution and try to clean up cause hierarchy.
+   */
+  protected Exception fail(final String message, Throwable cause) throws Exception {
+    log.debug("Failing: {}", message, cause);
+
+    // Try to decode exception stack for more meaningful and terse error messages
+    if (cause instanceof NexusClientException) {
+      cause = cause.getCause();
+
+      // FIXME: This should probably be handled by the nexus-client jersey adapter
+      if (cause instanceof com.sun.jersey.api.client.ClientHandlerException) {
+        cause = cause.getCause();
+      }
+
+      // TODO: decode anything else?
     }
 
-    /**
-     * Fail execution.
-     */
-    protected Exception fail(final String message) throws Exception {
-        log.debug("Failing: {}", message);
-        throw new MojoExecutionException(message);
-    }
+    throw new MojoExecutionException(message, cause);
+  }
 
-    /**
-     * Fail execution and try to clean up cause hierarchy.
-     */
-    protected Exception fail(final String message, Throwable cause) throws Exception {
-        log.debug("Failing: {}", message, cause);
+  protected abstract void doExecute() throws Exception;
 
-        // Try to decode exception stack for more meaningful and terse error messages
-        if (cause instanceof NexusClientException) {
-            cause = cause.getCause();
-
-            // FIXME: This should probably be handled by the nexus-client jersey adapter
-            if (cause instanceof com.sun.jersey.api.client.ClientHandlerException) {
-                cause = cause.getCause();
-            }
-
-            // TODO: decode anything else?
-        }
-
-        throw new MojoExecutionException(message, cause);
-    }
-
-    protected abstract void doExecute() throws Exception;
-
-    protected abstract void doCleanup();
+  protected abstract void doCleanup();
 }

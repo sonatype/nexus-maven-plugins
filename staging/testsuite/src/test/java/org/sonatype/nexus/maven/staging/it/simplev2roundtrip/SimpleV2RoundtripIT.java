@@ -10,20 +10,21 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
+
 package org.sonatype.nexus.maven.staging.it.simplev2roundtrip;
 
 import java.util.Arrays;
 import java.util.List;
 
+import com.sonatype.nexus.staging.client.StagingRepository;
 import com.sonatype.nexus.staging.client.StagingRepository.State;
-import junit.framework.Assert;
 
-import org.apache.maven.it.VerificationException;
 import org.sonatype.nexus.maven.staging.it.PreparedVerifier;
 import org.sonatype.nexus.maven.staging.it.SimpleRoundtripMatrixBaseTests;
 import org.sonatype.nexus.mindexer.client.SearchResponse;
 
-import com.sonatype.nexus.staging.client.StagingRepository;
+import junit.framework.Assert;
+import org.apache.maven.it.VerificationException;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -42,84 +43,76 @@ public class SimpleV2RoundtripIT
     extends SimpleRoundtripMatrixBaseTests
 {
 
-    public SimpleV2RoundtripIT( final String nexusBundleCoordinates )
-    {
-        super( nexusBundleCoordinates );
+  public SimpleV2RoundtripIT(final String nexusBundleCoordinates) {
+    super(nexusBundleCoordinates);
+  }
+
+  /**
+   * Nothing to validate before hand.
+   */
+  @Override
+  protected void preNexusAssertions(final PreparedVerifier verifier) {
+  }
+
+  /**
+   * Validates nexus side of affairs post maven invocations.
+   */
+  @Override
+  protected void postNexusAssertions(final PreparedVerifier verifier) {
+    //
+    // FIXME: Maybe add the drop after release to super test methods, and then leave no repositories as success
+    //
+
+    final List<StagingRepository> stagingRepositories = getAllStagingRepositories();
+    assertThat("Should have 1 'released' staging repositories",
+        stagingRepositories, hasSize(1));
+
+    StagingRepository repository = stagingRepositories.get(0);
+    assertThat(repository.getState(), is(State.RELEASED));
+
+    // drop the repository so the next test has empty repositories
+    getStagingWorkflowV2Service().dropStagingRepositories("cleanup", repository.getId());
+
+    // stuff we staged are released and found by indexer
+    final SearchResponse searchResponse =
+        searchWithRetriesForGAV(verifier.getProjectGroupId(), verifier.getProjectArtifactId(),
+            verifier.getProjectVersion(), null, null, "releases");
+    if (searchResponse.getHits().isEmpty()) {
+      Assert.fail(String.format(
+          "Nexus should have staged artifact in releases repository with GAV=%s:%s:%s but those are not found on index!",
+          verifier.getProjectGroupId(), verifier.getProjectArtifactId(), verifier.getProjectVersion()));
     }
+  }
 
-    /**
-     * Nothing to validate before hand.
-     */
-    @Override
-    protected void preNexusAssertions( final PreparedVerifier verifier )
-    {
-    }
+  protected void verifyDescription() {
+    final List<StagingRepository> stagingRepositories = getAllStagingRepositories();
+    assertThat("Should have 1 'released' staging repositories",
+        stagingRepositories, hasSize(1));
 
-    /**
-     * Validates nexus side of affairs post maven invocations.
-     */
-    @Override
-    protected void postNexusAssertions( final PreparedVerifier verifier )
-    {
-        //
-        // FIXME: Maybe add the drop after release to super test methods, and then leave no repositories as success
-        //
+    StagingRepository repository = stagingRepositories.get(0);
+    assertThat(repository.getState(), is(State.CLOSED));
 
-        final List<StagingRepository> stagingRepositories = getAllStagingRepositories();
-        assertThat("Should have 1 'released' staging repositories",
-            stagingRepositories, hasSize(1));
+    // see corresponding POM for mapping:
+    // maven2-project and maven3-project
+    assertThat(repository.getDescription(), equalTo("finish"));
+  }
 
-        StagingRepository repository = stagingRepositories.get(0);
-        assertThat(repository.getState(), is(State.RELEASED));
-
-        // drop the repository so the next test has empty repositories
-        getStagingWorkflowV2Service().dropStagingRepositories("cleanup", repository.getId());
-
-        // stuff we staged are released and found by indexer
-        final SearchResponse searchResponse =
-            searchWithRetriesForGAV( verifier.getProjectGroupId(), verifier.getProjectArtifactId(),
-                                     verifier.getProjectVersion(), null, null, "releases" );
-        if ( searchResponse.getHits().isEmpty() )
-        {
-            Assert.fail( String.format(
-                "Nexus should have staged artifact in releases repository with GAV=%s:%s:%s but those are not found on index!",
-                verifier.getProjectGroupId(), verifier.getProjectArtifactId(), verifier.getProjectVersion() ) );
-        }
-    }
-
-    protected void verifyDescription( )
-    {
-        final List<StagingRepository> stagingRepositories = getAllStagingRepositories();
-        assertThat("Should have 1 'released' staging repositories",
-            stagingRepositories, hasSize(1));
-
-        StagingRepository repository = stagingRepositories.get(0);
-        assertThat(repository.getState(), is(State.CLOSED));
-
-        // see corresponding POM for mapping:
-        // maven2-project and maven3-project
-        assertThat( repository.getDescription(), equalTo( "finish" ) );
-    }
-
-    /**
-     * Simulates separate invocation of commands. Deploy then release.
-     *
-     * @param verifier
-     * @throws VerificationException
-     */
-    @Override
-    protected void invokeMaven( final PreparedVerifier verifier )
-        throws VerificationException
-    {
-        // v2 workflow
-        verifier.executeGoals( Arrays.asList( "clean", "deploy" ) );
-        // should not fail
-        verifier.verifyErrorFreeLog();
-        // verify the description
-        verifyDescription();
-        // v2 release
-        verifier.executeGoals( Arrays.asList( "nexus-staging:release" ) );
-        // should not fail
-        verifier.verifyErrorFreeLog();
-    }
+  /**
+   * Simulates separate invocation of commands. Deploy then release.
+   */
+  @Override
+  protected void invokeMaven(final PreparedVerifier verifier)
+      throws VerificationException
+  {
+    // v2 workflow
+    verifier.executeGoals(Arrays.asList("clean", "deploy"));
+    // should not fail
+    verifier.verifyErrorFreeLog();
+    // verify the description
+    verifyDescription();
+    // v2 release
+    verifier.executeGoals(Arrays.asList("nexus-staging:release"));
+    // should not fail
+    verifier.verifyErrorFreeLog();
+  }
 }

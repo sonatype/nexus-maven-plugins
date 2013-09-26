@@ -10,31 +10,28 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
+
 package org.sonatype.nexus.maven.staging.deploy.strategy;
 
-import org.apache.maven.execution.MavenSession;
-
 import com.google.common.base.Preconditions;
+import org.apache.maven.execution.MavenSession;
 
 public class AbstractDeployRequest
 {
-    private final MavenSession mavenSession;
+  private final MavenSession mavenSession;
 
-    private final Parameters parameters;
+  private final Parameters parameters;
 
-    protected AbstractDeployRequest( final MavenSession mavenSession, final Parameters parameters )
-    {
-        this.mavenSession = Preconditions.checkNotNull( mavenSession );
-        this.parameters = Preconditions.checkNotNull( parameters );
-    }
+  protected AbstractDeployRequest(final MavenSession mavenSession, final Parameters parameters) {
+    this.mavenSession = Preconditions.checkNotNull(mavenSession);
+    this.parameters = Preconditions.checkNotNull(parameters);
+  }
 
-    public MavenSession getMavenSession()
-    {
-        return mavenSession;
-    }
+  public MavenSession getMavenSession() {
+    return mavenSession;
+  }
 
-    public Parameters getParameters()
-    {
-        return parameters;
-    }
+  public Parameters getParameters() {
+    return parameters;
+  }
 }

@@ -10,24 +10,25 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
+
 package org.sonatype.nexus.maven.staging;
 
 /**
  * Enumeration for staging "steps": start (when staging repository is created on remote nexus), finish (when staging
  * repository has been filled up, and is being sealed), drop (dropping the staging repository), release and promote.
- * 
+ *
  * @author cstamas
  * @since 1.4
  */
 public enum StagingAction
 {
-    START,
+  START,
 
-    FINISH,
+  FINISH,
 
-    DROP,
+  DROP,
 
-    RELEASE,
+  RELEASE,
 
-    PROMOTE;
+  PROMOTE;
 }

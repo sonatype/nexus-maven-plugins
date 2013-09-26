@@ -10,20 +10,21 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
+
 package org.sonatype.nexus.maven.staging.deploy.strategy;
 
 import java.io.File;
 
 /**
  * Execution parameters, mostly coming from Mojo parameters.
- * 
+ *
  * @author cstamas
  */
 public interface Parameters
 {
-    String getPluginGav();
+  String getPluginGav();
 
-    File getDeferredDirectoryRoot();
-    
-    File getStagingDirectoryRoot();
+  File getDeferredDirectoryRoot();
+
+  File getStagingDirectoryRoot();
 }

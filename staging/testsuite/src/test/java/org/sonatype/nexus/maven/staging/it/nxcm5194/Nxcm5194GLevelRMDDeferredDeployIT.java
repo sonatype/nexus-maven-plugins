@@ -10,43 +10,43 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
+
 package org.sonatype.nexus.maven.staging.it.nxcm5194;
 
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.maven.it.VerificationException;
 import org.sonatype.nexus.maven.staging.it.PreparedVerifier;
+
+import org.apache.maven.it.VerificationException;
 
 /**
  * IT for https://issues.sonatype.org/browse/NXCM-5194
  * <p>
  * It builds Snapshot of Maven Plugin, hence uses Deferred Deploy to deploy them directly into "snapshots" repo.
- * 
+ *
  * @author cstamas
  */
 public class Nxcm5194GLevelRMDDeferredDeployIT
     extends Nxcm5194GLevelRepositoryMetadataSupport
 {
 
-    public Nxcm5194GLevelRMDDeferredDeployIT( final String nexusBundleCoordinates )
-    {
-        super( nexusBundleCoordinates );
-    }
+  public Nxcm5194GLevelRMDDeferredDeployIT(final String nexusBundleCoordinates) {
+    super(nexusBundleCoordinates);
+  }
 
-    // ==
+  // ==
 
-    @Override
-    protected PreparedVerifier createMavenVerifier( final String mavenVersion, final File projectDirectory )
-        throws VerificationException, IOException
-    {
-        return createMavenVerifier( getClass().getSimpleName(), mavenVersion,
-            testData().resolveFile( "preset-nexus-maven-settings.xml" ), projectDirectory, "1.0-SNAPSHOT" );
-    }
+  @Override
+  protected PreparedVerifier createMavenVerifier(final String mavenVersion, final File projectDirectory)
+      throws VerificationException, IOException
+  {
+    return createMavenVerifier(getClass().getSimpleName(), mavenVersion,
+        testData().resolveFile("preset-nexus-maven-settings.xml"), projectDirectory, "1.0-SNAPSHOT");
+  }
 
-    @Override
-    protected String getTargetedRepositoryId()
-    {
-        return "snapshots";
-    }
+  @Override
+  protected String getTargetedRepositoryId() {
+    return "snapshots";
+  }
 }

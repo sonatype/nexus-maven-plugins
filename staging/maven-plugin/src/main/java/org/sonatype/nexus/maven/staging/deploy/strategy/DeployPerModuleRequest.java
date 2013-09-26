@@ -10,29 +10,29 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
+
 package org.sonatype.nexus.maven.staging.deploy.strategy;
 
 import java.util.List;
 
-import org.apache.maven.execution.MavenSession;
 import org.sonatype.nexus.maven.staging.deploy.DeployableArtifact;
 
 import com.google.common.base.Preconditions;
+import org.apache.maven.execution.MavenSession;
 
 public class DeployPerModuleRequest
     extends AbstractDeployRequest
 {
-    private final List<DeployableArtifact> deployableArtifacts;
+  private final List<DeployableArtifact> deployableArtifacts;
 
-    public DeployPerModuleRequest( final MavenSession mavenSession, final Parameters parameters,
-                                   final List<DeployableArtifact> deployableArtifacts )
-    {
-        super( mavenSession, parameters );
-        this.deployableArtifacts = Preconditions.checkNotNull( deployableArtifacts );
-    }
+  public DeployPerModuleRequest(final MavenSession mavenSession, final Parameters parameters,
+                                final List<DeployableArtifact> deployableArtifacts)
+  {
+    super(mavenSession, parameters);
+    this.deployableArtifacts = Preconditions.checkNotNull(deployableArtifacts);
+  }
 
-    public List<DeployableArtifact> getDeployableArtifacts()
-    {
-        return deployableArtifacts;
-    }
+  public List<DeployableArtifact> getDeployableArtifacts() {
+    return deployableArtifacts;
+  }
 }

@@ -10,7 +10,13 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
+
 package org.sonatype.nexus.maven.m2settings;
+
+import java.io.IOException;
+import java.util.List;
+
+import javax.annotation.Nullable;
 
 import jline.console.ConsoleReader;
 import jline.console.completer.StringsCompleter;
@@ -18,10 +24,6 @@ import org.apache.commons.lang.StringUtils;
 import org.codehaus.plexus.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
-import java.io.IOException;
-import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -31,141 +33,145 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *
  * @since 1.4
  */
-@Component(role=Prompter.class, instantiationStrategy="per-lookup")
+@Component(role = Prompter.class, instantiationStrategy = "per-lookup")
 public class PrompterImpl
     implements Prompter
 {
-    private static final Logger log = LoggerFactory.getLogger(PrompterImpl.class);
+  private static final Logger log = LoggerFactory.getLogger(PrompterImpl.class);
 
-    private final ConsoleReader console;
+  private final ConsoleReader console;
 
-    public PrompterImpl() throws IOException {
-        this.console = new ConsoleReader();
-        console.setHistoryEnabled(false);
-        console.setExpandEvents(false); // NXCM-5346: nexus-m2settings:download fails if password contains "!" character
+  public PrompterImpl() throws IOException {
+    this.console = new ConsoleReader();
+    console.setHistoryEnabled(false);
+    console.setExpandEvents(false); // NXCM-5346: nexus-m2settings:download fails if password contains "!" character
+  }
+
+  public ConsoleReader getConsole() {
+    return console;
+  }
+
+  // FIXME: CTRL-D corrupts the prompt slightly
+
+  public String prompt(final String message, final @Nullable Character mask) throws IOException {
+    checkNotNull(message);
+
+    final String prompt = String.format("%s: ", message);
+    String value;
+    do {
+      value = console.readLine(prompt, mask);
+
+      // Do not log values read when masked
+      if (mask == null) {
+        log.debug("Read value: '{}'", value);
+      }
+      else {
+        log.debug("Read masked chars: {}", value.length());
+      }
     }
+    while (StringUtils.isBlank(value));
+    return value;
+  }
 
-    public ConsoleReader getConsole() {
-        return console;
+  public String prompt(final String message) throws IOException {
+    checkNotNull(message);
+
+    return prompt(message, null);
+  }
+
+  public String promptWithDefaultValue(final String message, final String defaultValue) throws IOException {
+    checkNotNull(message);
+    checkNotNull(defaultValue);
+
+    final String prompt = String.format("%s [%s]: ", message, defaultValue);
+    String value = console.readLine(prompt);
+    if (StringUtils.isBlank(value)) {
+      return defaultValue;
     }
+    return value;
+  }
 
-    // FIXME: CTRL-D corrupts the prompt slightly
+  /**
+   * Helper to parse an integer w/o exceptions being thrown.
+   */
+  private
+  @Nullable
+  Integer parseInt(final String value) {
+    try {
+      return Integer.parseInt(value);
+    }
+    catch (Exception e) {
+      // ignore
+    }
+    return null;
+  }
 
-    public String prompt(final String message, final @Nullable Character mask) throws IOException {
-        checkNotNull(message);
-
-        final String prompt = String.format("%s: ", message);
-        String value;
-        do {
-            value = console.readLine(prompt, mask);
-
-            // Do not log values read when masked
-            if (mask == null) {
-                log.debug("Read value: '{}'", value);
-            }
-            else {
-                log.debug("Read masked chars: {}", value.length());
-            }
+  @Override
+  public Integer promptInteger(final String message, final @Nullable Integer min, final @Nullable Integer max)
+      throws IOException
+  {
+    while (true) {
+      String raw = prompt(message);
+      Integer value = parseInt(raw);
+      if (value != null) {
+        if (min != null && value < min) {
+          console.println("Value must be greater than " + (min - 1) + ": " + raw);
+          continue;
         }
-        while (StringUtils.isBlank(value));
+        if (max != null && value > max) {
+          console.println("Value must be less than " + max + ": " + raw);
+          continue;
+        }
+
+        // valid
         return value;
+      }
+      // else invalid, try again
+      console.println("Invalid value: " + raw);
     }
+  }
 
-    public String prompt(final String message) throws IOException {
-        checkNotNull(message);
+  public String promptChoice(final String header, final String message, final List<String> choices) throws IOException {
+    checkNotNull(header);
+    checkNotNull(message);
+    checkArgument(choices.size() > 1, "2 or more choices are required");
 
-        return prompt(message, null);
+    // TODO: Sort out if we want zero or one based indexes
+
+    // display header
+    console.println(header + ":");
+    for (int i = 0; i < choices.size(); i++) {
+      console.println(String.format("  %2d) %s", i, choices.get(i)));
     }
+    console.flush();
 
-    public String promptWithDefaultValue(final String message, final String defaultValue) throws IOException {
-        checkNotNull(message);
-        checkNotNull(defaultValue);
+    // setup completer
+    StringsCompleter completer = new StringsCompleter(choices);
+    console.addCompleter(completer);
 
-        final String prompt = String.format("%s [%s]: ", message, defaultValue);
-        String value = console.readLine(prompt);
-        if (StringUtils.isBlank(value)) {
-            return defaultValue;
+    try {
+      String value;
+      while (true) {
+        value = prompt(message).trim();
+
+        // check if value is an index
+        Integer i = parseInt(value);
+        if (i != null && i >= 0 && i < choices.size()) {
+          value = choices.get(i);
+          break;
         }
-        return value;
+
+        // check if choice is valid
+        if (choices.contains(value)) {
+          break;
+        }
+
+        console.println("Invalid selection: " + value);
+      }
+      return value;
     }
-
-    /**
-     * Helper to parse an integer w/o exceptions being thrown.
-     */
-    private @Nullable Integer parseInt(final String value) {
-        try {
-            return Integer.parseInt(value);
-        }
-        catch (Exception e) {
-            // ignore
-        }
-        return null;
+    finally {
+      console.removeCompleter(completer);
     }
-
-    @Override
-    public Integer promptInteger(final String message, final @Nullable Integer min, final @Nullable Integer max) throws IOException {
-        while (true) {
-            String raw = prompt(message);
-            Integer value = parseInt(raw);
-            if (value != null) {
-                if (min != null && value < min) {
-                    console.println("Value must be greater than " + (min - 1) + ": " + raw);
-                    continue;
-                }
-                if (max != null && value > max) {
-                    console.println("Value must be less than " + max + ": " + raw);
-                    continue;
-                }
-
-                // valid
-                return value;
-            }
-            // else invalid, try again
-            console.println("Invalid value: " + raw);
-        }
-    }
-
-    public String promptChoice(final String header, final String message, final List<String> choices) throws IOException {
-        checkNotNull(header);
-        checkNotNull(message);
-        checkArgument(choices.size() > 1, "2 or more choices are required");
-
-        // TODO: Sort out if we want zero or one based indexes
-
-        // display header
-        console.println(header + ":");
-        for (int i = 0; i < choices.size(); i++) {
-            console.println(String.format("  %2d) %s", i, choices.get(i)));
-        }
-        console.flush();
-
-        // setup completer
-        StringsCompleter completer = new StringsCompleter(choices);
-        console.addCompleter(completer);
-
-        try {
-            String value;
-            while (true) {
-                value = prompt(message).trim();
-
-                // check if value is an index
-                Integer i = parseInt(value);
-                if (i != null && i >= 0 && i < choices.size()) {
-                    value = choices.get(i);
-                    break;
-                }
-
-                // check if choice is valid
-                if (choices.contains(value)) {
-                    break;
-                }
-
-                console.println("Invalid selection: " + value);
-            }
-            return value;
-        }
-        finally {
-            console.removeCompleter(completer);
-        }
-    }
+  }
 }

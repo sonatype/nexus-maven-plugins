@@ -10,9 +10,11 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
+
 package org.sonatype.nexus.maven.staging;
 
 import com.sonatype.nexus.staging.client.StagingWorkflowV3Service.ProgressMonitor;
+
 import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.logging.console.ConsoleLogger;
@@ -27,86 +29,86 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class ProgressMonitorImpl
     implements ProgressMonitor
 {
-    protected final Logger logger;
-    
-    protected boolean needsNewline;
+  protected final Logger logger;
 
-    public ProgressMonitorImpl(final Logger logger) {
-        this.logger = checkNotNull(logger);
-    }
+  protected boolean needsNewline;
 
-    public ProgressMonitorImpl(final Log log) {
-        int level = Logger.LEVEL_INFO;
-        if (log.isDebugEnabled()) {
-            level = Logger.LEVEL_DEBUG;
-        }
-        this.logger = new ConsoleLogger(level, getClass().getName());
-    }
+  public ProgressMonitorImpl(final Logger logger) {
+    this.logger = checkNotNull(logger);
+  }
 
-    protected void maybePrintln() {
-        if (needsNewline) {
-            System.out.println();
-            needsNewline = false;
-        }
+  public ProgressMonitorImpl(final Log log) {
+    int level = Logger.LEVEL_INFO;
+    if (log.isDebugEnabled()) {
+      level = Logger.LEVEL_DEBUG;
     }
+    this.logger = new ConsoleLogger(level, getClass().getName());
+  }
 
-    @Override
-    public void start() {
-        if (logger.isDebugEnabled()) {
-            logger.debug("START");
-        }
-        else {
-            System.out.println();
-            System.out.print("Waiting for operation to complete...");
-        }
+  protected void maybePrintln() {
+    if (needsNewline) {
+      System.out.println();
+      needsNewline = false;
     }
+  }
 
-    @Override
-    public void tick() {
-        if (logger.isDebugEnabled()) {
-            logger.debug("TICK");
-        }
-        else {
-            needsNewline = true;
-            System.out.print(".");
-        }
+  @Override
+  public void start() {
+    if (logger.isDebugEnabled()) {
+      logger.debug("START");
     }
+    else {
+      System.out.println();
+      System.out.print("Waiting for operation to complete...");
+    }
+  }
 
-    @Override
-    public void pause() {
-        logger.debug("PAUSE");
+  @Override
+  public void tick() {
+    if (logger.isDebugEnabled()) {
+      logger.debug("TICK");
     }
+    else {
+      needsNewline = true;
+      System.out.print(".");
+    }
+  }
 
-    @Override
-    public void info(final String message) {
-        logger.debug(message);
-    }
+  @Override
+  public void pause() {
+    logger.debug("PAUSE");
+  }
 
-    @Override
-    public void error(final String message) {
-        logger.debug(message);
-    }
+  @Override
+  public void info(final String message) {
+    logger.debug(message);
+  }
 
-    @Override
-    public void stop() {
-        if (logger.isDebugEnabled()) {
-            logger.debug("STOP");
-        }
-        else {
-            maybePrintln();
-            System.out.println();
-        }
-    }
+  @Override
+  public void error(final String message) {
+    logger.debug(message);
+  }
 
-    @Override
-    public void timeout() {
-        maybePrintln();
-        logger.warn("TIMEOUT");
+  @Override
+  public void stop() {
+    if (logger.isDebugEnabled()) {
+      logger.debug("STOP");
     }
+    else {
+      maybePrintln();
+      System.out.println();
+    }
+  }
 
-    @Override
-    public void interrupted() {
-        maybePrintln();
-        logger.warn("INTERRUPTED");
-    }
+  @Override
+  public void timeout() {
+    maybePrintln();
+    logger.warn("TIMEOUT");
+  }
+
+  @Override
+  public void interrupted() {
+    maybePrintln();
+    logger.warn("INTERRUPTED");
+  }
 }

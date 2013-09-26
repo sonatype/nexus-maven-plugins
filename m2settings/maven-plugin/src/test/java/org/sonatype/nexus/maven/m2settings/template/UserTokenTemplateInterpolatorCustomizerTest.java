@@ -10,22 +10,25 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
+
 package org.sonatype.nexus.maven.m2settings.template;
+
+import java.util.Date;
 
 import com.sonatype.nexus.usertoken.client.UserToken;
 import com.sonatype.nexus.usertoken.plugin.rest.model.AuthTicketXO;
 import com.sonatype.nexus.usertoken.plugin.rest.model.UserTokenXO;
-import org.codehaus.plexus.interpolation.InterpolationException;
-import org.codehaus.plexus.interpolation.StringSearchInterpolator;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
+
 import org.sonatype.nexus.client.core.NexusClient;
 import org.sonatype.nexus.client.rest.ConnectionInfo;
 import org.sonatype.nexus.client.rest.UsernamePasswordAuthenticationInfo;
 import org.sonatype.sisu.litmus.testsupport.TestSupport;
 
-import java.util.Date;
+import org.codehaus.plexus.interpolation.InterpolationException;
+import org.codehaus.plexus.interpolation.StringSearchInterpolator;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -47,94 +50,94 @@ import static org.sonatype.nexus.maven.m2settings.template.UserTokenCustomizer.U
 public class UserTokenTemplateInterpolatorCustomizerTest
     extends TestSupport
 {
-    @Mock
-    private NexusClient nexusClient;
+  @Mock
+  private NexusClient nexusClient;
 
-    @Mock
-    private UserToken userToken;
+  @Mock
+  private UserToken userToken;
 
-    @Mock
-    private MasterPasswordEncryption encryption;
+  @Mock
+  private MasterPasswordEncryption encryption;
 
-    private UserTokenCustomizer customizer;
+  private UserTokenCustomizer customizer;
 
-    private StringSearchInterpolator interpolator;
+  private StringSearchInterpolator interpolator;
 
-    @Before
-    public void setUp() throws Exception {
-        UserTokenXO token = new UserTokenXO();
-        token.setNameCode("nc");
-        token.setPassCode("pc");
-        token.setCreated(new Date());
+  @Before
+  public void setUp() throws Exception {
+    UserTokenXO token = new UserTokenXO();
+    token.setNameCode("nc");
+    token.setPassCode("pc");
+    token.setCreated(new Date());
 
-        when(nexusClient.getSubsystem(UserToken.class)).thenReturn(userToken);
+    when(nexusClient.getSubsystem(UserToken.class)).thenReturn(userToken);
 
-        AuthTicketXO ticket = new AuthTicketXO().withT("some-ticket-blah-blah-blah");
-        when(userToken.authenticate(anyString(), anyString())).thenReturn(ticket);
+    AuthTicketXO ticket = new AuthTicketXO().withT("some-ticket-blah-blah-blah");
+    when(userToken.authenticate(anyString(), anyString())).thenReturn(ticket);
 
-        ConnectionInfo connectionInfo = mock(ConnectionInfo.class);
-        when(nexusClient.getConnectionInfo()).thenReturn(connectionInfo);
+    ConnectionInfo connectionInfo = mock(ConnectionInfo.class);
+    when(nexusClient.getConnectionInfo()).thenReturn(connectionInfo);
 
-        UsernamePasswordAuthenticationInfo auth = new UsernamePasswordAuthenticationInfo("foo", "bar");
-        when(connectionInfo.getAuthenticationInfo()).thenReturn(auth);
+    UsernamePasswordAuthenticationInfo auth = new UsernamePasswordAuthenticationInfo("foo", "bar");
+    when(connectionInfo.getAuthenticationInfo()).thenReturn(auth);
 
-        when(userToken.get(anyString())).thenReturn(token);
-        when(encryption.encrypt(any(String.class))).thenReturn("{foo}");
+    when(userToken.get(anyString())).thenReturn(token);
+    when(encryption.encrypt(any(String.class))).thenReturn("{foo}");
 
-        customizer = new UserTokenCustomizer(encryption, nexusClient);
-        interpolator = new StringSearchInterpolator(START_EXPR, END_EXPR);
+    customizer = new UserTokenCustomizer(encryption, nexusClient);
+    interpolator = new StringSearchInterpolator(START_EXPR, END_EXPR);
 
-        customizer.customize(nexusClient, interpolator);
-    }
+    customizer.customize(nexusClient, interpolator);
+  }
 
-    private String interpolate(final String expr) throws InterpolationException {
-        return interpolator.interpolate(START_EXPR + expr + END_EXPR);
-    }
+  private String interpolate(final String expr) throws InterpolationException {
+    return interpolator.interpolate(START_EXPR + expr + END_EXPR);
+  }
 
-    // FIXME: Add tests for authticket bits
+  // FIXME: Add tests for authticket bits
 
-    @Test
-    public void interpolate_userToken() throws Exception {
-        String result = interpolate(USER_TOKEN);
-        assertEquals("nc:pc", result);
-        verify(userToken, times(1)).get(anyString());
-    }
+  @Test
+  public void interpolate_userToken() throws Exception {
+    String result = interpolate(USER_TOKEN);
+    assertEquals("nc:pc", result);
+    verify(userToken, times(1)).get(anyString());
+  }
 
-    @Test
-    public void interpolate_userToken_encrypted() throws Exception {
-        String result = interpolate(USER_TOKEN + ENCRYPTED_SUFFIX);
-        assertEquals("{foo}", result);
-        verify(userToken, times(1)).get(anyString());
-        verify(encryption, times(1)).encrypt(any(String.class));
-    }
+  @Test
+  public void interpolate_userToken_encrypted() throws Exception {
+    String result = interpolate(USER_TOKEN + ENCRYPTED_SUFFIX);
+    assertEquals("{foo}", result);
+    verify(userToken, times(1)).get(anyString());
+    verify(encryption, times(1)).encrypt(any(String.class));
+  }
 
-    @Test
-    public void interpolate_userToken_nameCode() throws Exception {
-        String result = interpolate(USER_TOKEN_NAME_CODE);
-        assertEquals("nc", result);
-        verify(userToken, times(1)).get(anyString());
-    }
+  @Test
+  public void interpolate_userToken_nameCode() throws Exception {
+    String result = interpolate(USER_TOKEN_NAME_CODE);
+    assertEquals("nc", result);
+    verify(userToken, times(1)).get(anyString());
+  }
 
-    @Test
-    public void interpolate_userToken_nameCode_encrypted() throws Exception {
-        String result = interpolate(USER_TOKEN_NAME_CODE + ENCRYPTED_SUFFIX);
-        assertEquals("{foo}", result);
-        verify(userToken, times(1)).get(anyString());
-        verify(encryption, times(1)).encrypt(any(String.class));
-    }
+  @Test
+  public void interpolate_userToken_nameCode_encrypted() throws Exception {
+    String result = interpolate(USER_TOKEN_NAME_CODE + ENCRYPTED_SUFFIX);
+    assertEquals("{foo}", result);
+    verify(userToken, times(1)).get(anyString());
+    verify(encryption, times(1)).encrypt(any(String.class));
+  }
 
-    @Test
-    public void interpolate_userToken_passCode() throws Exception {
-        String result = interpolate(USER_TOKEN_PASS_CODE);
-        assertEquals("pc", result);
-        verify(userToken, times(1)).get(anyString());
-    }
+  @Test
+  public void interpolate_userToken_passCode() throws Exception {
+    String result = interpolate(USER_TOKEN_PASS_CODE);
+    assertEquals("pc", result);
+    verify(userToken, times(1)).get(anyString());
+  }
 
-    @Test
-    public void interpolate_userToken_passCode_encrypted() throws Exception {
-        String result = interpolate(USER_TOKEN_PASS_CODE + ENCRYPTED_SUFFIX);
-        assertEquals("{foo}", result);
-        verify(userToken, times(1)).get(anyString());
-        verify(encryption, times(1)).encrypt(any(String.class));
-    }
+  @Test
+  public void interpolate_userToken_passCode_encrypted() throws Exception {
+    String result = interpolate(USER_TOKEN_PASS_CODE + ENCRYPTED_SUFFIX);
+    assertEquals("{foo}", result);
+    verify(userToken, times(1)).get(anyString());
+    verify(encryption, times(1)).encrypt(any(String.class));
+  }
 }

@@ -10,65 +10,63 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
+
 package org.sonatype.nexus.maven.staging.workflow;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.sonatype.nexus.maven.staging.ErrorDumper;
-import org.sonatype.nexus.maven.staging.StagingAction;
-
 import com.sonatype.nexus.staging.client.StagingRuleFailures;
 import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
+import org.sonatype.nexus.maven.staging.ErrorDumper;
+import org.sonatype.nexus.maven.staging.StagingAction;
+
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Mojo;
+
 /**
  * Closes a Nexus staging repository.
- * 
+ *
  * @author cstamas
  * @since 1.0
  */
-@Mojo( name = "close", requiresOnline = true )
+@Mojo(name = "close", requiresOnline = true)
 public class CloseStageRepositoryMojo
     extends AbstractStagingBuildActionMojo
 {
-    @Override
-    public void doExecute( final StagingWorkflowV2Service stagingWorkflow )
-        throws MojoExecutionException, MojoFailureException
-    {
-        final String[] stagingRepositoryIds = getStagingRepositoryIds();
-        try
-        {
-            getLog().info( "Closing staging repository with IDs=" + Arrays.toString( getStagingRepositoryIds() ) );
-            stagingWorkflow.finishStagingRepositories( getDescriptionWithDefaultsForAction( StagingAction.FINISH ),
-                stagingRepositoryIds );
-            getLog().info( "Closed" );
-        }
-        catch ( StagingRuleFailuresException e )
-        {
-            // report staging repository failures
-            ErrorDumper.dumpErrors( getLog(), e );
-
-            // drop the repository (this will break exception chain if there's new failure, like network)
-            if ( !isKeepStagingRepositoryOnCloseRuleFailure() )
-            {
-                final List<String> failedRepositories = new ArrayList<String>();
-                for ( StagingRuleFailures failures : e.getFailures() )
-                {
-                    failedRepositories.add( failures.getRepositoryId() );
-                }
-                final String msg = "Rule failure during close of staging repositories: " + failedRepositories;
-
-                getLog().error( "Cleaning up remote stage repositories after a " + msg );
-                stagingWorkflow.dropStagingRepositories( getDescriptionWithDefaultsForAction( StagingAction.DROP ) + " ("
-                                + msg + ").", stagingRepositoryIds );
-            }
-            // fail the build
-            throw new MojoExecutionException( "Could not perform action: there are failing staging rules!", e );
-        }
+  @Override
+  public void doExecute(final StagingWorkflowV2Service stagingWorkflow)
+      throws MojoExecutionException, MojoFailureException
+  {
+    final String[] stagingRepositoryIds = getStagingRepositoryIds();
+    try {
+      getLog().info("Closing staging repository with IDs=" + Arrays.toString(getStagingRepositoryIds()));
+      stagingWorkflow.finishStagingRepositories(getDescriptionWithDefaultsForAction(StagingAction.FINISH),
+          stagingRepositoryIds);
+      getLog().info("Closed");
     }
+    catch (StagingRuleFailuresException e) {
+      // report staging repository failures
+      ErrorDumper.dumpErrors(getLog(), e);
+
+      // drop the repository (this will break exception chain if there's new failure, like network)
+      if (!isKeepStagingRepositoryOnCloseRuleFailure()) {
+        final List<String> failedRepositories = new ArrayList<String>();
+        for (StagingRuleFailures failures : e.getFailures()) {
+          failedRepositories.add(failures.getRepositoryId());
+        }
+        final String msg = "Rule failure during close of staging repositories: " + failedRepositories;
+
+        getLog().error("Cleaning up remote stage repositories after a " + msg);
+        stagingWorkflow.dropStagingRepositories(getDescriptionWithDefaultsForAction(StagingAction.DROP) + " ("
+            + msg + ").", stagingRepositoryIds);
+      }
+      // fail the build
+      throw new MojoExecutionException("Could not perform action: there are failing staging rules!", e);
+    }
+  }
 }

@@ -10,18 +10,20 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
+
 package org.sonatype.nexus.maven.staging.workflow.rc;
 
 import java.util.Arrays;
 
+import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
+
+import org.sonatype.nexus.maven.staging.StagingAction;
+
+import com.google.common.base.Strings;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.sonatype.nexus.maven.staging.StagingAction;
-
-import com.google.common.base.Strings;
-import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
 /**
  * Promotes a closed Nexus staging repository into a Nexus Build Promotion Profile.
@@ -29,48 +31,45 @@ import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
  * @author cstamas
  * @since 1.0
  */
-@Mojo( name = "rc-promote", requiresProject = false, requiresDirectInvocation = true, requiresOnline = true )
+@Mojo(name = "rc-promote", requiresProject = false, requiresDirectInvocation = true, requiresOnline = true)
 public class RcPromoteToStageProfileMojo
     extends AbstractStagingRcActionMojo
 {
 
-    /**
-     * Specifies the staging build promotion profile ID on remote Nexus where to promotion happens. If not specified,
-     * goal will fail.
-     */
-    @Parameter( property = "buildPromotionProfileId", required = true )
-    private String buildPromotionProfileId;
+  /**
+   * Specifies the staging build promotion profile ID on remote Nexus where to promotion happens. If not specified,
+   * goal will fail.
+   */
+  @Parameter(property = "buildPromotionProfileId", required = true)
+  private String buildPromotionProfileId;
 
-    protected String getBuildPromotionProfileId()
-        throws MojoExecutionException
-    {
-        if ( buildPromotionProfileId == null )
-        {
-            throw new MojoExecutionException(
-                "The staging staging build promotion profile ID to promote to is not defined! (use \"-DbuildPromotionProfileId=foo\" on CLI)" );
-        }
-
-        return buildPromotionProfileId;
+  protected String getBuildPromotionProfileId()
+      throws MojoExecutionException
+  {
+    if (buildPromotionProfileId == null) {
+      throw new MojoExecutionException(
+          "The staging staging build promotion profile ID to promote to is not defined! (use \"-DbuildPromotionProfileId=foo\" on CLI)");
     }
 
-    @Override
-    public void doExecute( final StagingWorkflowV2Service stagingWorkflow )
-        throws MojoExecutionException, MojoFailureException
-    {
-        getLog().info(
-            "RC-Promoting staging repository with IDs=" + Arrays.toString( getStagingRepositoryIds() )
-                + " to build profile ID=\""
-                + getBuildPromotionProfileId() + "\"" );
-        final String promotionGroupId =
-            stagingWorkflow.promoteStagingRepositories( getDescriptionWithDefaultsForAction( StagingAction.PROMOTE ),
-                getBuildPromotionProfileId(), getStagingRepositoryIds() );
-        if ( Strings.isNullOrEmpty( promotionGroupId ) )
-        {
-            getLog().info( "Promoted, but created promotion group ID unknown (needs Nexus Pro version 2.4+)." );
-        }
-        else
-        {
-            getLog().info( "Promoted, created promotion group with ID " + promotionGroupId );
-        }
+    return buildPromotionProfileId;
+  }
+
+  @Override
+  public void doExecute(final StagingWorkflowV2Service stagingWorkflow)
+      throws MojoExecutionException, MojoFailureException
+  {
+    getLog().info(
+        "RC-Promoting staging repository with IDs=" + Arrays.toString(getStagingRepositoryIds())
+            + " to build profile ID=\""
+            + getBuildPromotionProfileId() + "\"");
+    final String promotionGroupId =
+        stagingWorkflow.promoteStagingRepositories(getDescriptionWithDefaultsForAction(StagingAction.PROMOTE),
+            getBuildPromotionProfileId(), getStagingRepositoryIds());
+    if (Strings.isNullOrEmpty(promotionGroupId)) {
+      getLog().info("Promoted, but created promotion group ID unknown (needs Nexus Pro version 2.4+).");
     }
+    else {
+      getLog().info("Promoted, created promotion group with ID " + promotionGroupId);
+    }
+  }
 }

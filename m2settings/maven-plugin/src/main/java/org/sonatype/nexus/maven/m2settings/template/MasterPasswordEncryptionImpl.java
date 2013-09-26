@@ -10,16 +10,18 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
+
 package org.sonatype.nexus.maven.m2settings.template;
 
-import com.google.common.annotations.VisibleForTesting;
-import org.codehaus.plexus.component.annotations.Component;
-import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.plexus.components.cipher.DefaultPlexusCipher;
 import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecUtil;
 import org.sonatype.plexus.components.sec.dispatcher.model.SettingsSecurity;
+
+import com.google.common.annotations.VisibleForTesting;
+import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Requirement;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -28,47 +30,48 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *
  * @since 1.4
  */
-@Component(role=MasterPasswordEncryption.class)
+@Component(role = MasterPasswordEncryption.class)
 public class MasterPasswordEncryptionImpl
     implements MasterPasswordEncryption
 {
-    @Requirement
-    private SecDispatcher dispatcher;
+  @Requirement
+  private SecDispatcher dispatcher;
 
-    // Constructor for Plexus
-    public MasterPasswordEncryptionImpl() {
-        super();
+  // Constructor for Plexus
+  public MasterPasswordEncryptionImpl() {
+    super();
+  }
+
+  @VisibleForTesting
+  public MasterPasswordEncryptionImpl(final SecDispatcher dispatcher) {
+    this.dispatcher = checkNotNull(dispatcher);
+  }
+
+  // NOTE: This is copied from MavenCli as there is no other component which exposes this functionality :-(
+
+  public String encrypt(final String value) throws Exception {
+    String configurationFile = ((DefaultSecDispatcher) dispatcher)
+        .getConfigurationFile(); // HACK: Need the impl not the intf
+
+    if (configurationFile.startsWith("~")) {
+      configurationFile = System.getProperty("user.home") + configurationFile.substring(1);
     }
 
-    @VisibleForTesting
-    public MasterPasswordEncryptionImpl(final SecDispatcher dispatcher) {
-        this.dispatcher = checkNotNull(dispatcher);
+    String file = System.getProperty(DefaultSecDispatcher.SYSTEM_PROPERTY_SEC_LOCATION, configurationFile);
+
+    String master = null;
+
+    SettingsSecurity sec = SecUtil.read(file, true);
+    if (sec != null) {
+      master = sec.getMaster();
     }
 
-    // NOTE: This is copied from MavenCli as there is no other component which exposes this functionality :-(
-
-    public String encrypt(final String value) throws Exception {
-        String configurationFile = ((DefaultSecDispatcher)dispatcher).getConfigurationFile(); // HACK: Need the impl not the intf
-
-        if (configurationFile.startsWith("~")) {
-            configurationFile = System.getProperty("user.home") + configurationFile.substring(1);
-        }
-
-        String file = System.getProperty(DefaultSecDispatcher.SYSTEM_PROPERTY_SEC_LOCATION, configurationFile);
-
-        String master = null;
-
-        SettingsSecurity sec = SecUtil.read(file, true);
-        if (sec != null) {
-            master = sec.getMaster();
-        }
-
-        if (master == null) {
-            throw new IllegalStateException("Master password is not set in the setting security file: " + file);
-        }
-
-        DefaultPlexusCipher cipher = new DefaultPlexusCipher();
-        String masterPasswd = cipher.decryptDecorated(master, DefaultSecDispatcher.SYSTEM_PROPERTY_SEC_LOCATION);
-        return cipher.encryptAndDecorate(value, masterPasswd);
+    if (master == null) {
+      throw new IllegalStateException("Master password is not set in the setting security file: " + file);
     }
+
+    DefaultPlexusCipher cipher = new DefaultPlexusCipher();
+    String masterPasswd = cipher.decryptDecorated(master, DefaultSecDispatcher.SYSTEM_PROPERTY_SEC_LOCATION);
+    return cipher.encryptAndDecorate(value, masterPasswd);
+  }
 }

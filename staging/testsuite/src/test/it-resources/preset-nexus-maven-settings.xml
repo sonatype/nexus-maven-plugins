@@ -27,11 +27,11 @@
   -->
 
   <!--<mirrors>-->
-    <!--<mirror>-->
-      <!--<id>local-nexus</id>-->
-      <!--<mirrorOf>external:*</mirrorOf>-->
-      <!--&lt;!&ndash; Use a fake repository to not run into situations where local repository is not enough&ndash;&gt;-->
-      <!--<url>http://localhost:${nexus.port}/nexus/content/repository/fake</url>-->
-    <!--</mirror>-->
+  <!--<mirror>-->
+  <!--<id>local-nexus</id>-->
+  <!--<mirrorOf>external:*</mirrorOf>-->
+  <!--&lt;!&ndash; Use a fake repository to not run into situations where local repository is not enough&ndash;&gt;-->
+  <!--<url>http://localhost:${nexus.port}/nexus/content/repository/fake</url>-->
+  <!--</mirror>-->
   <!--</mirrors>-->
 </settings>
