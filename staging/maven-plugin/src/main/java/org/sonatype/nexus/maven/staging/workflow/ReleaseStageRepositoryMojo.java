@@ -24,7 +24,6 @@ import org.sonatype.nexus.maven.staging.StagingAction;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
 
 /**
  * Releases a single closed Nexus staging repository into a permanent Nexus repository for general consumption.
@@ -36,14 +35,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 public class ReleaseStageRepositoryMojo
     extends AbstractStagingBuildActionMojo
 {
-  /**
-   * Automatically drop repository after it has been successfully released.
-   *
-   * @since 1.4.3
-   */
-  @Parameter(property = "autoDropAfterRelease", defaultValue = "true")
-  private boolean autoDropAfterRelease;
-
   @Override
   public void doExecute(final StagingWorkflowV2Service stagingWorkflow)
       throws MojoExecutionException, MojoFailureException
@@ -60,7 +51,7 @@ public class ReleaseStageRepositoryMojo
       StagingActionDTO action = new StagingActionDTO();
       action.setDescription(description);
       action.setStagedRepositoryIds(Arrays.asList(getStagingRepositoryIds()));
-      action.setAutoDropAfterRelease(autoDropAfterRelease);
+      action.setAutoDropAfterRelease(isAutoDropAfterRelease());
 
       v3.releaseStagingRepositories(action);
     }

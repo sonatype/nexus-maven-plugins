@@ -34,6 +34,10 @@ public interface StagingParameters
   boolean isKeepStagingRepositoryOnFailure();
 
   boolean isSkipStagingRepositoryClose();
+  
+  boolean isReleaseAfterClose();
+
+  boolean isAutoDropAfterRelease();
 
   String getStagingProfileId();
 

@@ -146,6 +146,22 @@ public abstract class AbstractStagingMojo
   private boolean keepStagingRepositoryOnCloseRuleFailure;
 
   /**
+   * Should a staged (closed) repository automatically be released? Evaluated only if repository (or repositories) has been successfully closed.
+   *
+   * @since 1.5
+   */
+  @Parameter(property = "releaseOnClose", defaultValue = "false")
+  private boolean releaseOnClose;
+
+  /**
+   * Automatically drop repository after any release action has been successfully executed.
+   *
+   * @since 1.5
+   */
+  @Parameter(property = "autoDropAfterRelease", defaultValue = "true")
+  private boolean autoDropAfterRelease;
+
+  /**
    * Set the timeout in minutes for a staging operation.
    *
    * @since 1.5
@@ -194,6 +210,14 @@ public abstract class AbstractStagingMojo
 
   public boolean isKeepStagingRepositoryOnCloseRuleFailure() {
     return keepStagingRepositoryOnCloseRuleFailure;
+  }
+
+  public boolean isReleaseOnClose() {
+    return releaseOnClose;
+  }
+
+  public boolean isAutoDropAfterRelease() {
+    return autoDropAfterRelease;
   }
 
   protected MavenSession getMavenSession() {
