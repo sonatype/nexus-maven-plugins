@@ -38,6 +38,10 @@ public class StagingParametersImpl
 
   private final boolean skipStagingRepositoryClose;
 
+  private final boolean releaseAfterClose;
+  
+  private final boolean autoDropAfterRelease;
+
   private final String stagingProfileId;
 
   private final String stagingRepositoryId;
@@ -58,6 +62,8 @@ public class StagingParametersImpl
                                final boolean keepStagingRepositoryOnCloseRuleFailure,
                                final boolean keepStagingRepositoryOnFailure,
                                final boolean skipStagingRepositoryClose,
+                               final boolean releaseAfterClose,
+                               final boolean autoDropAfterRelease,
                                final String stagingProfileId,
                                final String stagingRepositoryId,
                                final StagingActionMessages stagingActionMessages,
@@ -71,6 +77,8 @@ public class StagingParametersImpl
     this.keepStagingRepositoryOnCloseRuleFailure = keepStagingRepositoryOnCloseRuleFailure;
     this.keepStagingRepositoryOnFailure = keepStagingRepositoryOnFailure;
     this.skipStagingRepositoryClose = skipStagingRepositoryClose;
+    this.releaseAfterClose = releaseAfterClose;
+    this.autoDropAfterRelease = autoDropAfterRelease;
     this.stagingProfileId = stagingProfileId;
     this.stagingRepositoryId = stagingRepositoryId;
     this.stagingActionMessages = checkNotNull(stagingActionMessages, "Staging action messages is null");
@@ -102,6 +110,16 @@ public class StagingParametersImpl
   @Override
   public boolean isSkipStagingRepositoryClose() {
     return skipStagingRepositoryClose;
+  }
+
+  @Override
+  public boolean isReleaseAfterClose() {
+    return releaseAfterClose;
+  }
+
+  @Override
+  public boolean isAutoDropAfterRelease() {
+    return autoDropAfterRelease;
   }
 
   @Override
@@ -143,6 +161,8 @@ public class StagingParametersImpl
         ", keepStagingRepositoryOnCloseRuleFailure=" + keepStagingRepositoryOnCloseRuleFailure +
         ", keepStagingRepositoryOnFailure=" + keepStagingRepositoryOnFailure +
         ", skipStagingRepositoryClose=" + skipStagingRepositoryClose +
+        ", releaseAfterClose=" + releaseAfterClose +
+        ", autoDropAfterRelease=" + autoDropAfterRelease +
         ", stagingProfileId='" + stagingProfileId + '\'' +
         ", stagingRepositoryId='" + stagingRepositoryId + '\'' +
         ", tags=" + tags +
