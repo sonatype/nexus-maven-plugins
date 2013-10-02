@@ -50,6 +50,9 @@ Basically, this mode is 100% same as maven-deploy-plugin works. Remote deploys h
 and the deployment repository is "sourced" in same way, from POMs `distributionManagement` entry (which node is used, 
 depends is the project being built a release or snapshot naturally).
 
+Direct deploy is used when you skip local staging (so to say, the staging functionality altogether), for example by
+using the `-DskipLocalStaging=true` CLI parameter.
+
 This mode is new in version 1.1.
 
 ### Deferred deploy
@@ -65,6 +68,10 @@ maven-deploy-plugin, except that the "window" to hit deploy clashes is way less,
 end (literally last moments) of your build, instead "throughout" the build (where the clash window pretty much equals
 the duration of the build).
 
+As said above, this mode is used when you either deploy snapshots (the project you build and deploy has snapshot version)
+or you skip staging, for example by using the `-DskipStaging=true` CLI parameter. Note: multi project builds where one
+project is release version and other is snapshot might result in unpredictable results and such cases are not supported!
+
 This mode is new in version 1.1.
 
 ### Staging
@@ -76,6 +83,9 @@ that's baseURL is set plugin configuration.
 This mode performs full staging workflow, from repository creation to closing it in case of success or dropping the repository
 in case of (transport or staging rule) failure.
 
+This mode is used when you did not specify any of the parameters mentioned in previous modes, and the project you deploy
+has release version.
+
 For supported staging workflows, refer to [Staging Workflows](nexus-staging-maven-plugin/WORKFLOWS.md) page.
 
 ### Image upload
@@ -85,6 +95,9 @@ in case of (transport or staging rule) failure. But in contrary to all modes abo
 where it is expected that you stage the "exact image" of the source to the staging repository, like some locally deployed
 repository produced by maven-deploy-plugin + altDeploymentRepository switch. Staging happens against a staging directory created 
 on Nexus instance that's baseURL is set plugin configuration.
+
+This mode is used only by it's own special goal, the `deploy-staged-repository`. The "plain" `deploy` goal will never
+use this mode.
 
 This mode is new in version 1.1.
 
@@ -325,6 +338,8 @@ These "flags" are usually passed in from CLI (`-D...`).
 | Skip remote staging (boolean) | `skipRemoteStaging` | `false` | If `true`, performs "local staging" only, and skips the remote deploy. Hence, no stage repository created, no deploy happened.|
 | Skip closing of staging repository (boolean) | `skipStagingRepositoryClose` | `false` | If true, the plugin _will not close_ the staging repository even after a successful staging. It makes you able to continue to deploy to same repository (see `stagingRepositoryId` workflow flag), or simply use the UI to do the same. |
 | Skip use of staging features (boolean) | `skipStaging` | `false` | If `true`, plugin will skip staging features completely, and will operate in "deferred deploy" mode.|
+| Immediately release on successful close operation (boolean) | `releaseOnClose` | `false` | If `true`, plugin will immediately perform a release of staging repository (or repositories) after a successful close Be aware that this flag affects all goals that perform "close" staging action, such as `deploy` (unless `skipStagingRepositoryClose` set), `close` and `rc-close`!|
+| Drop released staging repositories (boolean) | `autoDropAfterRelease` | `true` | If `true`, plugin will instruct Nexus to drop the staging repositories that were successfully released. If `false`, released repositories will be kept on server side, cleanup over UI will be needed.|
 
 ### Tagging staging repositories
 
