@@ -150,8 +150,8 @@ public abstract class AbstractStagingMojo
    *
    * @since 1.5
    */
-  @Parameter(property = "releaseOnClose", defaultValue = "false")
-  private boolean releaseOnClose;
+  @Parameter(property = "autoReleaseAfterClose", defaultValue = "false")
+  private boolean autoReleaseAfterClose;
 
   /**
    * Automatically drop repository after any release action has been successfully executed.
@@ -212,8 +212,8 @@ public abstract class AbstractStagingMojo
     return keepStagingRepositoryOnCloseRuleFailure;
   }
 
-  public boolean isReleaseOnClose() {
-    return releaseOnClose;
+  public boolean isAutoReleaseAfterClose() {
+    return autoReleaseAfterClose;
   }
 
   public boolean isAutoDropAfterRelease() {

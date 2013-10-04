@@ -118,7 +118,7 @@ public abstract class AbstractDeployMojo
             isKeepStagingRepositoryOnCloseRuleFailure(),
             isKeepStagingRepositoryOnFailure(),
             isSkipStagingRepositoryClose(),
-            isReleaseOnClose(),
+            isAutoReleaseAfterClose(),
             isAutoDropAfterRelease(),
             getStagingProfileId(),
             getStagingRepositoryId(),

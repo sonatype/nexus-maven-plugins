@@ -83,7 +83,7 @@ public class ReleaseAfterCloseIT
             "target/test-classes/maven3-multiprofile-project"));
 
     // plain v2 work-flow
-    verifier.addCliOption("-DreleaseOnClose=true");
+    verifier.addCliOption("-DautoReleaseAfterClose=true");
     verifier.addCliOption("-DautoDropAfterRelease=false"); // we do not test auto drop, but is easier assertions
     verifier.executeGoals(Arrays.asList("clean", "deploy"));
     // should not fail
