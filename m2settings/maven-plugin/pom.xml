@@ -175,6 +175,7 @@
                   <include>com.sonatype.nexus.plugins:nexus-m2-settings-template-client</include>
                   <include>com.sonatype.nexus.plugins:nexus-usertoken-model</include>
                   <include>com.sonatype.nexus.plugins:nexus-usertoken-client</include>
+                  <include>org.sonatype.sisu.jacksbee:jacksbee-runtime</include>
                 </includes>
               </artifactSet>
               <relocations>
