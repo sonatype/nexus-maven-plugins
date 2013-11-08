@@ -54,7 +54,7 @@
   </scm>
 
   <properties>
-    <nexus.version>2.7.0-SNAPSHOT</nexus.version>
+    <nexus.version>2.7.0-01</nexus.version>
     <maven.version>3.0.4</maven.version>
 
     <!-- Nexus integration-tests configuration -->
@@ -70,7 +70,6 @@
 
     <!-- reporting section does not inherit report plugin versions, so we use a property to force the version -->
     <maven-plugin-plugin.version>3.2</maven-plugin-plugin.version>
-
   </properties>
 
   <dependencyManagement>
