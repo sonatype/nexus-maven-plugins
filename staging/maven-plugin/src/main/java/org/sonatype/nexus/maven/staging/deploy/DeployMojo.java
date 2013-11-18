@@ -200,7 +200,7 @@ public class DeployMojo
     }
 
     // if local staging skipped, we even can't do remote staging at all (as nothing is staged locally)
-    if (isThisLastProjectWithThisMojoInExecution()) {
+    if (LastProjectWithThisMojoInExecution.YES == isThisLastProjectWithThisMojoInExecution()) {
       if (skipRemoteStaging) {
         getLog().info(
             "Artifacts locally gathered under directory " + getWorkDirectoryRoot().getAbsolutePath()

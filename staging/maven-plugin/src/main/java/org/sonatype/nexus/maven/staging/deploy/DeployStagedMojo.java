@@ -40,7 +40,8 @@ public class DeployStagedMojo
   {
     failIfOffline();
 
-    if (isThisLastProjectWithThisMojoInExecution()) {
+    final LastProjectWithThisMojoInExecution lastProjectWithThisMojoInExecution = isThisLastProjectWithThisMojoInExecution();
+    if (LastProjectWithThisMojoInExecution.YES == lastProjectWithThisMojoInExecution) {
       try {
         final DeployStrategy deployStrategy;
         if (getMavenSession().getCurrentProject().getArtifact().isSnapshot()) {
@@ -59,7 +60,7 @@ public class DeployStagedMojo
         throw new MojoExecutionException(e.getMessage(), e);
       }
     }
-    else {
+    else if (LastProjectWithThisMojoInExecution.NO == lastProjectWithThisMojoInExecution) {
       getLog().info("Execution skipped to the last project...");
     }
   }

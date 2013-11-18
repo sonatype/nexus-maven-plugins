@@ -146,7 +146,8 @@ public abstract class AbstractStagingMojo
   private boolean keepStagingRepositoryOnCloseRuleFailure;
 
   /**
-   * Should a staged (closed) repository automatically be released? Evaluated only if repository (or repositories) has been successfully closed.
+   * Should a staged (closed) repository automatically be released? Evaluated only if repository (or repositories) has
+   * been successfully closed.
    *
    * @since 1.5
    */
@@ -274,6 +275,15 @@ public abstract class AbstractStagingMojo
   }
 
   /**
+   * Enum with failures about "last project with this mojo" queries. Is tri-state to handle cases like
+   * Maven execution with {@code -fae} switch, where the Mojo get's invoked but a presence of a previous
+   * build problem might be detected.
+   */
+  public static enum LastProjectWithThisMojoInExecution {
+    NO, YES, YES_WITH_FAILURES;
+  }
+
+  /**
    * In case of "ordinary" (reactor) build, it returns {@code true} if the current project is the last one being
    * executed in this build that has this Mojo defined. In case of direct invocation of this Mojo over CLI, it
    * returns
@@ -281,13 +291,26 @@ public abstract class AbstractStagingMojo
    *
    * @return true if last project is being built.
    */
-  protected boolean isThisLastProjectWithThisMojoInExecution() {
+  protected LastProjectWithThisMojoInExecution isThisLastProjectWithThisMojoInExecution() {
+    boolean result;
     if ("default-cli".equals(mojoExecution.getExecutionId())) {
-      return MojoExecution.isCurrentTheLastProjectInExecution(mavenSession);
+      result = MojoExecution.isCurrentTheLastProjectInExecution(mavenSession);
     }
     else {
       // method mojoExecution.getGoal() is added in maven3!
-      return isThisLastProjectWithMojoInExecution(mojoExecution.getMojoDescriptor().getGoal());
+      result = isThisLastProjectWithMojoInExecution(mojoExecution.getMojoDescriptor().getGoal());
+    }
+    if (result) {
+      if (getMavenSession().getResult().hasExceptions()) {
+        getLog().warn("Not executing step due to existing build failures.");
+        return LastProjectWithThisMojoInExecution.YES_WITH_FAILURES;
+      }
+      else {
+        return LastProjectWithThisMojoInExecution.YES;
+      }
+    }
+    else {
+      return LastProjectWithThisMojoInExecution.NO;
     }
   }
 

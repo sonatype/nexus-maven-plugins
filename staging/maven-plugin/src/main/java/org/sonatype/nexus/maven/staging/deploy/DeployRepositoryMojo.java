@@ -81,7 +81,7 @@ public class DeployRepositoryMojo
           "Stage profile ID is not set, use \"-DstagingProfileId=XXXX\" on CLI to set it.");
     }
 
-    if (isThisLastProjectWithThisMojoInExecution()) {
+    if (LastProjectWithThisMojoInExecution.YES == isThisLastProjectWithThisMojoInExecution()) {
       try {
         final DeployStrategy deployStrategy = getDeployStrategy(Strategies.IMAGE);
         final Parameters parameters = buildParameters(deployStrategy);
