@@ -54,7 +54,7 @@
   </scm>
 
   <properties>
-    <nexus.version>2.7.0-02</nexus.version>
+    <nexus.version>2.8.0-SNAPSHOT</nexus.version>
     <maven.version>3.0.4</maven.version>
 
     <!-- Nexus integration-tests configuration -->
