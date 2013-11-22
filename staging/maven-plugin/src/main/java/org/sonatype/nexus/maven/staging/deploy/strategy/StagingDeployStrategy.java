@@ -124,7 +124,7 @@ public class StagingDeployStrategy
         final Profile stagingProfile = getRemoting().getStagingWorkflowV2Service().selectProfile(profileId);
         final StagingRepository stagingRepository = beforeUpload(parameters, stagingProfile);
         zappedStagingRepositories.add(stagingRepository);
-        getLogger().info(" * Uploading locally staged artifacts to profile " + stagingProfile.getName());
+        getLogger().info(" * Uploading locally staged artifacts to profile " + stagingProfile.name());
         deployUp(request.getMavenSession(),
             getStagingDirectory(request.getParameters().getStagingDirectoryRoot(), profileId),
             getDeploymentArtifactRepositoryForNexusStagingRepository(stagingRepository));
