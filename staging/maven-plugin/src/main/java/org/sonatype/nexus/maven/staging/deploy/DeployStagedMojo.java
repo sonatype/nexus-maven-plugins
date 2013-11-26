@@ -40,8 +40,7 @@ public class DeployStagedMojo
   {
     failIfOffline();
 
-    final LastProjectWithThisMojoInExecution lastProjectWithThisMojoInExecution = isThisLastProjectWithThisMojoInExecution();
-    if (LastProjectWithThisMojoInExecution.YES == lastProjectWithThisMojoInExecution) {
+    if (isThisLastProjectWithThisMojoInExecution()) {
       try {
         final DeployStrategy deployStrategy;
         if (getMavenSession().getCurrentProject().getArtifact().isSnapshot()) {
@@ -59,9 +58,6 @@ public class DeployStagedMojo
       catch (ArtifactDeploymentException e) {
         throw new MojoExecutionException(e.getMessage(), e);
       }
-    }
-    else if (LastProjectWithThisMojoInExecution.NO == lastProjectWithThisMojoInExecution) {
-      getLog().info("Execution skipped to the last project...");
     }
   }
 }

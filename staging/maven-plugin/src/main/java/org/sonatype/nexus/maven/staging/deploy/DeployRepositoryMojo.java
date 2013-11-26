@@ -81,7 +81,7 @@ public class DeployRepositoryMojo
           "Stage profile ID is not set, use \"-DstagingProfileId=XXXX\" on CLI to set it.");
     }
 
-    if (LastProjectWithThisMojoInExecution.YES == isThisLastProjectWithThisMojoInExecution()) {
+    if (isThisLastProjectWithThisMojoInExecution()) {
       try {
         final DeployStrategy deployStrategy = getDeployStrategy(Strategies.IMAGE);
         final Parameters parameters = buildParameters(deployStrategy);
@@ -92,9 +92,6 @@ public class DeployRepositoryMojo
       catch (ArtifactDeploymentException e) {
         throw new MojoExecutionException(e.getMessage(), e);
       }
-    }
-    else {
-      getLog().info("Execution skipped to the last project...");
     }
   }
 

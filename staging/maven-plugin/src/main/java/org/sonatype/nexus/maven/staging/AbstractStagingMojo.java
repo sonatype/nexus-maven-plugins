@@ -178,6 +178,20 @@ public abstract class AbstractStagingMojo
   @Parameter(property = "stagingProgressPauseDurationSeconds", defaultValue = "3")
   private int stagingProgressPauseDurationSeconds = 3;
 
+  /**
+   * Parameter controlling the build failure detection of this Mojo. If {@code true} (default), the Mojo will not perform
+   * any remote staging/deploy related activity, if Maven was invoked with {@code -fae} "fail at end" fail strategy
+   * and there are failures detected in Maven execution. To override {@code false} value should be specified, and
+   * that will make this Mojo behave as maven-deploy-plugin behaves, and remote staging/deploy activity will be
+   * performed, even if there was failure in the build. Note: this parameter mainly applies to Maven invocations
+   * having "fail at end" flag set, as in other cases "fail fast" is the strategy applied by Maven, and this Mojo
+   * will not even get invoked, as the build will fail fast.
+   *
+   * @since 1.5.2
+   */
+  @Parameter(property = "detectBuildFailures", defaultValue = "true")
+  private boolean detectBuildFailures;
+
   // == getters for stuff above
 
   protected String getNexusUrl() {
@@ -275,54 +289,37 @@ public abstract class AbstractStagingMojo
   }
 
   /**
-   * Enum with failures about "last project with this mojo" queries. Is tri-state to handle cases like
-   * Maven execution with {@code -fae} switch, where the Mojo get's invoked but a presence of a previous
-   * build problem might be detected.
-   */
-  public static enum LastProjectWithThisMojoInExecution {
-    NO, YES, YES_WITH_FAILURES;
-  }
-
-  /**
    * In case of "ordinary" (reactor) build, it returns {@code true} if the current project is the last one being
    * executed in this build that has this Mojo defined. In case of direct invocation of this Mojo over CLI, it
-   * returns
-   * {@code true} if the current project is the last one being executed in this build.
+   * returns {@code true} if the current project is the last one being executed in this build. Also, what this method
+   * returns depends on user parametrization, how this Mojo should behave when Maven is run with {@code -fae} "fail
+   * at end" switch and there are failures happened previously in build.
    *
    * @return true if last project is being built.
    */
-  protected LastProjectWithThisMojoInExecution isThisLastProjectWithThisMojoInExecution() {
+  protected boolean isThisLastProjectWithThisMojoInExecution() {
     boolean result;
     if ("default-cli".equals(mojoExecution.getExecutionId())) {
       result = MojoExecution.isCurrentTheLastProjectInExecution(mavenSession);
     }
     else {
       // method mojoExecution.getGoal() is added in maven3!
-      result = isThisLastProjectWithMojoInExecution(mojoExecution.getMojoDescriptor().getGoal());
+      result = MojoExecution.isCurrentTheLastProjectWithMojoInExecution(mavenSession, pluginGroupId, pluginArtifactId,
+          mojoExecution.getMojoDescriptor().getGoal());
     }
     if (result) {
-      if (getMavenSession().getResult().hasExceptions()) {
+      if (detectBuildFailures && getMavenSession().getResult().hasExceptions()) {
         getLog().warn("Not executing step due to existing build failures.");
-        return LastProjectWithThisMojoInExecution.YES_WITH_FAILURES;
+        return false;
       }
       else {
-        return LastProjectWithThisMojoInExecution.YES;
+        return true;
       }
     }
     else {
-      return LastProjectWithThisMojoInExecution.NO;
+      getLog().info("Execution skipped to the last project...");
+      return false;
     }
-  }
-
-  /**
-   * Returns true if the current project is the last one being executed in this build that has passed in goal
-   * execution defined.
-   *
-   * @return true if last project is being built.
-   */
-  protected boolean isThisLastProjectWithMojoInExecution(final String goal) {
-    return MojoExecution.isCurrentTheLastProjectWithMojoInExecution(mavenSession, pluginGroupId, pluginArtifactId,
-        goal);
   }
 
   /**
