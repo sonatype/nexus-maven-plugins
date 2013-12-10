@@ -257,7 +257,7 @@ public class DownloadMojo
 
     // configure client w/m2settings and usertoken support, but allow to connect to Nexus Pro 2.3+ only
     NexusClientFactory factory = new JerseyNexusClientFactory(
-        LogicalConditions.and(VersionConditions.any23AndLaterVersion(), EditionConditions.anyProEdition()),
+        LogicalConditions.and(VersionConditions.any27AndLaterVersion(), EditionConditions.anyProEdition()),
         new JerseyTemplatesSubsystemFactory(),
         new JerseyUserTokenSubsystemFactory()
     );
