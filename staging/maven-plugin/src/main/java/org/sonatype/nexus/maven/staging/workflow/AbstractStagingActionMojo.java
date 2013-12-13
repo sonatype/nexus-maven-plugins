@@ -172,7 +172,8 @@ public abstract class AbstractStagingActionMojo
           proxyInfos.put(zProxy.getProxyProtocol(), zProxy);
         }
 
-        final ConnectionInfo connectionInfo = new ConnectionInfo(baseUrl, authenticationInfo, proxyInfos);
+        final ConnectionInfo connectionInfo = new ConnectionInfo(baseUrl, authenticationInfo, proxyInfos,
+            isSslInsecure(), isSslAllowAll());
 
         this.nexusClient =
             new JerseyNexusClientFactory(

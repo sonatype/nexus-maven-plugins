@@ -186,6 +186,22 @@ public class DownloadMojo
   @Parameter(property = "proxy.password")
   private String proxyPassword;
 
+  /**
+   * SSL certificate check should allow self signed certificates?
+   *
+   * @since 1.6.0
+   */
+  @Parameter(property = "maven.wagon.http.ssl.insecure", defaultValue = "false")
+  private boolean sslInsecure;
+
+  /**
+   * SSL certificate X509 hostname check should be relaxed?
+   *
+   * @since 1.6.0
+   */
+  @Parameter(property = "maven.wagon.http.ssl.allowall", defaultValue = "false")
+  private boolean sslAllowAll;
+
   private NexusClient nexusClient;
 
   @Override
@@ -314,7 +330,8 @@ public class DownloadMojo
       proxies.put(protocol, proxy);
     }
 
-    return factory.createFor(new ConnectionInfo(baseUrl, auth, proxies));
+    final ConnectionInfo connectionInfo = new ConnectionInfo(baseUrl, auth, proxies, sslInsecure, sslAllowAll);
+    return factory.createFor(connectionInfo);
   }
 
   /**
