@@ -178,7 +178,7 @@ public abstract class AbstractStagingMojo
   private int stagingProgressPauseDurationSeconds = 3;
 
   /**
-   * SSL certificate check should allow self signed certificates?
+   * Is SSL certificate check validation relaxed? If {@code true}, self signed certificates will be accepted too.
    *
    * @since 1.6.0
    */
@@ -186,7 +186,7 @@ public abstract class AbstractStagingMojo
   private boolean sslInsecure;
 
   /**
-   * SSL certificate X509 hostname check should be relaxed?
+   * Is SSL certificate X509 hostname validation disabled? If {@code true}, any hostname will be accepted.
    *
    * @since 1.6.0
    */

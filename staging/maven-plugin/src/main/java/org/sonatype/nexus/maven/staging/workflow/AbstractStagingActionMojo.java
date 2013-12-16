@@ -28,6 +28,7 @@ import org.sonatype.nexus.client.core.NexusClient;
 import org.sonatype.nexus.client.core.exception.NexusClientErrorResponseException;
 import org.sonatype.nexus.client.rest.BaseUrl;
 import org.sonatype.nexus.client.rest.ConnectionInfo;
+import org.sonatype.nexus.client.rest.ConnectionInfo.ValidationLevel;
 import org.sonatype.nexus.client.rest.Protocol;
 import org.sonatype.nexus.client.rest.ProxyInfo;
 import org.sonatype.nexus.client.rest.UsernamePasswordAuthenticationInfo;
@@ -172,8 +173,10 @@ public abstract class AbstractStagingActionMojo
           proxyInfos.put(zProxy.getProxyProtocol(), zProxy);
         }
 
+        final ValidationLevel sslCertificateValidationLevel = isSslInsecure() ? ValidationLevel.LAX : ValidationLevel.STRICT;
+        final ValidationLevel sslCertificateHostnameValidationLevel = isSslAllowAll() ? ValidationLevel.NONE : ValidationLevel.LAX;
         final ConnectionInfo connectionInfo = new ConnectionInfo(baseUrl, authenticationInfo, proxyInfos,
-            isSslInsecure(), isSslAllowAll());
+            sslCertificateValidationLevel, sslCertificateHostnameValidationLevel);
 
         this.nexusClient =
             new JerseyNexusClientFactory(

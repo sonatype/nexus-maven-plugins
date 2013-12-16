@@ -26,6 +26,7 @@ import org.sonatype.maven.mojo.settings.MavenSettings;
 import org.sonatype.nexus.client.core.NexusClient;
 import org.sonatype.nexus.client.rest.BaseUrl;
 import org.sonatype.nexus.client.rest.ConnectionInfo;
+import org.sonatype.nexus.client.rest.ConnectionInfo.ValidationLevel;
 import org.sonatype.nexus.client.rest.Protocol;
 import org.sonatype.nexus.client.rest.ProxyInfo;
 import org.sonatype.nexus.client.rest.UsernamePasswordAuthenticationInfo;
@@ -205,8 +206,10 @@ public class RemotingImpl
         proxyInfos.put(zProxy.getProxyProtocol(), zProxy);
       }
 
+      final ValidationLevel sslCertificateValidationLevel = parameters.isSslInsecure() ? ValidationLevel.LAX : ValidationLevel.STRICT;
+      final ValidationLevel sslCertificateHostnameValidationLevel = parameters.isSslAllowAll() ? ValidationLevel.NONE : ValidationLevel.LAX;
       final ConnectionInfo connectionInfo = new ConnectionInfo(baseUrl, authenticationInfo, proxyInfos,
-          parameters.isSslInsecure(), parameters.isSslAllowAll());
+          sslCertificateValidationLevel, sslCertificateHostnameValidationLevel);
       this.nexusClient = new JerseyNexusClientFactory(
           // support v2 and v3
           new JerseyStagingWorkflowV2SubsystemFactory(),
