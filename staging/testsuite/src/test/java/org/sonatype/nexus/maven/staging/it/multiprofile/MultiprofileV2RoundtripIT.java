@@ -18,27 +18,17 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.inject.Inject;
-
 import com.sonatype.nexus.staging.client.StagingRepository;
 import com.sonatype.nexus.staging.client.StagingRepository.State;
 
-import org.sonatype.nexus.bundle.launcher.NexusBundleConfiguration;
 import org.sonatype.nexus.maven.staging.it.PreparedVerifier;
-import org.sonatype.nexus.maven.staging.it.StagingMavenPluginITSupport;
-import org.sonatype.nexus.testsuite.support.NexusStartAndStopStrategy;
-import org.sonatype.sisu.filetasks.FileTaskBuilder;
 
 import junit.framework.Assert;
 import org.apache.maven.it.VerificationException;
 import org.junit.Test;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-import static org.sonatype.nexus.testsuite.support.NexusStartAndStopStrategy.Strategy.EACH_METHOD;
-import static org.sonatype.sisu.filetasks.builder.FileRef.file;
-import static org.sonatype.sisu.filetasks.builder.FileRef.path;
 
 /**
  * IT that "implements" the Staging V2 testing guide's "multi profile" scenario followed by the "release" Post Staging
@@ -47,29 +37,11 @@ import static org.sonatype.sisu.filetasks.builder.FileRef.path;
  * @author cstamas
  * @see https://docs.sonatype.com/display/Nexus/Staging+V2+Testing
  */
-@NexusStartAndStopStrategy(EACH_METHOD)
 public class MultiprofileV2RoundtripIT
-    extends StagingMavenPluginITSupport
+    extends MultiprofileITSupport
 {
-  @Inject
-  private FileTaskBuilder fileTaskBuilder;
-
   public MultiprofileV2RoundtripIT(final String nexusBundleCoordinates) {
     super(nexusBundleCoordinates);
-  }
-
-  @Override
-  protected NexusBundleConfiguration configureNexus(final NexusBundleConfiguration configuration) {
-    // TODO: (cstamas) I promised to Alin to change this "old way of doing things" to use of REST API that would
-    // configure Nexus properly once the Security and Staging Management Nexus Client subsystems are done.
-    return super.configureNexus(configuration).addOverlays(
-        fileTaskBuilder.copy().directory(file(testData().resolveFile("preset-nexus"))).to().directory(
-            path("sonatype-work/nexus/conf")));
-  }
-
-  @Override
-  protected List<String> getMavenVersions() {
-    return Arrays.asList(M3_VERSION);
   }
 
   /**

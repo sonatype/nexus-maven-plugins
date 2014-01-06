@@ -18,31 +18,34 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import com.sonatype.nexus.staging.client.StagingRepository;
 
+import org.sonatype.nexus.bundle.launcher.NexusBundleConfiguration;
 import org.sonatype.nexus.maven.staging.it.PreparedVerifier;
+import org.sonatype.nexus.maven.staging.it.StagingMavenPluginITSupport;
 import org.sonatype.nexus.testsuite.support.NexusStartAndStopStrategy;
+import org.sonatype.sisu.filetasks.FileTaskBuilder;
 
 import junit.framework.Assert;
 import org.apache.maven.it.VerificationException;
 import org.junit.Test;
 
 import static org.sonatype.nexus.testsuite.support.NexusStartAndStopStrategy.Strategy.EACH_METHOD;
+import static org.sonatype.sisu.filetasks.builder.FileRef.file;
+import static org.sonatype.sisu.filetasks.builder.FileRef.path;
 
 /**
- * IT that Verifies multi profile build, where a subsequent staged repository close operation fails. In these cases -
- * set of staging repositories coming from ONE REACTOR - if build fails due to rule failure, all created staging
- * repositories should be dropped by same guidelines we drop the one repository that failed:
- * "user will start another build, and new ones will be created", but the ones not dropped will remain dangling.
- * Failure is achieved by activating a profile, that makes 2nd module produce an invalid build (lacking javadoc).
- *
- * @author cstamas
- * @see https://docs.sonatype.com/display/Nexus/Staging+V2+Testing
+ * IT that Verifies multi module build along with CLI "-fae" switch, and asserts that staging plugin
+ * does sense and detects previously happened build errors (as due to "fae" it will be invoked even
+ * after a failure). Failure is achieved by activating a profile, that makes 2nd module produce an invalid build
+ * (lacking javadoc).
  */
-public class MultiprofileFailureV2RoundtripIT
+public class MultiprofileFailureWithFailAtEndV2RoundtripIT
     extends MultiprofileITSupport
 {
-  public MultiprofileFailureV2RoundtripIT(final String nexusBundleCoordinates) {
+  public MultiprofileFailureWithFailAtEndV2RoundtripIT(final String nexusBundleCoordinates) {
     super(nexusBundleCoordinates);
   }
 
@@ -59,8 +62,10 @@ public class MultiprofileFailureV2RoundtripIT
             "target/test-classes/maven3-multiprofile-project"));
 
     try {
+      // add FAE
+      verifier.addCliOption("-fae");
       // skip javadoc, we want failing build but in m2
-      verifier.addCliOption("-Pskip-javadoc");
+      verifier.addCliOption("-Pmake-build-break");
       // v2 workflow
       verifier.executeGoals(Arrays.asList("clean", "deploy"));
       // should fail
@@ -69,52 +74,11 @@ public class MultiprofileFailureV2RoundtripIT
       Assert.fail("We should not get here, close at the end of deploy should fail!");
     }
     catch (VerificationException e) {
-      // good
+      // good, now verify did we detect the breakage at all?
+      verifier.verifyTextInLog("Not executing step due to existing build failures");
     }
 
-    // perform some checks
-    {
-      final List<StagingRepository> stagingRepositories = getAllStagingRepositories();
-      if (!stagingRepositories.isEmpty()) {
-        Assert.fail("Nexus should have 0 staging repositories, but it has: " + stagingRepositories);
-      }
-    }
-  }
-
-  /**
-   * Using "close" build action.
-   */
-  @Test
-  public void roundtripWithM3MultiprofileProjectUsingM3BuildActionClose()
-      throws VerificationException, IOException
-  {
-    final PreparedVerifier verifier =
-        createMavenVerifier(getClass().getSimpleName()
-            + "_roundtripWithM3MultiprofileProjectUsingM3BuildActionClose", M3_VERSION,
-            testData().resolveFile("preset-nexus-maven-settings.xml"), new File(getBasedir(),
-            "target/test-classes/maven3-multiprofile-project"));
-
-    try {
-      // skip javadoc, we want failing build but in m2
-      verifier.addCliOption("-Pskip-javadoc");
-      // we want to test the "close" build action here
-      verifier.addCliOption("-DskipStagingRepositoryClose=true");
-      // v2 workflow
-      verifier.executeGoals(Arrays.asList("clean", "deploy"));
-      // should not fail
-      verifier.verifyErrorFreeLog();
-      // build action: close, will fail
-      verifier.executeGoals(Arrays.asList("nexus-staging:close"));
-      // should fail
-      verifier.verifyErrorFreeLog();
-      // foolproof the failure
-      Assert.fail("We should not get here, close at the end of deploy should fail!");
-    }
-    catch (VerificationException e) {
-      // good
-    }
-
-    // perform some checks
+    // perform some checks, no remote staging should happen
     {
       final List<StagingRepository> stagingRepositories = getAllStagingRepositories();
       if (!stagingRepositories.isEmpty()) {
