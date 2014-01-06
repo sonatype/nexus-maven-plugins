@@ -308,11 +308,18 @@ public abstract class AbstractStagingMojo
           mojoExecution.getMojoDescriptor().getGoal());
     }
     if (result) {
-      if (detectBuildFailures && getMavenSession().getResult().hasExceptions()) {
-        getLog().warn("Not executing step due to existing build failures.");
-        return false;
+      try {
+        if (detectBuildFailures && getMavenSession().getResult().hasExceptions()) {
+          getLog().warn("Not executing step due to existing build failures.");
+          return false;
+        }
+        else {
+          return true;
+        }
       }
-      else {
+      catch (NoSuchMethodError e) {
+        // This is Maven2.x then, which does not expose MavenExecutionResult over API
+        getLog().info("Unable to detect any previous failures with Maven2, continuing...");
         return true;
       }
     }
