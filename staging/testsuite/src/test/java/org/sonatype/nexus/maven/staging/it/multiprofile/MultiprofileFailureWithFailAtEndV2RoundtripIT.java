@@ -53,7 +53,7 @@ public class MultiprofileFailureWithFailAtEndV2RoundtripIT
    * Using "deploy".
    */
   @Test
-  public void roundtripWithM3MultiprofileProjectUsingM3Deploy()
+  public void roundtripWithM3AndFae()
       throws VerificationException, IOException
   {
     final PreparedVerifier verifier =
