@@ -302,7 +302,7 @@ public abstract class StagingMavenPluginITSupport
     final List<Profile> profiles = stagingWorkflow.listProfiles();
     for (Profile profile : profiles) {
       final List<StagingRepository> stagingRepositories =
-          stagingWorkflow.listStagingRepositories(profile.getId());
+          stagingWorkflow.listStagingRepositories(profile.id());
       result.addAll(stagingRepositories);
     }
     return result;
@@ -313,7 +313,7 @@ public abstract class StagingMavenPluginITSupport
    */
   protected List<StagingRepository> getProfileStagingRepositories(final Profile profile) {
     List<StagingRepository> stagingRepositories =
-        getStagingWorkflowV2Service().listStagingRepositories(profile.getId());
+        getStagingWorkflowV2Service().listStagingRepositories(profile.id());
     return stagingRepositories;
   }
 

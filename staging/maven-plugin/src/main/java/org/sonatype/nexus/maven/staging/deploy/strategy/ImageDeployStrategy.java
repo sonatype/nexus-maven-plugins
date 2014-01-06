@@ -84,7 +84,7 @@ public class ImageDeployStrategy
     final Profile stagingProfile = getRemoting().getStagingWorkflowV2Service().selectProfile(profileId);
     final StagingRepository stagingRepository = beforeUpload(parameters, stagingProfile);
     try {
-      getLogger().info(" * Uploading locally staged artifacts to profile " + stagingProfile.getName());
+      getLogger().info(" * Uploading locally staged artifacts to profile " + stagingProfile.name());
       zapUp(request.getParameters().getStagingDirectoryRoot(), stagingRepository.getUrl());
       getLogger().info(" * Upload of locally staged artifacts finished.");
       afterUpload(parameters, stagingRepository);
