@@ -187,10 +187,26 @@ public abstract class AbstractStagingMojo
    * having "fail at end" flag set, as in other cases "fail fast" is the strategy applied by Maven, and this Mojo
    * will not even get invoked, as the build will fail fast.
    *
-   * @since 1.5.2
+   * @since 1.6.0
    */
   @Parameter(property = "detectBuildFailures", defaultValue = "true")
   private boolean detectBuildFailures;
+
+  /**
+   * Is SSL certificate check validation relaxed? If {@code true}, self signed certificates will be accepted too.
+   *
+   * @since 1.6.0
+   */
+  @Parameter(property = "maven.wagon.http.ssl.insecure", defaultValue = "false")
+  private boolean sslInsecure;
+
+  /**
+   * Is SSL certificate X509 hostname validation disabled? If {@code true}, any hostname will be accepted.
+   *
+   * @since 1.6.0
+   */
+  @Parameter(property = "maven.wagon.http.ssl.allowall", defaultValue = "false")
+  private boolean sslAllowAll;
 
   // == getters for stuff above
 
@@ -264,6 +280,10 @@ public abstract class AbstractStagingMojo
   protected int getStagingProgressPauseDurationSeconds() {
     return stagingProgressPauseDurationSeconds;
   }
+
+  protected boolean isSslInsecure() { return sslInsecure; }
+
+  protected boolean isSslAllowAll() { return sslAllowAll; }
 
   // == common methods
 

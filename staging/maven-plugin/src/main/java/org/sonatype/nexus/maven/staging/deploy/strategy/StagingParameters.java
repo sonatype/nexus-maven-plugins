@@ -56,4 +56,14 @@ public interface StagingParameters
    * @since 1.5
    */
   int getStagingProgressPauseDurationSeconds();
+
+  /**
+   * @since 1.6.0
+   */
+  boolean isSslInsecure();
+
+  /**
+   * @since 1.6.0
+   */
+  boolean isSslAllowAll();
 }

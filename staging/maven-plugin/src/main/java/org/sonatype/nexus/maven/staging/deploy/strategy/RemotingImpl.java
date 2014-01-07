@@ -26,6 +26,7 @@ import org.sonatype.maven.mojo.settings.MavenSettings;
 import org.sonatype.nexus.client.core.NexusClient;
 import org.sonatype.nexus.client.rest.BaseUrl;
 import org.sonatype.nexus.client.rest.ConnectionInfo;
+import org.sonatype.nexus.client.rest.ConnectionInfo.ValidationLevel;
 import org.sonatype.nexus.client.rest.Protocol;
 import org.sonatype.nexus.client.rest.ProxyInfo;
 import org.sonatype.nexus.client.rest.UsernamePasswordAuthenticationInfo;
@@ -67,22 +68,10 @@ public class RemotingImpl
     this.mavenSession = Preconditions.checkNotNull(mavenSession);
     this.parameters = Preconditions.checkNotNull(parameters);
     this.secDispatcher = Preconditions.checkNotNull(secDispatcher);
-    init(getMavenSession(), getParameters());
+    init();
   }
 
-  protected MavenSession getMavenSession() {
-    return mavenSession;
-  }
-
-  protected StagingParameters getParameters() {
-    return parameters;
-  }
-
-  protected SecDispatcher getSecDispatcher() {
-    return secDispatcher;
-  }
-
-  protected void init(MavenSession mavenSession, StagingParameters parameters)
+  protected void init()
       throws MojoExecutionException
   {
     String nexusUrl = parameters.getNexusUrl();
@@ -94,9 +83,9 @@ public class RemotingImpl
     try {
       if (!Strings.isNullOrEmpty(parameters.getServerId())) {
         final Server server =
-            MavenSettings.selectServer(getMavenSession().getSettings(), parameters.getServerId());
+            MavenSettings.selectServer(mavenSession.getSettings(), parameters.getServerId());
         if (server != null) {
-          this.server = MavenSettings.decrypt(getSecDispatcher(), server);
+          this.server = MavenSettings.decrypt(secDispatcher, server);
         }
         else {
           throw new MojoExecutionException("Server credentials with ID \"" + parameters.getServerId()
@@ -108,9 +97,9 @@ public class RemotingImpl
             "Server credentials to use in transport are not defined! (use \"-DserverId=someServerId\" on CLI or configure it in POM)");
       }
 
-      final Proxy proxy = MavenSettings.selectProxy(getMavenSession().getSettings(), nexusUrl);
+      final Proxy proxy = MavenSettings.selectProxy(mavenSession.getSettings(), nexusUrl);
       if (proxy != null) {
-        this.proxy = MavenSettings.decrypt(getSecDispatcher(), proxy);
+        this.proxy = MavenSettings.decrypt(secDispatcher, proxy);
       }
     }
     catch (SecDispatcherException e) {
@@ -188,7 +177,7 @@ public class RemotingImpl
   protected void createNexusClient()
       throws MojoExecutionException
   {
-    String nexusUrl = getParameters().getNexusUrl();
+    String nexusUrl = parameters.getNexusUrl();
     try {
       final BaseUrl baseUrl = BaseUrl.baseUrlFrom(nexusUrl);
       final UsernamePasswordAuthenticationInfo authenticationInfo;
@@ -217,7 +206,10 @@ public class RemotingImpl
         proxyInfos.put(zProxy.getProxyProtocol(), zProxy);
       }
 
-      final ConnectionInfo connectionInfo = new ConnectionInfo(baseUrl, authenticationInfo, proxyInfos);
+      final ValidationLevel sslCertificateValidationLevel = parameters.isSslInsecure() ? ValidationLevel.LAX : ValidationLevel.STRICT;
+      final ValidationLevel sslCertificateHostnameValidationLevel = parameters.isSslAllowAll() ? ValidationLevel.NONE : ValidationLevel.LAX;
+      final ConnectionInfo connectionInfo = new ConnectionInfo(baseUrl, authenticationInfo, proxyInfos,
+          sslCertificateValidationLevel, sslCertificateHostnameValidationLevel);
       this.nexusClient = new JerseyNexusClientFactory(
           // support v2 and v3
           new JerseyStagingWorkflowV2SubsystemFactory(),

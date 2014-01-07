@@ -125,7 +125,9 @@ public abstract class AbstractDeployMojo
             getStagingActionMessages(),
             getTags(),
             getStagingProgressTimeoutMinutes(),
-            getStagingProgressPauseDurationSeconds()
+            getStagingProgressPauseDurationSeconds(),
+            isSslInsecure(),
+            isSslAllowAll()
         );
 
         getLog().debug(parameters.toString());
