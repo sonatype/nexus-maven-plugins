@@ -177,6 +177,22 @@ public abstract class AbstractStagingMojo
   @Parameter(property = "stagingProgressPauseDurationSeconds", defaultValue = "3")
   private int stagingProgressPauseDurationSeconds = 3;
 
+  /**
+   * Is SSL certificate check validation relaxed? If {@code true}, self signed certificates will be accepted too.
+   *
+   * @since 1.6.0
+   */
+  @Parameter(property = "maven.wagon.http.ssl.insecure", defaultValue = "false")
+  private boolean sslInsecure;
+
+  /**
+   * Is SSL certificate X509 hostname validation disabled? If {@code true}, any hostname will be accepted.
+   *
+   * @since 1.6.0
+   */
+  @Parameter(property = "maven.wagon.http.ssl.allowall", defaultValue = "false")
+  private boolean sslAllowAll;
+
   // == getters for stuff above
 
   protected String getNexusUrl() {
@@ -249,6 +265,10 @@ public abstract class AbstractStagingMojo
   protected int getStagingProgressPauseDurationSeconds() {
     return stagingProgressPauseDurationSeconds;
   }
+
+  protected boolean isSslInsecure() { return sslInsecure; }
+
+  protected boolean isSslAllowAll() { return sslAllowAll; }
 
   // == common methods
 

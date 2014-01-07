@@ -54,6 +54,10 @@ public class StagingParametersImpl
 
   private final int stagingProgressPauseDurationSeconds;
 
+  private final boolean sslInsecure;
+
+  private final boolean sslAllowAll;
+
   public StagingParametersImpl(final String pluginGav,
                                final String nexusUrl,
                                final String serverId,
@@ -69,7 +73,9 @@ public class StagingParametersImpl
                                final StagingActionMessages stagingActionMessages,
                                final Map<String, String> tags,
                                final int stagingProgressTimeoutMinutes,
-                               final int stagingProgressPauseDurationSeconds)
+                               final int stagingProgressPauseDurationSeconds,
+                               final boolean sslInsecure,
+                               final boolean sslAllowAll)
   {
     super(pluginGav, deferredDirectoryRoot, stagingDirectoryRoot);
     this.nexusUrl = Preconditions.checkNotNull(nexusUrl, "Mandatory plugin parameter 'nexusUrl' is missing");
@@ -85,6 +91,8 @@ public class StagingParametersImpl
     this.tags = tags;
     this.stagingProgressTimeoutMinutes = stagingProgressTimeoutMinutes;
     this.stagingProgressPauseDurationSeconds = stagingProgressPauseDurationSeconds;
+    this.sslInsecure = sslInsecure;
+    this.sslAllowAll = sslAllowAll;
   }
 
   @Override
@@ -150,6 +158,12 @@ public class StagingParametersImpl
   public int getStagingProgressPauseDurationSeconds() {
     return stagingProgressPauseDurationSeconds;
   }
+
+  @Override
+  public boolean isSslInsecure() { return sslInsecure; }
+
+  @Override
+  public boolean isSslAllowAll() { return sslAllowAll; }
 
   @Override
   public String toString() {

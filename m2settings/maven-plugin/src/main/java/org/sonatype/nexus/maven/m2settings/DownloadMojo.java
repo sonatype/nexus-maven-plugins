@@ -41,6 +41,7 @@ import org.sonatype.nexus.client.core.condition.VersionConditions;
 import org.sonatype.nexus.client.rest.AuthenticationInfo;
 import org.sonatype.nexus.client.rest.BaseUrl;
 import org.sonatype.nexus.client.rest.ConnectionInfo;
+import org.sonatype.nexus.client.rest.ConnectionInfo.ValidationLevel;
 import org.sonatype.nexus.client.rest.NexusClientFactory;
 import org.sonatype.nexus.client.rest.Protocol;
 import org.sonatype.nexus.client.rest.ProxyInfo;
@@ -54,6 +55,7 @@ import com.google.common.io.CharStreams;
 import com.google.common.io.Closeables;
 import com.google.common.io.Files;
 import org.apache.commons.lang.StringUtils;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -186,6 +188,22 @@ public class DownloadMojo
   @Parameter(property = "proxy.password")
   private String proxyPassword;
 
+  /**
+   * Is SSL certificate check validation relaxed? If {@code true}, self signed certificates will be accepted too.
+   *
+   * @since 1.6.0
+   */
+  @Parameter(property = "maven.wagon.http.ssl.insecure", defaultValue = "false")
+  private boolean sslInsecure;
+
+  /**
+   * Is SSL certificate X509 hostname validation disabled? If {@code true}, any hostname will be accepted.
+   *
+   * @since 1.6.0
+   */
+  @Parameter(property = "maven.wagon.http.ssl.allowall", defaultValue = "false")
+  private boolean sslAllowAll;
+
   private NexusClient nexusClient;
 
   @Override
@@ -314,7 +332,10 @@ public class DownloadMojo
       proxies.put(protocol, proxy);
     }
 
-    return factory.createFor(new ConnectionInfo(baseUrl, auth, proxies));
+    final ValidationLevel sslCertificateValidationLevel = sslInsecure ? ValidationLevel.LAX : ValidationLevel.STRICT;
+    final ValidationLevel sslCertificateHostnameValidationLevel = sslAllowAll ? ValidationLevel.NONE : ValidationLevel.LAX;
+    final ConnectionInfo connectionInfo = new ConnectionInfo(baseUrl, auth, proxies, sslCertificateValidationLevel, sslCertificateHostnameValidationLevel);
+    return factory.createFor(connectionInfo);
   }
 
   /**
