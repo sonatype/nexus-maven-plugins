@@ -61,20 +61,12 @@ public abstract class MojoSupport
    */
   protected Exception fail(final String message, Throwable cause) throws Exception {
     log.debug("Failing: {}", message, cause);
-
-    // Try to decode exception stack for more meaningful and terse error messages
     if (cause instanceof NexusClientException) {
-      cause = cause.getCause();
-
-      // FIXME: This should probably be handled by the nexus-client jersey adapter
-      if (cause instanceof com.sun.jersey.api.client.ClientHandlerException) {
-        cause = cause.getCause();
-      }
-
-      // TODO: decode anything else?
+      throw new MojoExecutionException(message + ": " + cause.getMessage(), cause);
     }
-
-    throw new MojoExecutionException(message, cause);
+    else {
+      throw new MojoExecutionException(message, cause);
+    }
   }
 
   protected abstract void doExecute() throws Exception;
