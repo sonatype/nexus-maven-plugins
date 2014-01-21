@@ -75,7 +75,7 @@ public class MultiprofileFailureWithFailAtEndV2RoundtripIT
     }
     catch (VerificationException e) {
       // good, now verify did we detect the breakage at all?
-      verifier.verifyTextInLog("Not executing step due to existing build failures");
+      verifier.verifyTextInLog("Earlier build failures detected. Staging will not continue.");
     }
 
     // perform some checks, no remote staging should happen

@@ -179,13 +179,11 @@ public abstract class AbstractStagingMojo
   private int stagingProgressPauseDurationSeconds = 3;
 
   /**
-   * Parameter controlling the build failure detection of this Mojo. If {@code true} (default), the Mojo will not perform
-   * any remote staging/deploy related activity, if Maven was invoked with {@code -fae} "fail at end" fail strategy
-   * and there are failures detected in Maven execution. To override {@code false} value should be specified, and
-   * that will make this Mojo behave as maven-deploy-plugin behaves, and remote staging/deploy activity will be
-   * performed, even if there was failure in the build. Note: this parameter mainly applies to Maven invocations
-   * having "fail at end" flag set, as in other cases "fail fast" is the strategy applied by Maven, and this Mojo
-   * will not even get invoked, as the build will fail fast.
+   * MAVEN 3+ ONLY. Automatically detect build failures. If {@code true} (default), any build failure
+   * will prevent staging deployments. If {@code false}, build failures will not prevent staging deployments.
+   * A {@code false} value combined with Maven's {@code -fae} "fail at end" fail strategy will allow
+   * staging deployments despite a build falure, matching previous plugin default behavior. There is no reliable method
+   * for a plugin to detect a previous build failure using Maven 2.
    *
    * @since 1.6.0
    */
@@ -330,16 +328,22 @@ public abstract class AbstractStagingMojo
     if (result) {
       try {
         if (detectBuildFailures && getMavenSession().getResult().hasExceptions()) {
-          getLog().warn("Not executing step due to existing build failures.");
+          // log default behaviour at info
+          getLog().info("Earlier build failures detected. Staging will not continue.");
           return false;
         }
+        else if (!detectBuildFailures && getMavenSession().getResult().hasExceptions()) {
+          getLog().warn("Earlier build failures detected. Staging is configured to not detect build failures, continuing...");
+          return true;
+        }
         else {
+          // no build failures and default plugin behavior for last project
           return true;
         }
       }
       catch (NoSuchMethodError e) {
-        // This is Maven2.x then, which does not expose MavenExecutionResult over API
-        getLog().info("Unable to detect any previous failures with Maven2, continuing...");
+        // This is Maven2.x and last project, Maven 2x does not expose MavenExecutionResult over API
+        getLog().info("Unable to detect build failures with Maven 2, continuing...");
         return true;
       }
     }
