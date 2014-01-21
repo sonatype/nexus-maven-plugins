@@ -50,7 +50,7 @@
 
   <profiles>
     <profile>
-      <id>make-it-fail</id>
+      <id>skip-javadoc</id>
       <build>
         <plugins>
           <plugin>

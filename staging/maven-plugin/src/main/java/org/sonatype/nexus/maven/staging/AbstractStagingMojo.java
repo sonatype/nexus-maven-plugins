@@ -146,7 +146,8 @@ public abstract class AbstractStagingMojo
   private boolean keepStagingRepositoryOnCloseRuleFailure;
 
   /**
-   * Should a staged (closed) repository automatically be released? Evaluated only if repository (or repositories) has been successfully closed.
+   * Should a staged (closed) repository automatically be released? Evaluated only if repository (or repositories) has
+   * been successfully closed.
    *
    * @since 1.5
    */
@@ -176,6 +177,18 @@ public abstract class AbstractStagingMojo
    */
   @Parameter(property = "stagingProgressPauseDurationSeconds", defaultValue = "3")
   private int stagingProgressPauseDurationSeconds = 3;
+
+  /**
+   * MAVEN 3+ ONLY. Automatically detect build failures. If {@code true} (default), any build failure
+   * will prevent staging deployments. If {@code false}, build failures will not prevent staging deployments.
+   * A {@code false} value combined with Maven's {@code -fae} "fail at end" fail strategy will allow
+   * staging deployments despite a build falure, matching previous plugin default behavior. There is no reliable method
+   * for a plugin to detect a previous build failure using Maven 2.
+   *
+   * @since 1.6.0
+   */
+  @Parameter(property = "detectBuildFailures", defaultValue = "true")
+  private boolean detectBuildFailures;
 
   /**
    * Is SSL certificate check validation relaxed? If {@code true}, self signed certificates will be accepted too.
@@ -296,30 +309,48 @@ public abstract class AbstractStagingMojo
   /**
    * In case of "ordinary" (reactor) build, it returns {@code true} if the current project is the last one being
    * executed in this build that has this Mojo defined. In case of direct invocation of this Mojo over CLI, it
-   * returns
-   * {@code true} if the current project is the last one being executed in this build.
+   * returns {@code true} if the current project is the last one being executed in this build. Also, what this method
+   * returns depends on user parametrization, how this Mojo should behave when Maven is run with {@code -fae} "fail
+   * at end" switch and there are failures happened previously in build.
    *
    * @return true if last project is being built.
    */
   protected boolean isThisLastProjectWithThisMojoInExecution() {
+    boolean result;
     if ("default-cli".equals(mojoExecution.getExecutionId())) {
-      return MojoExecution.isCurrentTheLastProjectInExecution(mavenSession);
+      result = MojoExecution.isCurrentTheLastProjectInExecution(mavenSession);
     }
     else {
       // method mojoExecution.getGoal() is added in maven3!
-      return isThisLastProjectWithMojoInExecution(mojoExecution.getMojoDescriptor().getGoal());
+      result = MojoExecution.isCurrentTheLastProjectWithMojoInExecution(mavenSession, pluginGroupId, pluginArtifactId,
+          mojoExecution.getMojoDescriptor().getGoal());
     }
-  }
-
-  /**
-   * Returns true if the current project is the last one being executed in this build that has passed in goal
-   * execution defined.
-   *
-   * @return true if last project is being built.
-   */
-  protected boolean isThisLastProjectWithMojoInExecution(final String goal) {
-    return MojoExecution.isCurrentTheLastProjectWithMojoInExecution(mavenSession, pluginGroupId, pluginArtifactId,
-        goal);
+    if (result) {
+      try {
+        if (detectBuildFailures && getMavenSession().getResult().hasExceptions()) {
+          // log default behaviour at info
+          getLog().info("Earlier build failures detected. Staging will not continue.");
+          return false;
+        }
+        else if (!detectBuildFailures && getMavenSession().getResult().hasExceptions()) {
+          getLog().warn("Earlier build failures detected. Staging is configured to not detect build failures, continuing...");
+          return true;
+        }
+        else {
+          // no build failures and default plugin behavior for last project
+          return true;
+        }
+      }
+      catch (NoSuchMethodError e) {
+        // This is Maven2.x and last project, Maven 2x does not expose MavenExecutionResult over API
+        getLog().info("Unable to detect build failures with Maven 2, continuing...");
+        return true;
+      }
+    }
+    else {
+      getLog().info("Execution skipped to the last project...");
+      return false;
+    }
   }
 
   /**

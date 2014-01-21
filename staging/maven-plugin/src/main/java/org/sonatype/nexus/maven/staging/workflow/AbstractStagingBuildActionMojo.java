@@ -128,10 +128,6 @@ public abstract class AbstractStagingBuildActionMojo
    */
   @Override
   protected boolean shouldExecute() {
-    final boolean shouldExecute = isThisLastProjectWithThisMojoInExecution();
-    if (!shouldExecute) {
-      getLog().info("Execution skipped to the last project having scheduled execution of this Mojo...");
-    }
-    return shouldExecute;
+    return isThisLastProjectWithThisMojoInExecution();
   }
 }

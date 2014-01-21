@@ -93,9 +93,6 @@ public class DeployRepositoryMojo
         throw new MojoExecutionException(e.getMessage(), e);
       }
     }
-    else {
-      getLog().info("Execution skipped to the last project...");
-    }
   }
 
   /**
