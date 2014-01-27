@@ -91,7 +91,7 @@ public class Parameters
   /**
    * Invokes validation of transport parameters.
    */
-  public void validateRemote() {
+  public void validateRemoting() {
     validateBasic();
     checkArgument(!Strings.isNullOrEmpty(nexusUrl), "Mandatory plugin parameter 'nexusUrl' is missing");
     checkArgument(!Strings.isNullOrEmpty(serverId), "Mandatory plugin parameter 'serverId' is missing");
@@ -101,7 +101,7 @@ public class Parameters
    * Invokes validation of staging parameters, when staging is involved.
    */
   public void validateStaging() {
-    validateRemote();
+    validateRemoting();
     checkNotNull(stagingActionMessages, "Staging action messages is null");
   }
 

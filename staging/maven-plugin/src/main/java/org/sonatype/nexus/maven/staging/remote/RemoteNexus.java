@@ -69,6 +69,7 @@ public class RemoteNexus
     checkNotNull(mavenSession);
     checkNotNull(secDispatcher);
     checkNotNull(parameters);
+    parameters.validateRemoting();
 
     // init
     final String nexusUrl = parameters.getNexusUrl();
