@@ -23,8 +23,6 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.sonatype.nexus.maven.staging.remote.Parameters;
-
 import com.google.common.base.Strings;
 import com.google.common.io.Closeables;
 import org.apache.maven.artifact.Artifact;
@@ -65,24 +63,6 @@ public abstract class AbstractDeployStrategy
 
   @Requirement
   private ArtifactRepositoryLayout artifactRepositoryLayout;
-
-  private MavenSession mavenSession;
-
-  private Parameters parameters;
-
-  public void prepare(MavenSession mavenSession, Parameters parameters) {
-    this.mavenSession = checkNotNull(mavenSession);
-    this.parameters = checkNotNull(parameters);
-    parameters.validateBasic();
-  }
-
-  protected MavenSession getMavenSession() {
-    return mavenSession;
-  }
-
-  protected Parameters getParameters() {
-    return parameters;
-  }
 
   protected ArtifactRepository createDeploymentArtifactRepository(final String id, final String url) {
     return artifactRepositoryFactory.createDeploymentArtifactRepository(id, url, artifactRepositoryLayout, true);
@@ -148,7 +128,7 @@ public abstract class AbstractDeployStrategy
   // G:A:V:C:P:Ext:PomFileName:PluginPrefix
   private final Pattern indexProps = Pattern.compile("(.*):(.*):(.*):(.*):(.*):(.*):(.*):(.*)");
 
-  protected void deployUp(final File sourceDirectory,
+  protected void deployUp(final MavenSession mavenSession, final File sourceDirectory,
                           final ArtifactRepository remoteRepository)
       throws ArtifactDeploymentException, IOException
   {
@@ -240,7 +220,7 @@ public abstract class AbstractDeployStrategy
   /**
    * Returns the ArtifactRepository created from passed in maven session's current project's distribution management.
    */
-  protected ArtifactRepository getDeploymentRepository()
+  protected ArtifactRepository getDeploymentRepository(final MavenSession mavenSession)
       throws MojoExecutionException
   {
     final ArtifactRepository repo = mavenSession.getCurrentProject().getDistributionManagementArtifactRepository();

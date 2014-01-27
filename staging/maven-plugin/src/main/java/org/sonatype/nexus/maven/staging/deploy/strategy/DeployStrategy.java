@@ -13,11 +13,8 @@
 
 package org.sonatype.nexus.maven.staging.deploy.strategy;
 
-import org.sonatype.nexus.maven.staging.remote.Parameters;
-
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
 import org.apache.maven.artifact.installer.ArtifactInstallationException;
-import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 
 /**
@@ -28,13 +25,6 @@ import org.apache.maven.plugin.MojoExecutionException;
  */
 public interface DeployStrategy
 {
-
-  /**
-   * Prepares strategy for work. Does whatever needed for it to function, like creating REST client if needed
-   * and so on.
-   */
-  void prepare(MavenSession mavenSession, Parameters parameters);
-
   /**
    * To be invoked at every module's deploy phase (or where deploy mojo is bound), hence, is invoked multiple times
    * (as many times as many modules are built in reactor). Depending on strategy, this method might do nothing, might

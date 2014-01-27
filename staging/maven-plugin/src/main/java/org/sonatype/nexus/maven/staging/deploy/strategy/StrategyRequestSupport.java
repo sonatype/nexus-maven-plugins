@@ -13,28 +13,30 @@
 
 package org.sonatype.nexus.maven.staging.deploy.strategy;
 
-import java.util.List;
-
-import org.sonatype.nexus.maven.staging.deploy.DeployableArtifact;
 import org.sonatype.nexus.maven.staging.remote.Parameters;
 
 import org.apache.maven.execution.MavenSession;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class DeployPerModuleRequest
-    extends StrategyRequestSupport
+public abstract class StrategyRequestSupport
 {
-  private final List<DeployableArtifact> deployableArtifacts;
+  private final MavenSession mavenSession;
 
-  public DeployPerModuleRequest(final MavenSession mavenSession, final Parameters parameters,
-                                final List<DeployableArtifact> deployableArtifacts)
-  {
-    super(mavenSession, parameters);
-    this.deployableArtifacts = checkNotNull(deployableArtifacts);
+  private final Parameters parameters;
+
+  public StrategyRequestSupport(final MavenSession mavenSession, final Parameters parameters) {
+    this.mavenSession = checkNotNull(mavenSession);
+    this.parameters = checkNotNull(parameters);
   }
 
-  public List<DeployableArtifact> getDeployableArtifacts() {
-    return deployableArtifacts;
+  public MavenSession getMavenSession() {
+    return mavenSession;
+  }
+
+  public Parameters getParameters() {
+
+
+    return parameters;
   }
 }

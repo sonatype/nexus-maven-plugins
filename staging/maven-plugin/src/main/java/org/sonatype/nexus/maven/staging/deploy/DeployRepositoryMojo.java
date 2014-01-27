@@ -44,7 +44,7 @@ import org.apache.maven.plugins.annotations.Parameter;
  * @since 1.1
  */
 @Mojo(name = "deploy-staged-repository", requiresProject = false, requiresDirectInvocation = true,
-    requiresOnline = true)
+    requiresOnline = true, threadSafe = true)
 public class DeployRepositoryMojo
     extends AbstractDeployMojo
 {
@@ -82,8 +82,8 @@ public class DeployRepositoryMojo
 
     if (isThisLastProjectWithThisMojoInExecution()) {
       try {
-        final DeployStrategy deployStrategy = getDeployStrategy(Strategies.IMAGE, buildParameters());
-        final FinalizeDeployRequest request = new FinalizeDeployRequest();
+        final DeployStrategy deployStrategy = getDeployStrategy(Strategies.IMAGE);
+        final FinalizeDeployRequest request = new FinalizeDeployRequest(getMavenSession(), buildParameters());
 
         deployStrategy.finalizeDeploy(request);
       }

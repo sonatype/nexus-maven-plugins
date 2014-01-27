@@ -40,15 +40,15 @@ public class DeferredDeployStrategy
    * deploys.
    */
   @Override
-  public void deployPerModule(final DeployPerModuleRequest request)
+  public synchronized void deployPerModule(final DeployPerModuleRequest request)
       throws ArtifactInstallationException, ArtifactDeploymentException, MojoExecutionException
   {
     getLogger().info(
         "Performing deferred deploys (gathering into \""
-            + getParameters().getDeferredDirectoryRoot().getAbsolutePath() + "\")...");
+            + request.getParameters().getDeferredDirectoryRoot().getAbsolutePath() + "\")...");
     if (!request.getDeployableArtifacts().isEmpty()) {
       // deploys always to same stagingDirectory
-      final File stagingDirectory = getParameters().getDeferredDirectoryRoot();
+      final File stagingDirectory = request.getParameters().getDeferredDirectoryRoot();
       final ArtifactRepository stagingRepository = getArtifactRepositoryForDirectory(stagingDirectory);
       for (DeployableArtifact deployableArtifact : request.getDeployableArtifacts()) {
         install(deployableArtifact.getFile(), deployableArtifact.getArtifact(), stagingRepository,
@@ -61,14 +61,14 @@ public class DeferredDeployStrategy
   }
 
   /**
-   * Performs "bulk" remote deploy, or locally installed artifacts, and is driven by "index" file.
+   * Performs "bulk" remote deploy of locally installed artifacts, and is driven by "index" file.
    */
   @Override
-  public void finalizeDeploy(final FinalizeDeployRequest request)
+  public synchronized void finalizeDeploy(final FinalizeDeployRequest request)
       throws ArtifactDeploymentException, MojoExecutionException
   {
     getLogger().info("Deploying remotely...");
-    final File stagingDirectory = getParameters().getDeferredDirectoryRoot();
+    final File stagingDirectory = request.getParameters().getDeferredDirectoryRoot();
     if (!stagingDirectory.isDirectory()) {
       getLogger().warn(
           "Nothing to deploy, directory \"" + stagingDirectory.getAbsolutePath() + "\" does not exists!");
@@ -80,10 +80,10 @@ public class DeferredDeployStrategy
     try {
       // prepare the local staging directory
       // we have normal deploy
-      final ArtifactRepository deploymentRepository = getDeploymentRepository();
+      final ArtifactRepository deploymentRepository = getDeploymentRepository(request.getMavenSession());
       getLogger().info(
           " * Bulk deploying locally gathered snapshot artifacts to URL " + deploymentRepository.getUrl());
-      deployUp(stagingDirectory, deploymentRepository);
+      deployUp(request.getMavenSession(), stagingDirectory, deploymentRepository);
       getLogger().info(" * Bulk deploy of locally gathered snapshot artifacts finished.");
     }
     catch (IOException e) {

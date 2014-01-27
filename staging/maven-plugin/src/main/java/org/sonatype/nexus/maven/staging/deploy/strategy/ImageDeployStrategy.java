@@ -19,9 +19,9 @@ import java.util.Collections;
 
 import com.sonatype.nexus.staging.client.Profile;
 
-import org.sonatype.nexus.client.core.NexusClient;
 import org.sonatype.nexus.client.core.NexusStatus;
 import org.sonatype.nexus.maven.staging.deploy.StagingRepository;
+import org.sonatype.nexus.maven.staging.remote.RemoteNexus;
 import org.sonatype.nexus.maven.staging.zapper.Zapper;
 import org.sonatype.nexus.maven.staging.zapper.ZapperRequest;
 
@@ -63,29 +63,31 @@ public class ImageDeployStrategy
   }
 
   /**
-   * Remote deploys the "image", using {@link #zapUp(File, String)}.
+   * Remote deploys the "image", using {@link #zapUp(Server, Proxy, File, String)}.
    */
   @Override
   public void finalizeDeploy(final FinalizeDeployRequest request)
       throws ArtifactDeploymentException, MojoExecutionException
   {
     getLogger().info("Staging remotely locally deployed repository...");
-    final NexusStatus nexusStatus = getRemoteNexus().getNexusStatus();
+    final RemoteNexus remoteNexus = createRemoteNexus(request.getMavenSession(), request.getParameters());
+    final NexusStatus nexusStatus = remoteNexus.getNexusStatus();
     getLogger().info(
         String.format(" * Connected to Nexus at %s, is version %s and edition \"%s\"",
-            getRemoteNexus().getConnectionInfo().getBaseUrl(), nexusStatus.getVersion(), nexusStatus.getEditionLong()));
+            remoteNexus.getConnectionInfo().getBaseUrl(), nexusStatus.getVersion(), nexusStatus.getEditionLong()));
 
-    final String profileId = getParameters().getStagingProfileId();
-    final Profile stagingProfile = getRemoteNexus().getStagingWorkflowV2Service().selectProfile(profileId);
-    final StagingRepository stagingRepository = beforeUpload(stagingProfile);
+    final String profileId = request.getParameters().getStagingProfileId();
+    final Profile stagingProfile = remoteNexus.getStagingWorkflowV2Service().selectProfile(profileId);
+    final StagingRepository stagingRepository = beforeUpload(request.getParameters(), remoteNexus, stagingProfile);
     try {
       getLogger().info(" * Uploading locally staged artifacts to profile " + stagingProfile.name());
-      zapUp(getParameters().getStagingDirectoryRoot(), stagingRepository.getUrl());
+      zapUp(remoteNexus.getServer(), remoteNexus.getProxy(), request.getParameters().getStagingDirectoryRoot(),
+          stagingRepository.getUrl());
       getLogger().info(" * Upload of locally staged artifacts finished.");
-      afterUpload(stagingRepository);
+      afterUpload(request.getParameters(), remoteNexus, stagingRepository);
     }
     catch (Exception e) {
-      afterUploadFailure(Collections.singletonList(stagingRepository), e);
+      afterUploadFailure(request.getParameters(), remoteNexus, Collections.singletonList(stagingRepository), e);
       getLogger().error("Remote staging finished with a failure.");
       throw new ArtifactDeploymentException("Remote staging failed: " + e.getMessage(), e);
     }
@@ -97,18 +99,14 @@ public class ImageDeployStrategy
    * (sourceDirectory) should be already prepared, as there will be no transformations applied to them, content and
    * filenames will be deploy as-is.
    */
-  protected void zapUp(final File sourceDirectory, final String deployUrl)
+  protected void zapUp(final Server server, final Proxy proxy, final File sourceDirectory, final String deployUrl)
       throws IOException
   {
     final ZapperRequest request = new ZapperRequest(sourceDirectory, deployUrl);
-
-    final Server server = getRemoteNexus().getServer();
     if (server != null) {
       request.setRemoteUsername(server.getUsername());
       request.setRemotePassword(server.getPassword());
     }
-
-    final Proxy proxy = getRemoteNexus().getProxy();
     if (proxy != null) {
       request.setProxyProtocol(proxy.getProtocol());
       request.setProxyHost(proxy.getHost());
@@ -116,7 +114,6 @@ public class ImageDeployStrategy
       request.setProxyUsername(proxy.getUsername());
       request.setProxyPassword(proxy.getPassword());
     }
-
     zapper.deployDirectory(request);
   }
 

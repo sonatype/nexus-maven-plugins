@@ -44,8 +44,8 @@ public class DirectDeployStrategy
       throws ArtifactInstallationException, ArtifactDeploymentException, MojoExecutionException
   {
     getLogger().info("Performing direct deploys (maven-deploy-plugin like)...");
-    final ArtifactRepository deploymentRepository = getDeploymentRepository();
-    final ArtifactRepository localRepository = getMavenSession().getLocalRepository();
+    final ArtifactRepository deploymentRepository = getDeploymentRepository(request.getMavenSession());
+    final ArtifactRepository localRepository = request.getMavenSession().getLocalRepository();
     for (DeployableArtifact deployableArtifact : request.getDeployableArtifacts()) {
       artifactDeployer.deploy(deployableArtifact.getFile(), deployableArtifact.getArtifact(),
           deploymentRepository, localRepository);

@@ -21,8 +21,8 @@ import java.util.List;
 import org.sonatype.nexus.maven.staging.deploy.strategy.DeployPerModuleRequest;
 import org.sonatype.nexus.maven.staging.deploy.strategy.DeployStrategy;
 import org.sonatype.nexus.maven.staging.deploy.strategy.FinalizeDeployRequest;
-import org.sonatype.nexus.maven.staging.remote.Parameters;
 import org.sonatype.nexus.maven.staging.deploy.strategy.Strategies;
+import org.sonatype.nexus.maven.staging.remote.Parameters;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
@@ -43,7 +43,7 @@ import org.apache.maven.project.artifact.ProjectArtifactMetadata;
  * @author cstamas
  * @since 1.0
  */
-@Mojo(name = "deploy", defaultPhase = LifecyclePhase.DEPLOY, requiresOnline = true)
+@Mojo(name = "deploy", defaultPhase = LifecyclePhase.DEPLOY, requiresOnline = true, threadSafe = true)
 public class DeployMojo
     extends AbstractDeployMojo
 {
@@ -132,6 +132,7 @@ public class DeployMojo
       artifact.setRelease(true);
     }
 
+    final Parameters parameters = buildParameters();
     final DeployStrategy deployStrategy;
     try {
       if (isPomArtifact) {
@@ -170,25 +171,23 @@ public class DeployMojo
         deployables.add(new DeployableArtifact(attached.getFile(), attached));
       }
 
-      final Parameters parameters = buildParameters();
       if (skipLocalStaging)
       // totally skipped
       {
-        deployStrategy = getDeployStrategy(Strategies.DIRECT, parameters);
+        deployStrategy = getDeployStrategy(Strategies.DIRECT);
       }
       else if (isSkipStaging() || artifact.isSnapshot())
       // locally staging but uploading to deployment repo (no profiles and V2 used at all)
       {
-        deployStrategy = getDeployStrategy(Strategies.DEFERRED, parameters);
+        deployStrategy = getDeployStrategy(Strategies.DEFERRED);
       }
       else
       // for releases, everything used: profile selection, full V2, etc
       {
-        deployStrategy = getDeployStrategy(Strategies.STAGING, parameters);
+        deployStrategy = getDeployStrategy(Strategies.STAGING);
       }
 
-      final DeployPerModuleRequest request =
-          new DeployPerModuleRequest(deployables);
+      final DeployPerModuleRequest request = new DeployPerModuleRequest(getMavenSession(), parameters, deployables);
       deployStrategy.deployPerModule(request);
     }
     catch (ArtifactInstallationException e) {
@@ -208,7 +207,7 @@ public class DeployMojo
       }
 
       try {
-        final FinalizeDeployRequest request = new FinalizeDeployRequest();
+        final FinalizeDeployRequest request = new FinalizeDeployRequest(getMavenSession(), parameters);
         deployStrategy.finalizeDeploy(request);
       }
       catch (ArtifactDeploymentException e) {

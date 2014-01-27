@@ -71,7 +71,6 @@ public class Parameters
 
   private boolean sslAllowAll;
 
-
   /**
    * Ctor, validates the minimal set of required parameters.
    */

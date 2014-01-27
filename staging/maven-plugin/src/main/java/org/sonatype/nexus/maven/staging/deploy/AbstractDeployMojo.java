@@ -87,19 +87,12 @@ public abstract class AbstractDeployMojo
    * Returns the deploy strategy by key (plexus component hint). If no given strategy found,
    * {@link MojoExecutionException} is thrown.
    */
-  protected DeployStrategy getDeployStrategy(final String key, final Parameters parameters)
+  protected DeployStrategy getDeployStrategy(final String key)
       throws MojoExecutionException
   {
     final DeployStrategy deployStrategy = deployStrategies.get(key);
     if (deployStrategy == null) {
       throw new MojoExecutionException("DeployStrategy " + key + " not found!");
-    }
-    try {
-      deployStrategy.prepare(getMavenSession(), parameters);
-    }
-    catch (Exception e) {
-      // validation errors will happen here
-      throw new MojoExecutionException("Bad configuration: " + e.getMessage(), e);
     }
     return deployStrategy;
   }
