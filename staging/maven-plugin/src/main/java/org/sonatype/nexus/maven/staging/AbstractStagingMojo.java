@@ -16,6 +16,7 @@ package org.sonatype.nexus.maven.staging;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.sonatype.maven.mojo.execution.MojoExecution;
 import org.sonatype.nexus.maven.staging.deploy.DeployMojo;
@@ -327,19 +328,23 @@ public abstract class AbstractStagingMojo
     }
     if (result) {
       try {
-        if (detectBuildFailures && getMavenSession().getResult().hasExceptions()) {
-          // log default behaviour at info
-          getLog().info("Earlier build failures detected. Staging will not continue.");
-          return false;
+        if (getMavenSession().getResult().hasExceptions()) {
+          if (detectBuildFailures) {
+            // log failures found and bail out
+            getLog().info("Earlier build failures detected. Staging will not continue.");
+            return false;
+          }
+          else if (!detectBuildFailures) {
+            // just log and continue
+            getLog().warn(
+                "Earlier build failures detected. Staging is configured to not detect build failures, continuing...");
+          }
         }
-        else if (!detectBuildFailures && getMavenSession().getResult().hasExceptions()) {
-          getLog().warn("Earlier build failures detected. Staging is configured to not detect build failures, continuing...");
-          return true;
-        }
-        else {
-          // no build failures and default plugin behavior for last project
-          return true;
-        }
+        // Being here means we are Maven3 (as getResult() was successfully invoked)
+        // In case of parallel build, we need to ensure everything else is built
+        waitForOtherProjectsIfNeeded();
+
+        return true;
       }
       catch (NoSuchMethodError e) {
         // This is Maven2.x and last project, Maven 2x does not expose MavenExecutionResult over API
@@ -350,6 +355,43 @@ public abstract class AbstractStagingMojo
     else {
       getLog().info("Execution skipped to the last project...");
       return false;
+    }
+  }
+
+  /**
+   * Method that blocks current thread until every other project has build result. Naturally, this method will
+   * never sleep and will immediately return in non-parallel builds (as "topologically last" project will be built as
+   * last on single thread of execution). The importance of the method is in case of parallel builds, where
+   * "topologically last" project might be built with other modules on same level. In this case, we do want to sleep
+   * until every project is built (except "this" project).
+   * <p/>Note: this method assumes Maven3 host, and should be called only if running within Maven3. Otherwise,
+   * NoSuchMethodError will be thrown.
+   */
+  protected void waitForOtherProjectsIfNeeded() {
+    final MavenProject currentProject = getMavenSession().getCurrentProject();
+    // TODO: should we maximize how much to sleep?
+    // There could be IT module running in parallel for hours for example
+    // But this below will sleep indefinitely...
+    while (true) {
+      boolean done = true;
+      for (MavenProject project : getMavenSession().getProjects()) {
+        if (currentProject != project && getMavenSession().getResult().getBuildSummary(project) == null) {
+          done = false;
+          break;
+        }
+      }
+      if (!done) {
+        getLog().info("Waiting for other projects build to finish...");
+        try {
+          Thread.sleep(TimeUnit.SECONDS.toMillis(10l));
+        }
+        catch (InterruptedException e) {
+          // nothing?
+        }
+      }
+      else {
+        return;
+      }
     }
   }
 
