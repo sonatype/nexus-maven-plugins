@@ -328,6 +328,9 @@ public abstract class AbstractStagingMojo
     }
     if (result) {
       try {
+        // In case of parallel build, we need to ensure everything else is built
+        waitForOtherProjectsIfNeeded();
+
         if (getMavenSession().getResult().hasExceptions()) {
           if (detectBuildFailures) {
             // log failures found and bail out
@@ -340,10 +343,7 @@ public abstract class AbstractStagingMojo
                 "Earlier build failures detected. Staging is configured to not detect build failures, continuing...");
           }
         }
-        // Being here means we are Maven3 (as getResult() was successfully invoked)
-        // In case of parallel build, we need to ensure everything else is built
-        waitForOtherProjectsIfNeeded();
-
+        // we are okay, this was last module and everything else is/was already built
         return true;
       }
       catch (NoSuchMethodError e) {
