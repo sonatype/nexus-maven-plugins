@@ -13,8 +13,11 @@
 
 package org.sonatype.nexus.maven.staging.deploy.strategy;
 
+import org.sonatype.nexus.maven.staging.remote.Parameters;
+
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
 import org.apache.maven.artifact.installer.ArtifactInstallationException;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 
 /**
@@ -27,15 +30,10 @@ public interface DeployStrategy
 {
 
   /**
-   * Returns true if this strategy needs Nexus Client to work. This boils down to having {@code nexusUrl} and
-   * {@code serverId} set in plugin configuration or not. For example, "deferred" and "direct" deploys
-   * does not do any REST Calls, they will return {@code false} here, while others does manipulate remote
-   * Nexus over REST API calls.
-   *
-   * @return {@code true} if Nexus Client is needed for this strategy.
-   * @since 1.3
+   * Prepares strategy for work. Does whatever needed for it to function, like creating REST client if needed
+   * and so on.
    */
-  boolean needsNexusClient();
+  void prepare(MavenSession mavenSession, Parameters parameters);
 
   /**
    * To be invoked at every module's deploy phase (or where deploy mojo is bound), hence, is invoked multiple times

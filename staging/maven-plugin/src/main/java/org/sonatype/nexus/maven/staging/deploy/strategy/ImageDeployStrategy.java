@@ -52,8 +52,7 @@ public class ImageDeployStrategy
 
   /**
    * This method is actually unused in this strategy, as the "image" to be deployed is prepared by something else.
-   * For
-   * example, it might be prepared with maven-deploy-plugin using altDeploymentRepository switch pointing to local
+   * For example, it might be prepared with maven-deploy-plugin using altDeploymentRepository switch pointing to local
    * file system.
    */
   @Override
@@ -71,26 +70,22 @@ public class ImageDeployStrategy
       throws ArtifactDeploymentException, MojoExecutionException
   {
     getLogger().info("Staging remotely locally deployed repository...");
-    final StagingParameters parameters = getAsStagingParameters(request.getParameters());
-    initRemoting(request.getMavenSession(), parameters);
-
-    final NexusClient nexusClient = getRemoting().getNexusClient();
-    final NexusStatus nexusStatus = nexusClient.getNexusStatus();
+    final NexusStatus nexusStatus = getRemoteNexus().getNexusStatus();
     getLogger().info(
         String.format(" * Connected to Nexus at %s, is version %s and edition \"%s\"",
-            nexusClient.getConnectionInfo().getBaseUrl(), nexusStatus.getVersion(), nexusStatus.getEditionLong()));
+            getRemoteNexus().getConnectionInfo().getBaseUrl(), nexusStatus.getVersion(), nexusStatus.getEditionLong()));
 
-    final String profileId = parameters.getStagingProfileId();
-    final Profile stagingProfile = getRemoting().getStagingWorkflowV2Service().selectProfile(profileId);
-    final StagingRepository stagingRepository = beforeUpload(parameters, stagingProfile);
+    final String profileId = getParameters().getStagingProfileId();
+    final Profile stagingProfile = getRemoteNexus().getStagingWorkflowV2Service().selectProfile(profileId);
+    final StagingRepository stagingRepository = beforeUpload(stagingProfile);
     try {
       getLogger().info(" * Uploading locally staged artifacts to profile " + stagingProfile.name());
-      zapUp(request.getParameters().getStagingDirectoryRoot(), stagingRepository.getUrl());
+      zapUp(getParameters().getStagingDirectoryRoot(), stagingRepository.getUrl());
       getLogger().info(" * Upload of locally staged artifacts finished.");
-      afterUpload(parameters, stagingRepository);
+      afterUpload(stagingRepository);
     }
     catch (Exception e) {
-      afterUploadFailure(parameters, Collections.singletonList(stagingRepository), e);
+      afterUploadFailure(Collections.singletonList(stagingRepository), e);
       getLogger().error("Remote staging finished with a failure.");
       throw new ArtifactDeploymentException("Remote staging failed: " + e.getMessage(), e);
     }
@@ -107,13 +102,13 @@ public class ImageDeployStrategy
   {
     final ZapperRequest request = new ZapperRequest(sourceDirectory, deployUrl);
 
-    final Server server = getRemoting().getServer();
+    final Server server = getRemoteNexus().getServer();
     if (server != null) {
       request.setRemoteUsername(server.getUsername());
       request.setRemotePassword(server.getPassword());
     }
 
-    final Proxy proxy = getRemoting().getProxy();
+    final Proxy proxy = getRemoteNexus().getProxy();
     if (proxy != null) {
       request.setProxyProtocol(proxy.getProtocol());
       request.setProxyHost(proxy.getHost());

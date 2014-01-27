@@ -17,10 +17,7 @@ import java.util.Map;
 
 import org.sonatype.nexus.maven.staging.AbstractStagingMojo;
 import org.sonatype.nexus.maven.staging.deploy.strategy.DeployStrategy;
-import org.sonatype.nexus.maven.staging.deploy.strategy.Parameters;
-import org.sonatype.nexus.maven.staging.deploy.strategy.ParametersImpl;
-import org.sonatype.nexus.maven.staging.deploy.strategy.StagingParameters;
-import org.sonatype.nexus.maven.staging.deploy.strategy.StagingParametersImpl;
+import org.sonatype.nexus.maven.staging.remote.Parameters;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
@@ -90,64 +87,58 @@ public abstract class AbstractDeployMojo
    * Returns the deploy strategy by key (plexus component hint). If no given strategy found,
    * {@link MojoExecutionException} is thrown.
    */
-  protected DeployStrategy getDeployStrategy(final String key)
+  protected DeployStrategy getDeployStrategy(final String key, final Parameters parameters)
       throws MojoExecutionException
   {
     final DeployStrategy deployStrategy = deployStrategies.get(key);
     if (deployStrategy == null) {
       throw new MojoExecutionException("DeployStrategy " + key + " not found!");
     }
+    try {
+      deployStrategy.prepare(getMavenSession(), parameters);
+    }
+    catch (Exception e) {
+      // validation errors will happen here
+      throw new MojoExecutionException("Bad configuration: " + e.getMessage(), e);
+    }
     return deployStrategy;
   }
 
   /**
-   * Builds the parameters instance to pass to the {@link DeployStrategy}. This is mostly built from Mojo parameters,
-   * but some strategies might have different input.
+   * Builds the parameters instance.
    */
-  protected Parameters buildParameters(final DeployStrategy strategy)
+  protected Parameters buildParameters()
       throws MojoExecutionException
   {
-    if (strategy.needsNexusClient()) {
-      try {
-        final StagingParameters parameters = new StagingParametersImpl(
-            getPluginGav(),
-            getNexusUrl(),
-            getServerId(),
-            getDeferredDirectoryRoot(),
-            getStagingDirectoryRoot(),
-            isKeepStagingRepositoryOnCloseRuleFailure(),
-            isKeepStagingRepositoryOnFailure(),
-            isSkipStagingRepositoryClose(),
-            isAutoReleaseAfterClose(),
-            isAutoDropAfterRelease(),
-            getStagingProfileId(),
-            getStagingRepositoryId(),
-            getStagingActionMessages(),
-            getTags(),
-            getStagingProgressTimeoutMinutes(),
-            getStagingProgressPauseDurationSeconds(),
-            isSslInsecure(),
-            isSslAllowAll()
-        );
+    try {
+      // this below does not validate, it merely passes the set configuration values (even those unused)
+      // each strategy will properly validated parameters in their prepare method
+      final Parameters parameters = new Parameters(getPluginGav(), getDeferredDirectoryRoot(),
+          getStagingDirectoryRoot());
+      parameters.setNexusUrl(getNexusUrl());
+      parameters.setServerId(getServerId());
+      parameters.setKeepStagingRepositoryOnCloseRuleFailure(isKeepStagingRepositoryOnCloseRuleFailure());
+      parameters.setKeepStagingRepositoryOnFailure(isKeepStagingRepositoryOnFailure());
+      parameters.setSkipStagingRepositoryClose(isSkipStagingRepositoryClose());
+      parameters.setAutoReleaseAfterClose(isAutoReleaseAfterClose());
+      parameters.setAutoDropAfterRelease(isAutoDropAfterRelease());
+      parameters.setStagingProfileId(getStagingProfileId());
+      parameters.setStagingRepositoryId(getStagingRepositoryId());
+      parameters.setStagingActionMessages(getStagingActionMessages());
+      parameters.setTags(getTags());
+      parameters.setStagingProgressTimeoutMinutes(getStagingProgressTimeoutMinutes());
+      parameters.setStagingProgressPauseDurationSeconds(getStagingProgressPauseDurationSeconds());
+      parameters.setSslInsecure(isSslInsecure());
+      parameters.setSslAllowAll(isSslAllowAll());
 
+      if (getLog().isDebugEnabled()) {
         getLog().debug(parameters.toString());
-        return parameters;
       }
-      catch (NullPointerException e) {
-        throw new MojoExecutionException("Bad configuration:" + e.getMessage(), e);
-      }
+
+      return parameters;
     }
-    else {
-      try {
-        final Parameters parameters =
-            new ParametersImpl(getPluginGav(), getDeferredDirectoryRoot(), getStagingDirectoryRoot());
-
-        getLog().debug(parameters.toString());
-        return parameters;
-      }
-      catch (NullPointerException e) {
-        throw new MojoExecutionException("Bad configuration:" + e.getMessage(), e);
-      }
+    catch (Exception e) {
+      throw new MojoExecutionException("Bad configuration:" + e.getMessage(), e);
     }
   }
 

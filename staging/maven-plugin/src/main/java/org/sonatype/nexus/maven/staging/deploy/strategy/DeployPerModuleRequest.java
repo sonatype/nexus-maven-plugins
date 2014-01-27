@@ -17,19 +17,14 @@ import java.util.List;
 
 import org.sonatype.nexus.maven.staging.deploy.DeployableArtifact;
 
-import com.google.common.base.Preconditions;
-import org.apache.maven.execution.MavenSession;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class DeployPerModuleRequest
-    extends AbstractDeployRequest
 {
   private final List<DeployableArtifact> deployableArtifacts;
 
-  public DeployPerModuleRequest(final MavenSession mavenSession, final Parameters parameters,
-                                final List<DeployableArtifact> deployableArtifacts)
-  {
-    super(mavenSession, parameters);
-    this.deployableArtifacts = Preconditions.checkNotNull(deployableArtifacts);
+  public DeployPerModuleRequest(final List<DeployableArtifact> deployableArtifacts) {
+    this.deployableArtifacts = checkNotNull(deployableArtifacts);
   }
 
   public List<DeployableArtifact> getDeployableArtifacts() {

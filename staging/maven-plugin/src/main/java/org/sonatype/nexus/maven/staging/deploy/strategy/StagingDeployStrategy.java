@@ -23,7 +23,6 @@ import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 import com.sonatype.nexus.staging.client.StagingWorkflowV3Service;
 
-import org.sonatype.nexus.client.core.NexusClient;
 import org.sonatype.nexus.client.core.NexusStatus;
 import org.sonatype.nexus.client.core.exception.NexusClientAccessForbiddenException;
 import org.sonatype.nexus.client.core.exception.NexusClientErrorResponseException;
@@ -65,16 +64,13 @@ public class StagingDeployStrategy
   {
     getLogger().info(
         "Performing local staging (local stagingDirectory=\""
-            + request.getParameters().getStagingDirectoryRoot().getAbsolutePath() + "\")...");
-    final StagingParameters parameters = getAsStagingParameters(request.getParameters());
-    initRemoting(request.getMavenSession(), parameters);
+            + getParameters().getStagingDirectoryRoot().getAbsolutePath() + "\")...");
     if (!request.getDeployableArtifacts().isEmpty()) {
       // we match only for 1st in list!
       final String profileId =
-          selectStagingProfile(parameters,
-              request.getDeployableArtifacts().get(0).getArtifact());
+          selectStagingProfile(request.getDeployableArtifacts().get(0).getArtifact());
       final File stagingDirectory =
-          getStagingDirectory(request.getParameters().getStagingDirectoryRoot(), profileId);
+          getStagingDirectory(getParameters().getStagingDirectoryRoot(), profileId);
       // deploys always to same stagingDirectory
       for (DeployableArtifact deployableArtifact : request.getDeployableArtifacts()) {
         final ArtifactRepository stagingRepository = getArtifactRepositoryForDirectory(stagingDirectory);
@@ -95,19 +91,16 @@ public class StagingDeployStrategy
       throws ArtifactDeploymentException, MojoExecutionException
   {
     getLogger().info("Performing remote staging...");
-    final StagingParameters parameters = getAsStagingParameters(request.getParameters());
-    initRemoting(request.getMavenSession(), parameters);
-    final File stageRoot = request.getParameters().getStagingDirectoryRoot();
+    final File stageRoot = getParameters().getStagingDirectoryRoot();
     final File[] localStageRepositories = stageRoot.listFiles();
     if (localStageRepositories == null) {
       getLogger().info("We have nothing locally staged, bailing out.");
       return;
     }
-    final NexusClient nexusClient = getRemoting().getNexusClient();
-    final NexusStatus nexusStatus = nexusClient.getNexusStatus();
+    final NexusStatus nexusStatus = getRemoteNexus().getNexusStatus();
     getLogger().info(
         String.format(" * Connected to Nexus at %s, is version %s and edition \"%s\"",
-            nexusClient.getConnectionInfo().getBaseUrl(), nexusStatus.getVersion(), nexusStatus.getEditionLong()));
+            getRemoteNexus().getConnectionInfo().getBaseUrl(), nexusStatus.getVersion(), nexusStatus.getEditionLong()));
 
     final List<StagingRepository> zappedStagingRepositories = new ArrayList<StagingRepository>();
     for (File profileDirectory : localStageRepositories) {
@@ -121,18 +114,17 @@ public class StagingDeployStrategy
       getLogger().info(" * Remote staging into staging profile ID \"" + profileId + "\"");
 
       try {
-        final Profile stagingProfile = getRemoting().getStagingWorkflowV2Service().selectProfile(profileId);
-        final StagingRepository stagingRepository = beforeUpload(parameters, stagingProfile);
+        final Profile stagingProfile = getRemoteNexus().getStagingWorkflowV2Service().selectProfile(profileId);
+        final StagingRepository stagingRepository = beforeUpload(stagingProfile);
         zappedStagingRepositories.add(stagingRepository);
         getLogger().info(" * Uploading locally staged artifacts to profile " + stagingProfile.name());
-        deployUp(request.getMavenSession(),
-            getStagingDirectory(request.getParameters().getStagingDirectoryRoot(), profileId),
+        deployUp(getStagingDirectory(getParameters().getStagingDirectoryRoot(), profileId),
             getDeploymentArtifactRepositoryForNexusStagingRepository(stagingRepository));
         getLogger().info(" * Upload of locally staged artifacts finished.");
-        afterUpload(parameters, stagingRepository);
+        afterUpload(stagingRepository);
       }
       catch (NexusClientNotFoundException e) {
-        afterUploadFailure(parameters, zappedStagingRepositories, e);
+        afterUploadFailure(zappedStagingRepositories, e);
         getLogger().error("Remote staging finished with a failure: " + e.getMessage());
         getLogger().error("");
         getLogger().error("Possible causes of 404 Not Found error:");
@@ -144,7 +136,7 @@ public class StagingDeployStrategy
         throw new ArtifactDeploymentException("Remote staging failed: " + e.getMessage(), e);
       }
       catch (NexusClientAccessForbiddenException e) {
-        afterUploadFailure(parameters, zappedStagingRepositories, e);
+        afterUploadFailure(zappedStagingRepositories, e);
         getLogger().error("Remote staging finished with a failure: " + e.getMessage());
         getLogger().error("");
         getLogger().error("Possible causes of 403 Forbidden:");
@@ -154,20 +146,20 @@ public class StagingDeployStrategy
         throw new ArtifactDeploymentException("Remote staging failed: " + e.getMessage(), e);
       }
       catch (Exception e) {
-        afterUploadFailure(parameters, zappedStagingRepositories, e);
+        afterUploadFailure(zappedStagingRepositories, e);
         getLogger().error("Remote staging finished with a failure: " + e.getMessage());
         throw new ArtifactDeploymentException("Remote staging failed: " + e.getMessage(), e);
       }
     }
     getLogger().info(
         "Remote staged " + zappedStagingRepositories.size() + " repositories, finished with success.");
-    
-    if (!parameters.isSkipStagingRepositoryClose() && parameters.isReleaseAfterClose()) {
-      releaseAfterClose(parameters, zappedStagingRepositories);
+
+    if (!getParameters().isSkipStagingRepositoryClose() && getParameters().isAutoReleaseAfterClose()) {
+      releaseAfterClose(zappedStagingRepositories);
     }
   }
-  
-  protected void releaseAfterClose(final StagingParameters parameters, final List<StagingRepository> stagedRepositories)
+
+  protected void releaseAfterClose(final List<StagingRepository> stagedRepositories)
       throws MojoExecutionException
   {
     getLogger().info("Remote staging repositories are being released...");
@@ -179,18 +171,18 @@ public class StagingDeployStrategy
             return input.getRepositoryId();
           }
         }));
-    final StagingWorkflowV2Service stagingWorkflow = getRemoting().getStagingWorkflowV2Service();
+    final StagingWorkflowV2Service stagingWorkflow = getRemoteNexus().getStagingWorkflowV2Service();
     try {
       if (stagingWorkflow instanceof StagingWorkflowV3Service) {
         final StagingWorkflowV3Service v3 = (StagingWorkflowV3Service) stagingWorkflow;
         StagingActionDTO action = new StagingActionDTO();
-        action.setDescription(parameters.getActionDescription(StagingAction.RELEASE));
+        action.setDescription(getParameters().getActionDescription(StagingAction.RELEASE));
         action.setStagedRepositoryIds(stagedRepositoryIds);
-        action.setAutoDropAfterRelease(parameters.isAutoDropAfterRelease());
+        action.setAutoDropAfterRelease(getParameters().isAutoDropAfterRelease());
         v3.releaseStagingRepositories(action);
       }
       else {
-        stagingWorkflow.releaseStagingRepositories(parameters.getActionDescription(StagingAction.RELEASE),
+        stagingWorkflow.releaseStagingRepositories(getParameters().getActionDescription(StagingAction.RELEASE),
             stagedRepositoryIds.toArray(new String[stagedRepositoryIds.size()]));
       }
     }

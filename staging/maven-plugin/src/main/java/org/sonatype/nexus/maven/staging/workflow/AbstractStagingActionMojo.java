@@ -56,7 +56,7 @@ public abstract class AbstractStagingActionMojo
     extends AbstractStagingMojo
 {
   /**
-   * The NexusClient instance.
+   * The RemoteNexus instance.
    */
   private NexusClient nexusClient;
 
@@ -104,7 +104,7 @@ public abstract class AbstractStagingActionMojo
   // == TRANSPORT
 
   /**
-   * Initialized stuff needed for transport, stuff like: Server, Proxy and NexusClient.
+   * Initialized stuff needed for transport, stuff like: Server, Proxy and RemoteNexus.
    */
   protected void createTransport(final String deployUrl)
       throws MojoExecutionException
@@ -184,7 +184,7 @@ public abstract class AbstractStagingActionMojo
                 new JerseyStagingWorkflowV2SubsystemFactory(), new JerseyStagingWorkflowV3SubsystemFactory())
                 .createFor(connectionInfo);
 
-        getLog().debug("NexusClient created against Nexus instance on URL: " + baseUrl.toString() + ".");
+        getLog().debug("RemoteNexus created against Nexus instance on URL: " + baseUrl.toString() + ".");
       }
       catch (MalformedURLException e) {
         throw new MojoExecutionException("Malformed Nexus base URL!", e);

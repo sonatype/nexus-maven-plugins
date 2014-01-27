@@ -15,7 +15,7 @@ package org.sonatype.nexus.maven.staging.deploy;
 
 import org.sonatype.nexus.maven.staging.deploy.strategy.DeployStrategy;
 import org.sonatype.nexus.maven.staging.deploy.strategy.FinalizeDeployRequest;
-import org.sonatype.nexus.maven.staging.deploy.strategy.Parameters;
+import org.sonatype.nexus.maven.staging.remote.Parameters;
 import org.sonatype.nexus.maven.staging.deploy.strategy.Strategies;
 
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
@@ -42,17 +42,16 @@ public class DeployStagedMojo
 
     if (isThisLastProjectWithThisMojoInExecution()) {
       try {
+        final Parameters parameters = buildParameters();
         final DeployStrategy deployStrategy;
         if (getMavenSession().getCurrentProject().getArtifact().isSnapshot()) {
-          deployStrategy = getDeployStrategy(Strategies.DEFERRED);
+          deployStrategy = getDeployStrategy(Strategies.DEFERRED, parameters);
         }
         else {
-          deployStrategy = getDeployStrategy(Strategies.STAGING);
+          deployStrategy = getDeployStrategy(Strategies.STAGING, parameters);
         }
 
-        final Parameters parameters = buildParameters(deployStrategy);
-        final FinalizeDeployRequest request = new FinalizeDeployRequest(getMavenSession(), parameters);
-
+        final FinalizeDeployRequest request = new FinalizeDeployRequest();
         deployStrategy.finalizeDeploy(request);
       }
       catch (ArtifactDeploymentException e) {

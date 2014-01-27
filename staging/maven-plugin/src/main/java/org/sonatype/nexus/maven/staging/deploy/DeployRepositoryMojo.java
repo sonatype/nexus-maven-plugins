@@ -17,7 +17,6 @@ import java.io.File;
 
 import org.sonatype.nexus.maven.staging.deploy.strategy.DeployStrategy;
 import org.sonatype.nexus.maven.staging.deploy.strategy.FinalizeDeployRequest;
-import org.sonatype.nexus.maven.staging.deploy.strategy.Parameters;
 import org.sonatype.nexus.maven.staging.deploy.strategy.Strategies;
 
 import com.google.common.base.Strings;
@@ -83,9 +82,8 @@ public class DeployRepositoryMojo
 
     if (isThisLastProjectWithThisMojoInExecution()) {
       try {
-        final DeployStrategy deployStrategy = getDeployStrategy(Strategies.IMAGE);
-        final Parameters parameters = buildParameters(deployStrategy);
-        final FinalizeDeployRequest request = new FinalizeDeployRequest(getMavenSession(), parameters);
+        final DeployStrategy deployStrategy = getDeployStrategy(Strategies.IMAGE, buildParameters());
+        final FinalizeDeployRequest request = new FinalizeDeployRequest();
 
         deployStrategy.finalizeDeploy(request);
       }

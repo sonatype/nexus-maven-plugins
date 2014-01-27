@@ -21,7 +21,7 @@ import java.util.List;
 import org.sonatype.nexus.maven.staging.deploy.strategy.DeployPerModuleRequest;
 import org.sonatype.nexus.maven.staging.deploy.strategy.DeployStrategy;
 import org.sonatype.nexus.maven.staging.deploy.strategy.FinalizeDeployRequest;
-import org.sonatype.nexus.maven.staging.deploy.strategy.Parameters;
+import org.sonatype.nexus.maven.staging.remote.Parameters;
 import org.sonatype.nexus.maven.staging.deploy.strategy.Strategies;
 
 import org.apache.maven.artifact.Artifact;
@@ -119,24 +119,6 @@ public class DeployMojo
     // matching, etc.
     failIfOffline();
 
-    final Parameters parameters;
-    final DeployStrategy deployStrategy;
-    if (skipLocalStaging)
-    // totally skipped
-    {
-      deployStrategy = getDeployStrategy(Strategies.DIRECT);
-    }
-    else if (isSkipStaging() || artifact.isSnapshot())
-    // locally staging but uploading to deployment repo (no profiles and V2 used at all)
-    {
-      deployStrategy = getDeployStrategy(Strategies.DEFERRED);
-    }
-    else
-    // for releases, everything used: profile selection, full V2, etc
-    {
-      deployStrategy = getDeployStrategy(Strategies.STAGING);
-    }
-
     // DEPLOY
     final ArrayList<DeployableArtifact> deployables = new ArrayList<DeployableArtifact>(2);
 
@@ -150,6 +132,7 @@ public class DeployMojo
       artifact.setRelease(true);
     }
 
+    final DeployStrategy deployStrategy;
     try {
       if (isPomArtifact) {
         deployables.add(new DeployableArtifact(pomFile, artifact));
@@ -187,9 +170,25 @@ public class DeployMojo
         deployables.add(new DeployableArtifact(attached.getFile(), attached));
       }
 
-      parameters = buildParameters(deployStrategy);
+      final Parameters parameters = buildParameters();
+      if (skipLocalStaging)
+      // totally skipped
+      {
+        deployStrategy = getDeployStrategy(Strategies.DIRECT, parameters);
+      }
+      else if (isSkipStaging() || artifact.isSnapshot())
+      // locally staging but uploading to deployment repo (no profiles and V2 used at all)
+      {
+        deployStrategy = getDeployStrategy(Strategies.DEFERRED, parameters);
+      }
+      else
+      // for releases, everything used: profile selection, full V2, etc
+      {
+        deployStrategy = getDeployStrategy(Strategies.STAGING, parameters);
+      }
+
       final DeployPerModuleRequest request =
-          new DeployPerModuleRequest(getMavenSession(), parameters, deployables);
+          new DeployPerModuleRequest(deployables);
       deployStrategy.deployPerModule(request);
     }
     catch (ArtifactInstallationException e) {
@@ -209,7 +208,7 @@ public class DeployMojo
       }
 
       try {
-        final FinalizeDeployRequest request = new FinalizeDeployRequest(getMavenSession(), parameters);
+        final FinalizeDeployRequest request = new FinalizeDeployRequest();
         deployStrategy.finalizeDeploy(request);
       }
       catch (ArtifactDeploymentException e) {

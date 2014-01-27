@@ -45,10 +45,10 @@ public class DeferredDeployStrategy
   {
     getLogger().info(
         "Performing deferred deploys (gathering into \""
-            + request.getParameters().getDeferredDirectoryRoot().getAbsolutePath() + "\")...");
+            + getParameters().getDeferredDirectoryRoot().getAbsolutePath() + "\")...");
     if (!request.getDeployableArtifacts().isEmpty()) {
       // deploys always to same stagingDirectory
-      final File stagingDirectory = request.getParameters().getDeferredDirectoryRoot();
+      final File stagingDirectory = getParameters().getDeferredDirectoryRoot();
       final ArtifactRepository stagingRepository = getArtifactRepositoryForDirectory(stagingDirectory);
       for (DeployableArtifact deployableArtifact : request.getDeployableArtifacts()) {
         install(deployableArtifact.getFile(), deployableArtifact.getArtifact(), stagingRepository,
@@ -68,7 +68,7 @@ public class DeferredDeployStrategy
       throws ArtifactDeploymentException, MojoExecutionException
   {
     getLogger().info("Deploying remotely...");
-    final File stagingDirectory = request.getParameters().getDeferredDirectoryRoot();
+    final File stagingDirectory = getParameters().getDeferredDirectoryRoot();
     if (!stagingDirectory.isDirectory()) {
       getLogger().warn(
           "Nothing to deploy, directory \"" + stagingDirectory.getAbsolutePath() + "\" does not exists!");
@@ -80,10 +80,10 @@ public class DeferredDeployStrategy
     try {
       // prepare the local staging directory
       // we have normal deploy
-      final ArtifactRepository deploymentRepository = getDeploymentRepository(request.getMavenSession());
+      final ArtifactRepository deploymentRepository = getDeploymentRepository();
       getLogger().info(
           " * Bulk deploying locally gathered snapshot artifacts to URL " + deploymentRepository.getUrl());
-      deployUp(request.getMavenSession(), stagingDirectory, deploymentRepository);
+      deployUp(stagingDirectory, deploymentRepository);
       getLogger().info(" * Bulk deploy of locally gathered snapshot artifacts finished.");
     }
     catch (IOException e) {

@@ -23,7 +23,8 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.common.base.Preconditions;
+import org.sonatype.nexus.maven.staging.remote.Parameters;
+
 import com.google.common.base.Strings;
 import com.google.common.io.Closeables;
 import org.apache.maven.artifact.Artifact;
@@ -46,6 +47,8 @@ import org.apache.maven.project.artifact.ProjectArtifactMetadata;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public abstract class AbstractDeployStrategy
     extends AbstractLogEnabled
     implements DeployStrategy
@@ -63,9 +66,22 @@ public abstract class AbstractDeployStrategy
   @Requirement
   private ArtifactRepositoryLayout artifactRepositoryLayout;
 
-  @Override
-  public boolean needsNexusClient() {
-    return false;
+  private MavenSession mavenSession;
+
+  private Parameters parameters;
+
+  public void prepare(MavenSession mavenSession, Parameters parameters) {
+    this.mavenSession = checkNotNull(mavenSession);
+    this.parameters = checkNotNull(parameters);
+    parameters.validateBasic();
+  }
+
+  protected MavenSession getMavenSession() {
+    return mavenSession;
+  }
+
+  protected Parameters getParameters() {
+    return parameters;
   }
 
   protected ArtifactRepository createDeploymentArtifactRepository(final String id, final String url) {
@@ -132,7 +148,7 @@ public abstract class AbstractDeployStrategy
   // G:A:V:C:P:Ext:PomFileName:PluginPrefix
   private final Pattern indexProps = Pattern.compile("(.*):(.*):(.*):(.*):(.*):(.*):(.*):(.*)");
 
-  protected void deployUp(final MavenSession mavenSession, final File sourceDirectory,
+  protected void deployUp(final File sourceDirectory,
                           final ArtifactRepository remoteRepository)
       throws ArtifactDeploymentException, IOException
   {
@@ -209,8 +225,8 @@ public abstract class AbstractDeployStrategy
      * Constructor.
      */
     public FakeArtifactHandler(final String type, final String extension) {
-      super(Preconditions.checkNotNull(type));
-      this.extension = Preconditions.checkNotNull(extension);
+      super(checkNotNull(type));
+      this.extension = checkNotNull(extension);
     }
 
     @Override
@@ -224,7 +240,7 @@ public abstract class AbstractDeployStrategy
   /**
    * Returns the ArtifactRepository created from passed in maven session's current project's distribution management.
    */
-  protected ArtifactRepository getDeploymentRepository(final MavenSession mavenSession)
+  protected ArtifactRepository getDeploymentRepository()
       throws MojoExecutionException
   {
     final ArtifactRepository repo = mavenSession.getCurrentProject().getDistributionManagementArtifactRepository();
