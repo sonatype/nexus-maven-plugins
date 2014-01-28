@@ -40,7 +40,7 @@ public class DeferredDeployStrategy
    * deploys.
    */
   @Override
-  public synchronized void deployPerModule(final DeployPerModuleRequest request)
+  public void deployPerModule(final DeployPerModuleRequest request)
       throws ArtifactInstallationException, ArtifactDeploymentException, MojoExecutionException
   {
     getLogger().info(
@@ -64,7 +64,7 @@ public class DeferredDeployStrategy
    * Performs "bulk" remote deploy of locally installed artifacts, and is driven by "index" file.
    */
   @Override
-  public synchronized void finalizeDeploy(final FinalizeDeployRequest request)
+  public void finalizeDeploy(final FinalizeDeployRequest request)
       throws ArtifactDeploymentException, MojoExecutionException
   {
     getLogger().info("Deploying remotely...");

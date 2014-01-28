@@ -62,7 +62,7 @@ public class StagingDeployStrategy
    * if needed.
    */
   @Override
-  public synchronized void deployPerModule(final DeployPerModuleRequest request)
+  public void deployPerModule(final DeployPerModuleRequest request)
       throws ArtifactInstallationException, ArtifactDeploymentException, MojoExecutionException
   {
     getLogger().info(
@@ -93,7 +93,7 @@ public class StagingDeployStrategy
    * Performs Nexus staging of locally staged artifacts.
    */
   @Override
-  public synchronized void finalizeDeploy(final FinalizeDeployRequest request)
+  public void finalizeDeploy(final FinalizeDeployRequest request)
       throws ArtifactDeploymentException, MojoExecutionException
   {
     getLogger().info("Performing remote staging...");

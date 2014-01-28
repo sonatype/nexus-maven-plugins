@@ -55,7 +55,7 @@ public class ImageDeployStrategy
    * file system.
    */
   @Override
-  public synchronized void deployPerModule(final DeployPerModuleRequest request)
+  public void deployPerModule(final DeployPerModuleRequest request)
       throws ArtifactInstallationException, ArtifactDeploymentException, MojoExecutionException
   {
     // nothing
@@ -65,7 +65,7 @@ public class ImageDeployStrategy
    * Remote deploys the "image", using {@link #zapUp(Server, Proxy, File, String)}.
    */
   @Override
-  public synchronized void finalizeDeploy(final FinalizeDeployRequest request)
+  public void finalizeDeploy(final FinalizeDeployRequest request)
       throws ArtifactDeploymentException, MojoExecutionException
   {
     getLogger().info("Staging remotely locally deployed repository...");
