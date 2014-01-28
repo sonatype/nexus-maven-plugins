@@ -23,7 +23,6 @@ import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 import com.sonatype.nexus.staging.client.StagingWorkflowV3Service;
 
-import org.sonatype.nexus.client.core.NexusStatus;
 import org.sonatype.nexus.client.core.exception.NexusClientAccessForbiddenException;
 import org.sonatype.nexus.client.core.exception.NexusClientErrorResponseException;
 import org.sonatype.nexus.client.core.exception.NexusClientNotFoundException;
@@ -42,6 +41,8 @@ import org.apache.maven.artifact.installer.ArtifactInstallationException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.component.annotations.Component;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Full staging V2 deploy strategy. It perform local staging and remote staging (on remote Nexus).
@@ -70,8 +71,10 @@ public class StagingDeployStrategy
     if (!request.getDeployableArtifacts().isEmpty()) {
       // we match only for 1st in list!
       final RemoteNexus remoteNexus = createRemoteNexus(request.getMavenSession(), request.getParameters());
+      request.setRemoteNexus(remoteNexus); // to reuse if this module is last and will perform finalizeDeploy too
       final String profileId =
-          selectStagingProfile(request.getParameters(), remoteNexus, request.getDeployableArtifacts().get(0).getArtifact());
+          selectStagingProfile(request.getParameters(), remoteNexus,
+              request.getDeployableArtifacts().get(0).getArtifact());
       final File stagingDirectory =
           getStagingDirectory(request.getParameters().getStagingDirectoryRoot(), profileId);
       // deploys always to same stagingDirectory
@@ -100,12 +103,8 @@ public class StagingDeployStrategy
       getLogger().info("We have nothing locally staged, bailing out.");
       return;
     }
-    final RemoteNexus remoteNexus = createRemoteNexus(request.getMavenSession(), request.getParameters());
-    final NexusStatus nexusStatus = remoteNexus.getNexusStatus();
-    getLogger().info(
-        String.format(" * Connected to Nexus at %s, is version %s and edition \"%s\"",
-            remoteNexus.getConnectionInfo().getBaseUrl(), nexusStatus.getVersion(), nexusStatus.getEditionLong()));
-
+    final RemoteNexus remoteNexus = checkNotNull(request.getRemoteNexus(),
+        "BUG: finalizeDeploy invoked before deployPerModule?");
     final List<StagingRepository> zappedStagingRepositories = new ArrayList<StagingRepository>();
     for (File profileDirectory : localStageRepositories) {
       if (!profileDirectory.isDirectory()) {
@@ -164,7 +163,8 @@ public class StagingDeployStrategy
     }
   }
 
-  protected void releaseAfterClose(final Parameters parameters, final RemoteNexus remoteNexus, final List<StagingRepository> stagedRepositories)
+  protected void releaseAfterClose(final Parameters parameters, final RemoteNexus remoteNexus,
+                                   final List<StagingRepository> stagedRepositories)
       throws MojoExecutionException
   {
     getLogger().info("Remote staging repositories are being released...");

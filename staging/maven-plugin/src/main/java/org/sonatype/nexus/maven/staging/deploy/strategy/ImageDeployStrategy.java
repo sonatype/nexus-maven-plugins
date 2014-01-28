@@ -19,7 +19,6 @@ import java.util.Collections;
 
 import com.sonatype.nexus.staging.client.Profile;
 
-import org.sonatype.nexus.client.core.NexusStatus;
 import org.sonatype.nexus.maven.staging.deploy.StagingRepository;
 import org.sonatype.nexus.maven.staging.remote.RemoteNexus;
 import org.sonatype.nexus.maven.staging.zapper.Zapper;
@@ -71,11 +70,6 @@ public class ImageDeployStrategy
   {
     getLogger().info("Staging remotely locally deployed repository...");
     final RemoteNexus remoteNexus = createRemoteNexus(request.getMavenSession(), request.getParameters());
-    final NexusStatus nexusStatus = remoteNexus.getNexusStatus();
-    getLogger().info(
-        String.format(" * Connected to Nexus at %s, is version %s and edition \"%s\"",
-            remoteNexus.getConnectionInfo().getBaseUrl(), nexusStatus.getVersion(), nexusStatus.getEditionLong()));
-
     final String profileId = request.getParameters().getStagingProfileId();
     final Profile stagingProfile = remoteNexus.getStagingWorkflowV2Service().selectProfile(profileId);
     final StagingRepository stagingRepository = beforeUpload(request.getParameters(), remoteNexus, stagingProfile);

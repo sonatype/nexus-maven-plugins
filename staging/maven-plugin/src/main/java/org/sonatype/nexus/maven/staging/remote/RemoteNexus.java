@@ -185,11 +185,16 @@ public class RemoteNexus
           .isSslAllowAll() ? ValidationLevel.NONE : ValidationLevel.LAX;
       final ConnectionInfo connectionInfo = new ConnectionInfo(baseUrl, authenticationInfo, proxyInfos,
           sslCertificateValidationLevel, sslCertificateHostnameValidationLevel);
-      return new JerseyNexusClientFactory(
+      final NexusClient nexusClient = new JerseyNexusClientFactory(
           // support v2 and v3
           new JerseyStagingWorkflowV2SubsystemFactory(),
           new JerseyStagingWorkflowV3SubsystemFactory()
       ).createFor(connectionInfo);
+      final NexusStatus nexusStatus = nexusClient.getNexusStatus();
+      log.info(
+          String.format(" * Connected to Nexus at %s, is version %s and edition \"%s\"",
+              connectionInfo.getBaseUrl(), nexusStatus.getVersion(), nexusStatus.getEditionLong()));
+      return nexusClient;
     }
     catch (MalformedURLException e) {
       throw new IllegalArgumentException("Malformed Nexus base URL [" + nexusUrl + "]", e);

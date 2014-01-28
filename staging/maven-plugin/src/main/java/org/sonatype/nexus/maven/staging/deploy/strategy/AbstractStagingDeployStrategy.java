@@ -26,7 +26,6 @@ import com.sonatype.nexus.staging.client.StagingRuleFailures;
 import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
-import org.sonatype.nexus.client.core.NexusStatus;
 import org.sonatype.nexus.client.core.exception.NexusClientErrorResponseException;
 import org.sonatype.nexus.maven.staging.ErrorDumper;
 import org.sonatype.nexus.maven.staging.StagingAction;
@@ -81,11 +80,6 @@ public abstract class AbstractStagingDeployStrategy
       throws MojoExecutionException
   {
     try {
-      final NexusStatus nexusStatus = remoteNexus.getNexusStatus();
-      getLogger().info(
-          String.format(" * Connected to Nexus at %s, is version %s and edition \"%s\"",
-              remoteNexus.getConnectionInfo().getBaseUrl(), nexusStatus.getVersion(),
-              nexusStatus.getEditionLong()));
       final StagingWorkflowV2Service stagingService = remoteNexus.getStagingWorkflowV2Service();
 
       Profile stagingProfile;

@@ -50,7 +50,6 @@ public abstract class AbstractStagingActionMojo
     failIfOffline();
 
     if (shouldExecute()) {
-      getLog().info("Connecting to Nexus...");
       final StagingWorkflowV2Service stagingWorkflow = createStagingWorkflowService();
 
       try {
