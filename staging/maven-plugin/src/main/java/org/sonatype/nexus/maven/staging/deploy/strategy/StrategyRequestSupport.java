@@ -14,6 +14,7 @@
 package org.sonatype.nexus.maven.staging.deploy.strategy;
 
 import org.sonatype.nexus.maven.staging.remote.Parameters;
+import org.sonatype.nexus.maven.staging.remote.RemoteNexus;
 
 import org.apache.maven.execution.MavenSession;
 
@@ -24,6 +25,11 @@ public abstract class StrategyRequestSupport
   private final MavenSession mavenSession;
 
   private final Parameters parameters;
+
+  /**
+   * Client to be reused across per-module and per-build executions.
+   */
+  private transient RemoteNexus remoteNexus;
 
   public StrategyRequestSupport(final MavenSession mavenSession, final Parameters parameters) {
     this.mavenSession = checkNotNull(mavenSession);
@@ -38,5 +44,13 @@ public abstract class StrategyRequestSupport
 
 
     return parameters;
+  }
+
+  public RemoteNexus getRemoteNexus() {
+    return remoteNexus;
+  }
+
+  public void setRemoteNexus(final RemoteNexus remoteNexus) {
+    this.remoteNexus = remoteNexus;
   }
 }

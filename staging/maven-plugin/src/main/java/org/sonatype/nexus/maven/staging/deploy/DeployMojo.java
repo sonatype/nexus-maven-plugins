@@ -134,6 +134,7 @@ public class DeployMojo
 
     final Parameters parameters = buildParameters();
     final DeployStrategy deployStrategy;
+    final DeployPerModuleRequest request;
     try {
       if (isPomArtifact) {
         deployables.add(new DeployableArtifact(pomFile, artifact));
@@ -187,7 +188,7 @@ public class DeployMojo
         deployStrategy = getDeployStrategy(Strategies.STAGING);
       }
 
-      final DeployPerModuleRequest request = new DeployPerModuleRequest(getMavenSession(), parameters, deployables);
+      request = new DeployPerModuleRequest(getMavenSession(), parameters, deployables);
       deployStrategy.deployPerModule(request);
     }
     catch (ArtifactInstallationException e) {
@@ -207,8 +208,9 @@ public class DeployMojo
       }
 
       try {
-        final FinalizeDeployRequest request = new FinalizeDeployRequest(getMavenSession(), parameters);
-        deployStrategy.finalizeDeploy(request);
+        final FinalizeDeployRequest finalizeRequest = new FinalizeDeployRequest(getMavenSession(), parameters);
+        finalizeRequest.setRemoteNexus(request.getRemoteNexus()); // pass over client
+        deployStrategy.finalizeDeploy(finalizeRequest);
       }
       catch (ArtifactDeploymentException e) {
         throw new MojoExecutionException(e.getMessage(), e);
