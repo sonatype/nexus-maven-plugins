@@ -157,6 +157,7 @@ public class RemoteNexus
       final Map<Protocol, ProxyInfo> proxyInfos = new HashMap<Protocol, ProxyInfo>(1);
 
       if (server != null && server.getUsername() != null) {
+        log.info(" + Using server credentials \"{}\" from Maven settings.", server.getId());
         authenticationInfo =
             new UsernamePasswordAuthenticationInfo(server.getUsername(), server.getPassword());
       }
@@ -173,6 +174,7 @@ public class RemoteNexus
         else {
           proxyAuthentication = null;
         }
+        log.info(" + Using \"{}\" {} Proxy from Maven settings", proxy.getId(), proxy.getProtocol().toUpperCase());
         final ProxyInfo zProxy =
             new ProxyInfo(Protocol.valueOf(proxy.getProtocol().toUpperCase()), proxy.getHost(),
                 proxy.getPort(), proxyAuthentication);

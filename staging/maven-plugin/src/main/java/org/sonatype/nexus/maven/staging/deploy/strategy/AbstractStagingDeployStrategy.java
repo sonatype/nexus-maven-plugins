@@ -53,18 +53,8 @@ public abstract class AbstractStagingDeployStrategy
   protected RemoteNexus createRemoteNexus(MavenSession mavenSession, Parameters parameters) {
     parameters.validateRemoting();
     parameters.validateStaging();
-    final RemoteNexus remoteNexus = new RemoteNexus(mavenSession, secDispatcher, getLogger().isDebugEnabled(),
+    return new RemoteNexus(mavenSession, secDispatcher, getLogger().isDebugEnabled(),
         parameters);
-    if (remoteNexus.getServer() != null) {
-      getLogger().info(
-          "Using server credentials with ID=\"" + remoteNexus.getServer().getId() + "\" from Maven settings.");
-    }
-    if (remoteNexus.getProxy() != null) {
-      getLogger().info(
-          "Using " + remoteNexus.getProxy().getProtocol().toUpperCase() + " Proxy with ID=\""
-              + remoteNexus.getProxy().getId() + "\" from Maven settings.");
-    }
-    return remoteNexus;
   }
 
   // ==
