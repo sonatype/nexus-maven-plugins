@@ -91,11 +91,7 @@ public abstract class AbstractStagingActionMojo
       throws MojoExecutionException
   {
     try {
-      final Parameters parameters = new Parameters(getPluginGav(), getDeferredDirectoryRoot(),
-          getStagingDirectoryRoot());
-      parameters.setNexusUrl(getNexusUrl());
-      parameters.setServerId(getServerId());
-      parameters.validateRemoting();
+      final Parameters parameters = buildParameters();
       final RemoteNexus remoteNexus = new RemoteNexus(getMavenSession(), getSecDispatcher(), getLog().isDebugEnabled(),
           parameters);
       return remoteNexus.getStagingWorkflowV2Service();

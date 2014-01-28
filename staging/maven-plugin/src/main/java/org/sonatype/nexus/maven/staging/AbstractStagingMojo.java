@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.sonatype.maven.mojo.execution.MojoExecution;
 import org.sonatype.nexus.maven.staging.deploy.DeployMojo;
+import org.sonatype.nexus.maven.staging.remote.Parameters;
 import org.sonatype.nexus.maven.staging.workflow.CloseStageRepositoryMojo;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 
@@ -442,5 +443,36 @@ public abstract class AbstractStagingMojo
    */
   protected File getDeferredDirectoryRoot() {
     return new File(getWorkDirectoryRoot(), "deferred");
+  }
+
+  /**
+   * Builds the parameters instance.
+   */
+  protected Parameters buildParameters()
+      throws MojoExecutionException
+  {
+    try {
+      // this below does not validate, it merely passes the set configuration values (even those unused)
+      // each strategy will properly validated parameters in their prepare method
+      final Parameters parameters = new Parameters(getPluginGav(), getDeferredDirectoryRoot(),
+          getStagingDirectoryRoot());
+      parameters.setNexusUrl(getNexusUrl());
+      parameters.setServerId(getServerId());
+      parameters.setKeepStagingRepositoryOnCloseRuleFailure(isKeepStagingRepositoryOnCloseRuleFailure());
+      parameters.setAutoReleaseAfterClose(isAutoReleaseAfterClose());
+      parameters.setAutoDropAfterRelease(isAutoDropAfterRelease());
+      parameters.setStagingActionMessages(getStagingActionMessages());
+      parameters.setStagingProgressTimeoutMinutes(getStagingProgressTimeoutMinutes());
+      parameters.setStagingProgressPauseDurationSeconds(getStagingProgressPauseDurationSeconds());
+      parameters.setSslInsecure(isSslInsecure());
+      parameters.setSslAllowAll(isSslAllowAll());
+      if (getLog().isDebugEnabled()) {
+        getLog().debug(parameters.toString());
+      }
+      return parameters;
+    }
+    catch (Exception e) {
+      throw new MojoExecutionException("Bad configuration:" + e.getMessage(), e);
+    }
   }
 }
