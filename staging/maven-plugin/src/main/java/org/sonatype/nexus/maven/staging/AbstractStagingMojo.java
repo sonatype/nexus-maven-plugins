@@ -384,7 +384,7 @@ public abstract class AbstractStagingMojo
       if (!done) {
         getLog().info("Waiting for other projects build to finish...");
         try {
-          Thread.sleep(TimeUnit.SECONDS.toMillis(10l));
+          Thread.sleep(TimeUnit.SECONDS.toMillis(2l));
         }
         catch (InterruptedException e) {
           // nothing?
