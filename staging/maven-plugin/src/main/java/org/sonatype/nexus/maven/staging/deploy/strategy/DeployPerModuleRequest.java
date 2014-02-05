@@ -16,12 +16,14 @@ package org.sonatype.nexus.maven.staging.deploy.strategy;
 import java.util.List;
 
 import org.sonatype.nexus.maven.staging.deploy.DeployableArtifact;
+import org.sonatype.nexus.maven.staging.remote.Parameters;
 
-import com.google.common.base.Preconditions;
 import org.apache.maven.execution.MavenSession;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class DeployPerModuleRequest
-    extends AbstractDeployRequest
+    extends StrategyRequestSupport
 {
   private final List<DeployableArtifact> deployableArtifacts;
 
@@ -29,7 +31,7 @@ public class DeployPerModuleRequest
                                 final List<DeployableArtifact> deployableArtifacts)
   {
     super(mavenSession, parameters);
-    this.deployableArtifacts = Preconditions.checkNotNull(deployableArtifacts);
+    this.deployableArtifacts = checkNotNull(deployableArtifacts);
   }
 
   public List<DeployableArtifact> getDeployableArtifacts() {

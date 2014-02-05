@@ -61,7 +61,7 @@ public class DeferredDeployStrategy
   }
 
   /**
-   * Performs "bulk" remote deploy, or locally installed artifacts, and is driven by "index" file.
+   * Performs "bulk" remote deploy of locally installed artifacts, and is driven by "index" file.
    */
   @Override
   public void finalizeDeploy(final FinalizeDeployRequest request)

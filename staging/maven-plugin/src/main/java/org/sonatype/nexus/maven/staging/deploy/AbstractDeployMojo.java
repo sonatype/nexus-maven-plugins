@@ -17,10 +17,7 @@ import java.util.Map;
 
 import org.sonatype.nexus.maven.staging.AbstractStagingMojo;
 import org.sonatype.nexus.maven.staging.deploy.strategy.DeployStrategy;
-import org.sonatype.nexus.maven.staging.deploy.strategy.Parameters;
-import org.sonatype.nexus.maven.staging.deploy.strategy.ParametersImpl;
-import org.sonatype.nexus.maven.staging.deploy.strategy.StagingParameters;
-import org.sonatype.nexus.maven.staging.deploy.strategy.StagingParametersImpl;
+import org.sonatype.nexus.maven.staging.remote.Parameters;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
@@ -101,53 +98,33 @@ public abstract class AbstractDeployMojo
   }
 
   /**
-   * Builds the parameters instance to pass to the {@link DeployStrategy}. This is mostly built from Mojo parameters,
-   * but some strategies might have different input.
+   * Builds the parameters instance.
    */
-  protected Parameters buildParameters(final DeployStrategy strategy)
+  @Override
+  protected Parameters buildParameters()
       throws MojoExecutionException
   {
-    if (strategy.needsNexusClient()) {
-      try {
-        final StagingParameters parameters = new StagingParametersImpl(
-            getPluginGav(),
-            getNexusUrl(),
-            getServerId(),
-            getDeferredDirectoryRoot(),
-            getStagingDirectoryRoot(),
-            isKeepStagingRepositoryOnCloseRuleFailure(),
-            isKeepStagingRepositoryOnFailure(),
-            isSkipStagingRepositoryClose(),
-            isAutoReleaseAfterClose(),
-            isAutoDropAfterRelease(),
-            getStagingProfileId(),
-            getStagingRepositoryId(),
-            getStagingActionMessages(),
-            getTags(),
-            getStagingProgressTimeoutMinutes(),
-            getStagingProgressPauseDurationSeconds(),
-            isSslInsecure(),
-            isSslAllowAll()
-        );
+    try {
+      // this below does not validate, it merely passes the set configuration values (even those unused)
+      // each strategy will properly validated parameters in their prepare method
+      final Parameters parameters = super.buildParameters();
+      // add parameters defined on this level
+      parameters.setKeepStagingRepositoryOnFailure(isKeepStagingRepositoryOnFailure());
+      parameters.setSkipStagingRepositoryClose(isSkipStagingRepositoryClose());
+      parameters.setStagingProfileId(getStagingProfileId());
+      parameters.setStagingRepositoryId(getStagingRepositoryId());
+      parameters.setTags(getTags());
 
+      if (getLog().isDebugEnabled()) {
         getLog().debug(parameters.toString());
-        return parameters;
       }
-      catch (NullPointerException e) {
-        throw new MojoExecutionException("Bad configuration:" + e.getMessage(), e);
-      }
+      return parameters;
     }
-    else {
-      try {
-        final Parameters parameters =
-            new ParametersImpl(getPluginGav(), getDeferredDirectoryRoot(), getStagingDirectoryRoot());
-
-        getLog().debug(parameters.toString());
-        return parameters;
-      }
-      catch (NullPointerException e) {
-        throw new MojoExecutionException("Bad configuration:" + e.getMessage(), e);
-      }
+    catch (MojoExecutionException e) {
+      throw e;
+    }
+    catch (Exception e) {
+      throw new MojoExecutionException("Bad configuration:" + e.getMessage(), e);
     }
   }
 

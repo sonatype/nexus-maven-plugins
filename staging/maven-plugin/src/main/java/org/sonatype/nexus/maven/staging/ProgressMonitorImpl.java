@@ -45,6 +45,14 @@ public class ProgressMonitorImpl
     this.logger = new ConsoleLogger(level, getClass().getName());
   }
 
+  public ProgressMonitorImpl(final boolean debug) {
+    int level = Logger.LEVEL_INFO;
+    if (debug) {
+      level = Logger.LEVEL_DEBUG;
+    }
+    this.logger = new ConsoleLogger(level, getClass().getName());
+  }
+
   protected void maybePrintln() {
     if (needsNewline) {
       System.out.println();

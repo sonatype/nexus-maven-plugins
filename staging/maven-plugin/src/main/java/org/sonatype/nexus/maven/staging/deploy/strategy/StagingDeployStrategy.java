@@ -23,8 +23,6 @@ import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 import com.sonatype.nexus.staging.client.StagingWorkflowV3Service;
 
-import org.sonatype.nexus.client.core.NexusClient;
-import org.sonatype.nexus.client.core.NexusStatus;
 import org.sonatype.nexus.client.core.exception.NexusClientAccessForbiddenException;
 import org.sonatype.nexus.client.core.exception.NexusClientErrorResponseException;
 import org.sonatype.nexus.client.core.exception.NexusClientNotFoundException;
@@ -32,6 +30,8 @@ import org.sonatype.nexus.maven.staging.ErrorDumper;
 import org.sonatype.nexus.maven.staging.StagingAction;
 import org.sonatype.nexus.maven.staging.deploy.DeployableArtifact;
 import org.sonatype.nexus.maven.staging.deploy.StagingRepository;
+import org.sonatype.nexus.maven.staging.remote.Parameters;
+import org.sonatype.nexus.maven.staging.remote.RemoteNexus;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
@@ -41,6 +41,8 @@ import org.apache.maven.artifact.installer.ArtifactInstallationException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.component.annotations.Component;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Full staging V2 deploy strategy. It perform local staging and remote staging (on remote Nexus).
@@ -66,12 +68,12 @@ public class StagingDeployStrategy
     getLogger().info(
         "Performing local staging (local stagingDirectory=\""
             + request.getParameters().getStagingDirectoryRoot().getAbsolutePath() + "\")...");
-    final StagingParameters parameters = getAsStagingParameters(request.getParameters());
-    initRemoting(request.getMavenSession(), parameters);
     if (!request.getDeployableArtifacts().isEmpty()) {
       // we match only for 1st in list!
+      final RemoteNexus remoteNexus = createRemoteNexus(request.getMavenSession(), request.getParameters());
+      request.setRemoteNexus(remoteNexus); // to reuse if this module is last and will perform finalizeDeploy too
       final String profileId =
-          selectStagingProfile(parameters,
+          selectStagingProfile(request.getParameters(), remoteNexus,
               request.getDeployableArtifacts().get(0).getArtifact());
       final File stagingDirectory =
           getStagingDirectory(request.getParameters().getStagingDirectoryRoot(), profileId);
@@ -95,20 +97,14 @@ public class StagingDeployStrategy
       throws ArtifactDeploymentException, MojoExecutionException
   {
     getLogger().info("Performing remote staging...");
-    final StagingParameters parameters = getAsStagingParameters(request.getParameters());
-    initRemoting(request.getMavenSession(), parameters);
     final File stageRoot = request.getParameters().getStagingDirectoryRoot();
     final File[] localStageRepositories = stageRoot.listFiles();
     if (localStageRepositories == null) {
       getLogger().info("We have nothing locally staged, bailing out.");
       return;
     }
-    final NexusClient nexusClient = getRemoting().getNexusClient();
-    final NexusStatus nexusStatus = nexusClient.getNexusStatus();
-    getLogger().info(
-        String.format(" * Connected to Nexus at %s, is version %s and edition \"%s\"",
-            nexusClient.getConnectionInfo().getBaseUrl(), nexusStatus.getVersion(), nexusStatus.getEditionLong()));
-
+    final RemoteNexus remoteNexus = checkNotNull(request.getRemoteNexus(),
+        "BUG: finalizeDeploy invoked before deployPerModule?");
     final List<StagingRepository> zappedStagingRepositories = new ArrayList<StagingRepository>();
     for (File profileDirectory : localStageRepositories) {
       if (!profileDirectory.isDirectory()) {
@@ -121,18 +117,18 @@ public class StagingDeployStrategy
       getLogger().info(" * Remote staging into staging profile ID \"" + profileId + "\"");
 
       try {
-        final Profile stagingProfile = getRemoting().getStagingWorkflowV2Service().selectProfile(profileId);
-        final StagingRepository stagingRepository = beforeUpload(parameters, stagingProfile);
+        final Profile stagingProfile = remoteNexus.getStagingWorkflowV2Service().selectProfile(profileId);
+        final StagingRepository stagingRepository = beforeUpload(request.getParameters(), remoteNexus, stagingProfile);
         zappedStagingRepositories.add(stagingRepository);
         getLogger().info(" * Uploading locally staged artifacts to profile " + stagingProfile.name());
-        deployUp(request.getMavenSession(),
-            getStagingDirectory(request.getParameters().getStagingDirectoryRoot(), profileId),
-            getDeploymentArtifactRepositoryForNexusStagingRepository(stagingRepository));
+        deployUp(request.getMavenSession(), getStagingDirectory(request.getParameters().getStagingDirectoryRoot(),
+            profileId),
+            createDeploymentArtifactRepository(remoteNexus.getServer().getId(), stagingRepository.getUrl()));
         getLogger().info(" * Upload of locally staged artifacts finished.");
-        afterUpload(parameters, stagingRepository);
+        afterUpload(request.getParameters(), remoteNexus, stagingRepository);
       }
       catch (NexusClientNotFoundException e) {
-        afterUploadFailure(parameters, zappedStagingRepositories, e);
+        afterUploadFailure(request.getParameters(), remoteNexus, zappedStagingRepositories, e);
         getLogger().error("Remote staging finished with a failure: " + e.getMessage());
         getLogger().error("");
         getLogger().error("Possible causes of 404 Not Found error:");
@@ -144,7 +140,7 @@ public class StagingDeployStrategy
         throw new ArtifactDeploymentException("Remote staging failed: " + e.getMessage(), e);
       }
       catch (NexusClientAccessForbiddenException e) {
-        afterUploadFailure(parameters, zappedStagingRepositories, e);
+        afterUploadFailure(request.getParameters(), remoteNexus, zappedStagingRepositories, e);
         getLogger().error("Remote staging finished with a failure: " + e.getMessage());
         getLogger().error("");
         getLogger().error("Possible causes of 403 Forbidden:");
@@ -154,20 +150,21 @@ public class StagingDeployStrategy
         throw new ArtifactDeploymentException("Remote staging failed: " + e.getMessage(), e);
       }
       catch (Exception e) {
-        afterUploadFailure(parameters, zappedStagingRepositories, e);
+        afterUploadFailure(request.getParameters(), remoteNexus, zappedStagingRepositories, e);
         getLogger().error("Remote staging finished with a failure: " + e.getMessage());
         throw new ArtifactDeploymentException("Remote staging failed: " + e.getMessage(), e);
       }
     }
     getLogger().info(
         "Remote staged " + zappedStagingRepositories.size() + " repositories, finished with success.");
-    
-    if (!parameters.isSkipStagingRepositoryClose() && parameters.isReleaseAfterClose()) {
-      releaseAfterClose(parameters, zappedStagingRepositories);
+
+    if (!request.getParameters().isSkipStagingRepositoryClose() && request.getParameters().isAutoReleaseAfterClose()) {
+      releaseAfterClose(request.getParameters(), remoteNexus, zappedStagingRepositories);
     }
   }
-  
-  protected void releaseAfterClose(final StagingParameters parameters, final List<StagingRepository> stagedRepositories)
+
+  protected void releaseAfterClose(final Parameters parameters, final RemoteNexus remoteNexus,
+                                   final List<StagingRepository> stagedRepositories)
       throws MojoExecutionException
   {
     getLogger().info("Remote staging repositories are being released...");
@@ -179,7 +176,7 @@ public class StagingDeployStrategy
             return input.getRepositoryId();
           }
         }));
-    final StagingWorkflowV2Service stagingWorkflow = getRemoting().getStagingWorkflowV2Service();
+    final StagingWorkflowV2Service stagingWorkflow = remoteNexus.getStagingWorkflowV2Service();
     try {
       if (stagingWorkflow instanceof StagingWorkflowV3Service) {
         final StagingWorkflowV3Service v3 = (StagingWorkflowV3Service) stagingWorkflow;

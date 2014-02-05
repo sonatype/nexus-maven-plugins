@@ -71,8 +71,10 @@ public class MavenSettings
   {
     final Server result = Clone.copy(server);
 
-    result.setUsername(decrypt(secDispatcher, server.getUsername()));
-    result.setPassword(decrypt(secDispatcher, server.getPassword()));
+    synchronized (secDispatcher) {
+      result.setUsername(decrypt(secDispatcher, server.getUsername()));
+      result.setPassword(decrypt(secDispatcher, server.getPassword()));
+    }
 
     return result;
   }
@@ -82,8 +84,10 @@ public class MavenSettings
   {
     final Proxy result = Clone.copy(server);
 
-    result.setUsername(decrypt(secDispatcher, server.getUsername()));
-    result.setPassword(decrypt(secDispatcher, server.getPassword()));
+    synchronized (secDispatcher) {
+      result.setUsername(decrypt(secDispatcher, server.getUsername()));
+      result.setPassword(decrypt(secDispatcher, server.getPassword()));
+    }
 
     return result;
   }
@@ -104,6 +108,10 @@ public class MavenSettings
     return false;
   }
 
+  /**
+   * Invokes decrypt on {@link SecDispatcher} if not {@code null}. As the sec dispatcher is not thread safe, in
+   * case of concurrent access, this method should be called from protected region only!
+   */
   private static String decrypt(final SecDispatcher secDispatcher, final String str)
       throws SecDispatcherException
   {

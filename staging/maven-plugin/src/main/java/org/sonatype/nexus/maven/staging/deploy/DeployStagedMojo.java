@@ -15,7 +15,6 @@ package org.sonatype.nexus.maven.staging.deploy;
 
 import org.sonatype.nexus.maven.staging.deploy.strategy.DeployStrategy;
 import org.sonatype.nexus.maven.staging.deploy.strategy.FinalizeDeployRequest;
-import org.sonatype.nexus.maven.staging.deploy.strategy.Parameters;
 import org.sonatype.nexus.maven.staging.deploy.strategy.Strategies;
 
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
@@ -30,7 +29,7 @@ import org.apache.maven.plugins.annotations.Mojo;
  * @author cstamas
  * @since 1.0
  */
-@Mojo(name = "deploy-staged", requiresOnline = true)
+@Mojo(name = "deploy-staged", requiresOnline = true, threadSafe = true)
 public class DeployStagedMojo
     extends AbstractDeployMojo
 {
@@ -50,9 +49,7 @@ public class DeployStagedMojo
           deployStrategy = getDeployStrategy(Strategies.STAGING);
         }
 
-        final Parameters parameters = buildParameters(deployStrategy);
-        final FinalizeDeployRequest request = new FinalizeDeployRequest(getMavenSession(), parameters);
-
+        final FinalizeDeployRequest request = new FinalizeDeployRequest(getMavenSession(), buildParameters());
         deployStrategy.finalizeDeploy(request);
       }
       catch (ArtifactDeploymentException e) {

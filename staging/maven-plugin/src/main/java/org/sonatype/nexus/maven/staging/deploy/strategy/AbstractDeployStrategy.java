@@ -23,7 +23,6 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.io.Closeables;
 import org.apache.maven.artifact.Artifact;
@@ -46,6 +45,8 @@ import org.apache.maven.project.artifact.ProjectArtifactMetadata;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public abstract class AbstractDeployStrategy
     extends AbstractLogEnabled
     implements DeployStrategy
@@ -63,11 +64,6 @@ public abstract class AbstractDeployStrategy
   @Requirement
   private ArtifactRepositoryLayout artifactRepositoryLayout;
 
-  @Override
-  public boolean needsNexusClient() {
-    return false;
-  }
-
   protected ArtifactRepository createDeploymentArtifactRepository(final String id, final String url) {
     return artifactRepositoryFactory.createDeploymentArtifactRepository(id, url, artifactRepositoryLayout, true);
   }
@@ -84,48 +80,62 @@ public abstract class AbstractDeployStrategy
   }
 
   /**
+   * Static lock object, used to synchronize access to non-thread safe methods of this strategy in case of
+   * parallel build (Maven3).
+   */
+  private static final Object parallelLock = new Object();
+
+  /**
    * Performs an "install" (not to be confused with "install into local repository!) into the staging repository. It
    * will retain snapshot versions, and no metadata is created at all. In short: performs a simple file copy.
+   * <p/>
+   * This one single method is not thread safe, as it performs IO and appends to the "index" file. Hence, this
+   * one method is execute in a synchronized block of a static object's monitor, to prevent multiple parallel
+   * install actions to happen. As install is local FS operation, this method should quickly finish it's job
+   * as costly operations (like asking for Staging profile of REST API of remote Nexus) already happened, we
+   * do only local FS ops here.
    */
   protected void install(final File source, final Artifact artifact, final ArtifactRepository stagingRepository,
                          final File stagingDirectory)
       throws ArtifactInstallationException, MojoExecutionException
   {
-    final String path = stagingRepository.pathOf(artifact);
-    try {
-      artifactInstaller.install(source, artifact, stagingRepository);
+    synchronized (parallelLock) {
+      final String path = stagingRepository.pathOf(artifact);
+      try {
+        artifactInstaller.install(source, artifact, stagingRepository);
 
-      String pluginPrefix = null;
-      // String pluginName = null;
-      for (ArtifactMetadata artifactMetadata : artifact.getMetadataList()) {
-        if (artifactMetadata instanceof GroupRepositoryMetadata) {
-          final Plugin plugin =
-              ((GroupRepositoryMetadata) artifactMetadata).getMetadata().getPlugins().get(0);
-          pluginPrefix = plugin.getPrefix();
-          // pluginName = plugin.getName();
+        String pluginPrefix = null;
+        // String pluginName = null;
+        for (ArtifactMetadata artifactMetadata : artifact.getMetadataList()) {
+          if (artifactMetadata instanceof GroupRepositoryMetadata) {
+            final Plugin plugin =
+                ((GroupRepositoryMetadata) artifactMetadata).getMetadata().getPlugins().get(0);
+            pluginPrefix = plugin.getPrefix();
+            // pluginName = plugin.getName();
+          }
         }
-      }
 
-      // append the index file
-      final FileOutputStream fos = new FileOutputStream(new File(stagingDirectory, ".index"), true);
-      final OutputStreamWriter osw = new OutputStreamWriter(fos, "ISO-8859-1");
-      final PrintWriter pw = new PrintWriter(osw);
-      String pomFileName = null;
-      for (ArtifactMetadata artifactMetadata : artifact.getMetadataList()) {
-        if (artifactMetadata instanceof ProjectArtifactMetadata) {
-          pomFileName = ((ProjectArtifactMetadata) artifactMetadata).getLocalFilename(stagingRepository);
+        // append the index file
+        final FileOutputStream fos = new FileOutputStream(new File(stagingDirectory, ".index"), true);
+        final OutputStreamWriter osw = new OutputStreamWriter(fos, "ISO-8859-1");
+        final PrintWriter pw = new PrintWriter(osw);
+        String pomFileName = null;
+        for (ArtifactMetadata artifactMetadata : artifact.getMetadataList()) {
+          if (artifactMetadata instanceof ProjectArtifactMetadata) {
+            pomFileName = (artifactMetadata).getLocalFilename(stagingRepository);
+          }
         }
+        pw.println(String.format("%s=%s:%s:%s:%s:%s:%s:%s:%s", path, artifact.getGroupId(),
+            artifact.getArtifactId(), artifact.getVersion(),
+            Strings.isNullOrEmpty(artifact.getClassifier()) ? "n/a" : artifact.getClassifier(), artifact.getType(),
+            artifact.getArtifactHandler().getExtension(), Strings.isNullOrEmpty(pomFileName) ? "n/a" : pomFileName,
+            Strings.isNullOrEmpty(pluginPrefix) ? "n/a" : pluginPrefix));
+        pw.flush();
+        pw.close();
       }
-      pw.println(String.format("%s=%s:%s:%s:%s:%s:%s:%s:%s", path, artifact.getGroupId(),
-          artifact.getArtifactId(), artifact.getVersion(),
-          Strings.isNullOrEmpty(artifact.getClassifier()) ? "n/a" : artifact.getClassifier(), artifact.getType(),
-          artifact.getArtifactHandler().getExtension(), Strings.isNullOrEmpty(pomFileName) ? "n/a" : pomFileName,
-          Strings.isNullOrEmpty(pluginPrefix) ? "n/a" : pluginPrefix));
-      pw.flush();
-      pw.close();
-    }
-    catch (IOException e) {
-      throw new ArtifactInstallationException("Cannot locally stage and maintain the index file!", e);
+      catch (IOException e) {
+        throw new ArtifactInstallationException("Cannot locally stage and maintain the index file!", e);
+      }
     }
   }
 
@@ -209,8 +219,8 @@ public abstract class AbstractDeployStrategy
      * Constructor.
      */
     public FakeArtifactHandler(final String type, final String extension) {
-      super(Preconditions.checkNotNull(type));
-      this.extension = Preconditions.checkNotNull(extension);
+      super(checkNotNull(type));
+      this.extension = checkNotNull(extension);
     }
 
     @Override
