@@ -379,6 +379,10 @@ public abstract class AbstractStagingMojo
         if (currentProject != project && getMavenSession().getResult().getBuildSummary(project) == null) {
           done = false;
           break;
+        } else if (currentProject == project) {
+          // we need to break, as "lastProjectWithThisMojo might != lastProjectInReactor"
+          // and in that case we would block here indefinitely
+          break;
         }
       }
       if (!done) {
