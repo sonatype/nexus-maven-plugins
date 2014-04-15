@@ -176,7 +176,7 @@ public class RemoteNexus
         }
         log.info(" + Using \"{}\" {} Proxy from Maven settings", proxy.getId(), proxy.getProtocol().toUpperCase());
         final ProxyInfo zProxy =
-            new ProxyInfo(Protocol.valueOf(proxy.getProtocol().toUpperCase()), proxy.getHost(),
+            new ProxyInfo(baseUrl.getProtocol(), proxy.getHost(),
                 proxy.getPort(), proxyAuthentication);
         proxyInfos.put(zProxy.getProxyProtocol(), zProxy);
       }
