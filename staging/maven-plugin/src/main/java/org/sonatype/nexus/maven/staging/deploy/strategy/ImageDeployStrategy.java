@@ -102,7 +102,7 @@ public class ImageDeployStrategy
       request.setRemotePassword(server.getPassword());
     }
     if (proxy != null) {
-      request.setProxyProtocol(proxy.getProtocol());
+      request.setProxyProtocol("http"); // Proxy is always HTTP
       request.setProxyHost(proxy.getHost());
       request.setProxyPort(proxy.getPort());
       request.setProxyUsername(proxy.getUsername());
