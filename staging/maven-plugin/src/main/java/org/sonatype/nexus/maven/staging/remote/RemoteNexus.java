@@ -84,7 +84,8 @@ public class RemoteNexus
             + "\" not found!");
       }
 
-      final Proxy proxy = MavenSettings.selectProxy(mavenSession.getSettings(), nexusUrl);
+      // NEXUS-6538: Behave like Wagons: select strictly based on Nexus URL protocol
+      final Proxy proxy = MavenSettings.selectProxy(mavenSession.getSettings(), nexusUrl, true);
       if (proxy != null) {
         this.proxy = MavenSettings.decrypt(secDispatcher, proxy);
       }
@@ -176,7 +177,7 @@ public class RemoteNexus
         }
         log.info(" + Using \"{}\" {} Proxy from Maven settings", proxy.getId(), proxy.getProtocol().toUpperCase());
         final ProxyInfo zProxy =
-            new ProxyInfo(Protocol.valueOf(proxy.getProtocol().toUpperCase()), proxy.getHost(),
+            new ProxyInfo(baseUrl.getProtocol(), proxy.getHost(),
                 proxy.getPort(), proxyAuthentication);
         proxyInfos.put(zProxy.getProxyProtocol(), zProxy);
       }

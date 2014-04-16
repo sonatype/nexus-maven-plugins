@@ -38,7 +38,33 @@ public class MavenSettings
     return null;
   }
 
+  /**
+   * Method that selects proxy from Maven settings.xml for given URL. This method for
+   * HTTPS serverUrl will select HTTPS Proxy if found, and will fallback to HTTP Proxy
+   * if defined. This method will return {@code null} (meaning "no proxy to be used") only
+   * if user's settings has no active HTTP Proxy.
+   */
   public static Proxy selectProxy(final Settings settings, final String serverUrl)
+      throws MalformedURLException
+  {
+    return selectProxy(settings, serverUrl, false);
+  }
+
+  /**
+   * Method that selects proxy from Maven settings.xml for given URL.
+   * If {@code strict} parameter is {@code false}, this method for HTTPS serverUrl
+   * will select HTTPS Proxy if found, and will fallback to HTTP Proxy
+   * if defined. This method will return {@code null} (meaning "no proxy to be used") only
+   * if user's settings has no active HTTP Proxy.
+   *
+   * If {@code strict} parameter is {@code true}, this method will
+   * behave in "strictly by protocol" mode, meaning, there is no fallback. If serverUrl is HTTPS then
+   * HTTPS Proxy will be returned if found, or {@code null}. For plain HTTP similarly,
+   * it will return HTTP Proxy only if one is found.
+   *
+   * @since 1.6.1
+   */
+  public static Proxy selectProxy(final Settings settings, final String serverUrl, final boolean strict)
       throws MalformedURLException
   {
     URL url = new URL(serverUrl);
@@ -58,12 +84,22 @@ public class MavenSettings
       }
     }
 
-    Proxy proxy = httpProxy;
-    if ("https".equalsIgnoreCase(url.getProtocol()) && httpsProxy != null) {
-      proxy = httpsProxy;
+    if (!strict) {
+      Proxy proxy = httpProxy;
+      if ("https".equalsIgnoreCase(url.getProtocol()) && httpsProxy != null) {
+        proxy = httpsProxy;
+      }
+      return proxy;
     }
-
-    return proxy;
+    else {
+      if ("http".equalsIgnoreCase(url.getProtocol())) {
+        return httpProxy;
+      }
+      else if ("https".equalsIgnoreCase(url.getProtocol())) {
+        return httpsProxy;
+      }
+      return null;
+    }
   }
 
   public static Server decrypt(final SecDispatcher secDispatcher, final Server server)
