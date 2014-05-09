@@ -104,7 +104,8 @@ public abstract class AbstractStagingMojo
   /**
    * The base URL for a Nexus Professional instance that includes the nexus-staging-plugin. For example, if Nexus is
    * mounted at the server context of {@code /nexus} and running on localhost at port 8081 ( the default install ),
-   * then this value should be {@code http://localhost:8081/nexus/}.
+   * then this value should be {@code http://localhost:8081/nexus/}. Do not confuse the base URL with the implicit
+   * profile matching URL such as {@code http://localhost:8081/service/local/staging/deploy/maven2/}!
    */
   @Parameter(property = "nexusUrl")
   private String nexusUrl;
