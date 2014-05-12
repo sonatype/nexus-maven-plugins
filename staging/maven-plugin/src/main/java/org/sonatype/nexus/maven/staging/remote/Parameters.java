@@ -14,6 +14,7 @@
 package org.sonatype.nexus.maven.staging.remote;
 
 import java.io.File;
+import java.util.Locale;
 import java.util.Map;
 
 import org.sonatype.nexus.maven.staging.StagingAction;
@@ -93,6 +94,13 @@ public class Parameters
   public void validateRemoting() {
     validateBasic();
     checkArgument(!Strings.isNullOrEmpty(nexusUrl), "Mandatory plugin parameter 'nexusUrl' is missing");
+    checkArgument(nexusUrl.toLowerCase(Locale.ENGLISH).startsWith("https") ||
+            nexusUrl.toLowerCase(Locale.ENGLISH).startsWith("http"),
+        "Mandatory plugin parameter 'nexusUrl' must start with http or https");
+    checkArgument(!nexusUrl.contains("/service/local/") && !nexusUrl.contains("/content/repositories/"),
+        "Mandatory plugin parameter 'nexusUrl' should be your Nexus base URL only - for example" +
+            " http://localhost:8081/nexus"
+    );
     checkArgument(!Strings.isNullOrEmpty(serverId), "Mandatory plugin parameter 'serverId' is missing");
   }
 

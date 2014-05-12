@@ -93,8 +93,7 @@ public abstract class AbstractStagingMojo
 
   /**
    * Specifies an alternative staging directory to which the project artifacts should be "locally staged". By
-   * default,
-   * staging directory will be looked for under {@code $}{{@code project.build.directory} {@code /nexus-staging}
+   * default, staging directory will be looked for under {@code $}{{@code project.build.directory} {@code /nexus-staging}
    * folder of the first encountered module that has this Mojo defined for execution (Warning: this means, if top
    * level POM is an aggregator, it will be NOT in top level!).
    */
@@ -103,8 +102,10 @@ public abstract class AbstractStagingMojo
 
   /**
    * The base URL for a Nexus Professional instance that includes the nexus-staging-plugin. For example, if Nexus is
-   * mounted at the server context of {@code /nexus} and running on localhost at port 8081 ( the default install ),
-   * then this value should be {@code http://localhost:8081/nexus/}.
+   * mounted at context path {@code /nexus} and running on localhost at port 8081 ( the default install ), then this
+   * value should be {@code http://localhost:8081/nexus/}. This is not the implicit profile matching URL such as
+   * {@code http://localhost:8081/nexus/service/local/staging/deploy/maven2/} or a repository content URL such as
+   * {@code http://localhost:8081/nexus/content/repositories/releases/}!
    */
   @Parameter(property = "nexusUrl")
   private String nexusUrl;
@@ -183,9 +184,9 @@ public abstract class AbstractStagingMojo
   /**
    * MAVEN 3+ ONLY. Automatically detect build failures. If {@code true} (default), any build failure
    * will prevent staging deployments. If {@code false}, build failures will not prevent staging deployments.
-   * A {@code false} value combined with Maven's {@code -fae} "fail at end" fail strategy will allow
-   * staging deployments despite a build falure, matching previous plugin default behavior. There is no reliable method
-   * for a plugin to detect a previous build failure using Maven 2.
+   * A {@code false} value combined with the Maven {@code -fae} "fail at end" fail strategy will allow staging
+   * deployments despite a build failure, matching previous plugin default behavior. There is no reliable method for a
+   * plugin to detect a previous build failure using Maven 2.
    *
    * @since 1.6.0
    */
