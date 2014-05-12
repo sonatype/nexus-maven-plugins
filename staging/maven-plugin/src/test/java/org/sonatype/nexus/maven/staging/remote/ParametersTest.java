@@ -29,7 +29,7 @@ public class ParametersTest
   File file;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     params = new Parameters("", file, file);
     // valid values by default
     params.setServerId("nexus");
@@ -37,48 +37,48 @@ public class ParametersTest
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void validateRemotingMissingNexusUrl() throws Exception {
+  public void validateRemotingMissingNexusUrl() {
     params.setNexusUrl("");
     params.validateRemoting();
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void validateRemotingNexusUrlNoService() throws Exception {
+  public void validateRemotingNexusUrlNoService() {
     params.setNexusUrl("http://localhost:8081/nexus/service/local/staging");
     params.validateRemoting();
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void validateRemotingNexusUrlNoContent() throws Exception {
+  public void validateRemotingNexusUrlNoContent() {
     params.setNexusUrl("http://localhost:8081/nexus/content/repositories/snapshots");
     params.validateRemoting();
   }
 
   @Test
-  public void validateRemotingIsValid() throws Exception {
+  public void validateRemotingIsValid() {
     params.validateRemoting();
   }
 
   @Test
-  public void validateRemotingNexusUrlSlash() throws Exception {
+  public void validateRemotingNexusUrlSlash() {
     params.setNexusUrl("http://localhost:8081/nexus/");
     params.validateRemoting();
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void validateRemotingNexusUrlHttpOnly() throws Exception {
+  public void validateRemotingNexusUrlHttpOnly() {
     params.setNexusUrl("scp://localhost:8081/nexus");
     params.validateRemoting();
   }
 
   @Test
-  public void validateRemotingNexusUrlHttpsAllowed() throws Exception {
+  public void validateRemotingNexusUrlHttpsAllowed() {
     params.setNexusUrl("https://localhost:8081/nexus");
     params.validateRemoting();
   }
 
   @Test
-  public void validateRemotingNexusUrlIgnoreCase() throws Exception {
+  public void validateRemotingNexusUrlIgnoreCase() {
     params.setNexusUrl("HTTP://localhost:8081/nexus");
     params.validateRemoting();
   }
