@@ -68,20 +68,20 @@ public class LightweightStagingLifecycleParticipant
   public void afterProjectsRead(final MavenSession session)
       throws MavenExecutionException
   {
-    if (session.getTopLevelProject().getVersion().contains("SNAPSHOT")) {
-      // bail out of snapshot
-      log.info("Project version is SNAPSHOT, not using staging...");
+    if (session.getTopLevelProject().getVersion().contains("SNAPSHOT") || !session.getGoals().contains("deploy")) {
+      // bail out of snapshot or no deploy goal invoked
       return;
     }
     topLevelProjectGav = String
         .format("%s:%s:%s", session.getTopLevelProject().getGroupId(), session.getTopLevelProject().getArtifactId(),
             session.getTopLevelProject().getVersion());
-    log.info("Nexus staging is about to prepare staging repository for deploy of {}...", topLevelProjectGav);
     try {
       parameters = createParameters(session);
       remoteNexus = createRemoteNexus(session, secDispatcher, log.isDebugEnabled(), parameters);
       profile = remoteNexus.getStagingWorkflowService().selectProfile(parameters.getStagingProfileId());
       stagingRepositoryId = remoteNexus.getStagingWorkflowService().startStaging(profile, topLevelProjectGav, null);
+      log.info("Nexus staging repository {} created to receive deploy of {}...", stagingRepositoryId,
+          topLevelProjectGav);
     }
     catch (NexusClientNotFoundException e) {
       log.error("Unexpected Nexus response during staging start", e);
@@ -120,13 +120,17 @@ public class LightweightStagingLifecycleParticipant
     }
     if (session.getResult().hasExceptions()) {
       if (!parameters.isKeepStagingRepositoryOnFailure()) {
+        log.info("Dropping staging repository {} created for {} due to build failure...", stagingRepositoryId,
+            topLevelProjectGav);
         remoteNexus.getStagingWorkflowService().dropStagingRepositories(stagingRepositoryId);
       }
     }
     else {
       try {
+        log.info("Closing staging repository {} created for {}...", stagingRepositoryId, topLevelProjectGav);
         remoteNexus.getStagingWorkflowService().finishStaging(profile, stagingRepositoryId, topLevelProjectGav);
         if (!parameters.isSkipStagingRepositoryClose() && parameters.isAutoReleaseAfterClose()) {
+          log.info("Releasing staging repository {} created for {}...", stagingRepositoryId, topLevelProjectGav);
           releaseAfterClose();
         }
       }
