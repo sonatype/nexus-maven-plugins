@@ -165,7 +165,6 @@ public class LightweightStagingLifecycleParticipant
   protected void releaseAfterClose()
       throws MavenExecutionException
   {
-    log.info("Staging repository {} is being released...", stagingRepositoryId);
     final StagingWorkflowV2Service stagingWorkflow = remoteNexus.getStagingWorkflowService();
     final String message = topLevelProjectGav;
     try {
@@ -191,7 +190,6 @@ public class LightweightStagingLifecycleParticipant
       // fail the build
       throw new MavenExecutionException("Could not perform action: there are failing staging rules!", e);
     }
-    log.info("Remote staging repositories released.");
   }
 
   private void dumpErrors(final StagingRuleFailuresException e) {
