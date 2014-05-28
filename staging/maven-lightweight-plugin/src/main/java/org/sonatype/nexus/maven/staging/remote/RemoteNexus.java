@@ -41,7 +41,6 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Server;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -51,7 +50,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class RemoteNexus
 {
-  private static final Logger log = LoggerFactory.getLogger(RemoteNexus.class);
+  private final Logger log;
 
   private final Server server;
 
@@ -61,11 +60,12 @@ public class RemoteNexus
 
   private final StagingWorkflowV2Service stagingWorkflowService;
 
-  public RemoteNexus(final MavenSession mavenSession,
+  public RemoteNexus(final Logger log,
+                     final MavenSession mavenSession,
                      final SecDispatcher secDispatcher,
-                     final boolean debug,
                      final Parameters parameters)
   {
+    this.log = checkNotNull(log);
     checkNotNull(mavenSession);
     checkNotNull(secDispatcher);
     checkNotNull(parameters);
@@ -80,7 +80,7 @@ public class RemoteNexus
       }
       else {
         throw new IllegalArgumentException("Server credentials with ID \"" + parameters.getServerId()
-            + "\" not found!");
+            + "\" not found in maven settings!");
       }
 
       // NEXUS-6538: Behave like Wagons: select strictly based on Nexus URL protocol
@@ -101,7 +101,7 @@ public class RemoteNexus
 
     // create client and needed subsystem
     this.nexusClient = createNexusClient(parameters);
-    this.stagingWorkflowService = createStagingWorkflowService(parameters, nexusClient, debug);
+    this.stagingWorkflowService = createStagingWorkflowService(parameters, nexusClient);
   }
 
   /**
@@ -127,12 +127,14 @@ public class RemoteNexus
       final UsernamePasswordAuthenticationInfo authenticationInfo;
       final Map<Protocol, ProxyInfo> proxyInfos = new HashMap<Protocol, ProxyInfo>(1);
 
+      log.info(" * Creating NexusClient instance for {}", baseUrl);
       if (server != null && server.getUsername() != null) {
         log.info(" + Using server credentials \"{}\" from Maven settings.", server.getId());
         authenticationInfo =
             new UsernamePasswordAuthenticationInfo(server.getUsername(), server.getPassword());
       }
       else {
+        log.info(" + No server credentials are being used.");
         authenticationInfo = null;
       }
 
@@ -151,6 +153,9 @@ public class RemoteNexus
                 proxy.getPort(), proxyAuthentication);
         proxyInfos.put(zProxy.getProxyProtocol(), zProxy);
       }
+      else {
+        log.info(" + No HTTP Proxy is being used");
+      }
 
       final ValidationLevel sslCertificateValidationLevel = parameters
           .isSslInsecure() ? ValidationLevel.LAX : ValidationLevel.STRICT;
@@ -164,9 +169,8 @@ public class RemoteNexus
           new JerseyStagingWorkflowV3SubsystemFactory()
       ).createFor(connectionInfo);
       final NexusStatus nexusStatus = nexusClient.getNexusStatus();
-      log.info(
-          String.format(" * Connected to Nexus at %s, is version %s and edition \"%s\"",
-              connectionInfo.getBaseUrl(), nexusStatus.getVersion(), nexusStatus.getEditionLong()));
+      log.info(" * Connected to Nexus version {}, edition \"{}\"",
+          connectionInfo.getBaseUrl(), nexusStatus.getVersion(), nexusStatus.getEditionLong());
       return nexusClient;
     }
     catch (MalformedURLException e) {
@@ -182,7 +186,7 @@ public class RemoteNexus
   }
 
   protected StagingWorkflowV2Service createStagingWorkflowService(final Parameters parameters,
-                                                                  final NexusClient nexusClient, final boolean debug)
+                                                                  final NexusClient nexusClient)
   {
     StagingWorkflowV2Service workflowService = null;
     // First try v3

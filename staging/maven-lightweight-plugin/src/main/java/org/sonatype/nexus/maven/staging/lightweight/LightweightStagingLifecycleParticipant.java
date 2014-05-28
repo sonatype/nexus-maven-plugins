@@ -75,9 +75,10 @@ public class LightweightStagingLifecycleParticipant
     topLevelProjectGav = String
         .format("%s:%s:%s", session.getTopLevelProject().getGroupId(), session.getTopLevelProject().getArtifactId(),
             session.getTopLevelProject().getVersion());
+    log.info("Using lightweight-staging to perform deploy");
     try {
       parameters = createParameters(session);
-      remoteNexus = createRemoteNexus(session, secDispatcher, log.isDebugEnabled(), parameters);
+      remoteNexus = createRemoteNexus(session, secDispatcher, parameters);
       profile = remoteNexus.getStagingWorkflowService().selectProfile(parameters.getStagingProfileId());
       stagingRepositoryId = remoteNexus.getStagingWorkflowService().startStaging(profile, topLevelProjectGav, null);
       log.info("Nexus staging repository {} created to receive deploy of {}...", stagingRepositoryId,
@@ -156,10 +157,9 @@ public class LightweightStagingLifecycleParticipant
 
   private RemoteNexus createRemoteNexus(final MavenSession session,
                                         final SecDispatcher secDispatcher,
-                                        final boolean debug,
                                         final Parameters parameters)
   {
-    return new RemoteNexus(session, secDispatcher, debug, parameters);
+    return new RemoteNexus(log, session, secDispatcher, parameters);
   }
 
   protected void releaseAfterClose()
