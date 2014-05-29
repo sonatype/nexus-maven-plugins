@@ -25,6 +25,7 @@ Features:
  * only drives the REST API of remote Nexus, does not take over deploys
 
 Limitations:
+ * **Experimental** use at own risk
  * the project being built will land in one single staging repository
  * the staging repository description is defaulted to the GAV of the first module and cannot be overridden
  * sends an extra status resource request at the beginning of the build
