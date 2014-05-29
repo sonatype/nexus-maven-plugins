@@ -17,6 +17,7 @@ import java.util.Collections;
 
 import com.sonatype.nexus.staging.api.dto.StagingActionDTO;
 import com.sonatype.nexus.staging.client.Profile;
+import com.sonatype.nexus.staging.client.ProfileMatchingParameters;
 import com.sonatype.nexus.staging.client.StagingRuleFailures;
 import com.sonatype.nexus.staging.client.StagingRuleFailures.RuleFailure;
 import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
@@ -30,6 +31,7 @@ import org.sonatype.nexus.maven.staging.remote.Parameters;
 import org.sonatype.nexus.maven.staging.remote.RemoteNexus;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 
+import com.google.common.base.Strings;
 import org.apache.maven.AbstractMavenLifecycleParticipant;
 import org.apache.maven.MavenExecutionException;
 import org.apache.maven.execution.MavenSession;
@@ -64,6 +66,13 @@ public class LightweightStagingLifecycleParticipant
 
   private String stagingRepositoryId;
 
+  private String stagingRepositoryUrl;
+
+  /**
+   * Method invoked after all the projects have be read up by Maven. Here, NexusClient is being built, and
+   * staging profile is determined, and staging is started for given profile. The repository URLs are then
+   * "redirected" to deploy into newly created staging repository.
+   */
   @Override
   public void afterProjectsRead(final MavenSession session)
       throws MavenExecutionException
@@ -78,11 +87,28 @@ public class LightweightStagingLifecycleParticipant
     log.info("Using lightweight-staging to perform deploy");
     try {
       parameters = createParameters(session);
-      remoteNexus = createRemoteNexus(session, secDispatcher, parameters);
-      profile = remoteNexus.getStagingWorkflowService().selectProfile(parameters.getStagingProfileId());
-      stagingRepositoryId = remoteNexus.getStagingWorkflowService().startStaging(profile, topLevelProjectGav, null);
-      log.info("Nexus staging repository {} created to receive deploy of {}...", stagingRepositoryId,
-          topLevelProjectGav);
+      remoteNexus = new RemoteNexus(log, session, secDispatcher, parameters);
+      profile = fetchProfile(session, parameters, remoteNexus);
+    }
+    catch (IllegalArgumentException e) {
+      log.info("Illegal staging configuration: {}", e.getMessage());
+      throw new MavenExecutionException("Illegal staging configuration: " + e.getMessage(), e);
+    }
+    catch (NexusClientAccessForbiddenException e) {
+      log.error("Lack of permission to access staging on Nexus");
+      throw new MavenExecutionException("Lack of permission to access staging", e);
+    }
+    catch (NexusClientNotFoundException e) {
+      log.info("Illegal staging configuration: profile does not exists or no access to it");
+      throw new MavenExecutionException("Illegal staging configuration: profile does not exists or no access to it", e);
+    }
+
+    try {
+      final String startMessage = topLevelProjectGav;
+      stagingRepositoryId = remoteNexus.getStagingWorkflowService().startStaging(profile, startMessage, null);
+      stagingRepositoryUrl = remoteNexus.getStagingWorkflowService()
+          .startedRepositoryBaseUrl(profile, stagingRepositoryId);
+      log.info(" * Nexus staging repository {} created...", stagingRepositoryId);
     }
     catch (NexusClientNotFoundException e) {
       log.error("Unexpected Nexus response during staging start", e);
@@ -97,8 +123,7 @@ public class LightweightStagingLifecycleParticipant
       throw new MavenExecutionException("Remote staging failed: " + e.getMessage(), e);
     }
 
-    final String stagingRepositoryUrl = remoteNexus.getStagingWorkflowService()
-        .startedRepositoryBaseUrl(profile, stagingRepositoryId);
+    log.info(" * Deploy will use URL: {}", stagingRepositoryUrl);
     // set the deploy URLs
     for (MavenProject project : session.getProjects()) {
       if (project.getDistributionManagement() != null && project.getDistributionManagement().getRepository() != null) {
@@ -111,87 +136,125 @@ public class LightweightStagingLifecycleParticipant
     }
   }
 
+  /**
+   * Method invoked at the build end. On successful build outcome, it will close the staging repository, and if needed,
+   * release it too. In case of build failure, if required, repository will be dropped.
+   */
   @Override
   public void afterSessionEnd(final MavenSession session)
       throws MavenExecutionException
   {
     if (parameters == null) {
-      // bail out
+      // bail out, as we did not even kick in
       return;
     }
+    final StagingWorkflowV2Service stagingWorkflow = remoteNexus.getStagingWorkflowService();
+    final String endMessage = topLevelProjectGav;
     if (session.getResult().hasExceptions()) {
       if (!parameters.isKeepStagingRepositoryOnFailure()) {
-        log.info("Dropping staging repository {} created for {} due to build failure...", stagingRepositoryId,
-            topLevelProjectGav);
-        remoteNexus.getStagingWorkflowService().dropStagingRepositories(stagingRepositoryId);
+        log.info(" * Dropping staging repository {} due to build failure...", stagingRepositoryId);
+        stagingWorkflow.dropStagingRepositories(stagingRepositoryId);
       }
     }
     else {
-      try {
-        log.info("Closing staging repository {} created for {}...", stagingRepositoryId, topLevelProjectGav);
-        remoteNexus.getStagingWorkflowService().finishStaging(profile, stagingRepositoryId, topLevelProjectGav);
-        if (!parameters.isSkipStagingRepositoryClose() && parameters.isAutoReleaseAfterClose()) {
-          log.info("Releasing staging repository {} created for {}...", stagingRepositoryId, topLevelProjectGav);
-          releaseAfterClose();
+      if (!parameters.isSkipStagingRepositoryClose()) {
+        try {
+          log.info(" * Closing staging repository {}...", stagingRepositoryId);
+          stagingWorkflow.finishStaging(profile, stagingRepositoryId, topLevelProjectGav);
+          if (!parameters.isAutoReleaseAfterClose()) {
+            log.info(" * Build artifacts are now accessible from URL: {}",
+                remoteNexus.getNexusClient().getConnectionInfo().getBaseUrl() + "content/repositories/" +
+                    stagingRepositoryId);
+          }
+          else {
+            log.info(" * Releasing staging repository {}...", stagingRepositoryId);
+            try {
+              if (stagingWorkflow instanceof StagingWorkflowV3Service) {
+                final StagingWorkflowV3Service v3 = (StagingWorkflowV3Service) stagingWorkflow;
+                StagingActionDTO action = new StagingActionDTO();
+                action.setDescription(endMessage);
+                action.setStagedRepositoryIds(Collections.singletonList(stagingRepositoryId));
+                action.setAutoDropAfterRelease(parameters.isAutoDropAfterRelease());
+                v3.releaseStagingRepositories(action);
+              }
+              else {
+                stagingWorkflow.releaseStagingRepositories(endMessage, stagingRepositoryId);
+              }
+            }
+            catch (StagingRuleFailuresException e) {
+              dumpErrors(e);
+              if (!parameters.isKeepStagingRepositoryOnCloseRuleFailure()) {
+                stagingWorkflow.dropStagingRepositories(stagingRepositoryId);
+              }
+              throw new MavenExecutionException(
+                  "Could not release staging repository: there are failing staging rules!", e);
+            }
+            catch (NexusClientErrorResponseException e) {
+              dumpErrors(e);
+              // fail the build, this is some communication error?
+              throw new MavenExecutionException("Could not release staging repository: Nexus ErrorResponse received!",
+                  e);
+            }
+          }
         }
-      }
-      catch (StagingRuleFailuresException e) {
-        dumpErrors(e);
-        if (!parameters.isKeepStagingRepositoryOnCloseRuleFailure()) {
-          remoteNexus.getStagingWorkflowService().dropStagingRepositories(stagingRepositoryId);
+        catch (StagingRuleFailuresException e) {
+          dumpErrors(e);
+          if (!parameters.isKeepStagingRepositoryOnCloseRuleFailure()) {
+            stagingWorkflow.dropStagingRepositories(stagingRepositoryId);
+          }
+          throw new MavenExecutionException("Could not close staging repository: there are failing staging rules!", e);
         }
-        throw new MavenExecutionException("Remote staging failed: " + e.getMessage(), e);
+        catch (NexusClientErrorResponseException e) {
+          dumpErrors(e);
+          // fail the build, this is some communication error?
+          throw new MavenExecutionException("Could not close staging repository: Nexus ErrorResponse received!", e);
+        }
       }
     }
   }
 
-  // ==
+  // ======
 
+  /**
+   * Extract parameters from various sources. Currently, it is TLP properties.
+   */
   private Parameters createParameters(final MavenSession session) {
     final String nexusUrl = session.getTopLevelProject().getProperties().getProperty("staging.nexusUrl");
     final String serverId = session.getTopLevelProject().getProperties().getProperty("staging.serverId");
     final String profileId = session.getTopLevelProject().getProperties().getProperty("staging.profileId");
 
+    log.debug("nexusUrl={}. serverId={}, profileId={}", nexusUrl, serverId, profileId);
+
     return new Parameters(nexusUrl, serverId, profileId);
   }
 
-  private RemoteNexus createRemoteNexus(final MavenSession session,
-                                        final SecDispatcher secDispatcher,
-                                        final Parameters parameters)
-  {
-    return new RemoteNexus(log, session, secDispatcher, parameters);
+  /**
+   * Fetches {@link Profile} to be used for staging. It's is either explicitly given by user in parameters, see {@link
+   * #createParameters(MavenSession)}, or if not, TLP is matched on remote server side for profile.
+   */
+  private Profile fetchProfile(final MavenSession session, final Parameters parameters, final RemoteNexus remoteNexus) {
+    Profile stagingProfile;
+    if (Strings.isNullOrEmpty(parameters.getStagingProfileId())) {
+      final ProfileMatchingParameters params =
+          new ProfileMatchingParameters(
+              session.getTopLevelProject().getGroupId(),
+              session.getTopLevelProject().getArtifactId(),
+              session.getTopLevelProject().getVersion());
+      stagingProfile = remoteNexus.getStagingWorkflowService().matchProfile(params);
+      log.info(
+          " * Using staging profile \"" + stagingProfile.name() + "\" (matched by Nexus against TLP).");
+    }
+    else {
+      stagingProfile = remoteNexus.getStagingWorkflowService().selectProfile(parameters.getStagingProfileId());
+      log.info(
+          " * Using staging profile \"" + stagingProfile.name() + "\" (set by user).");
+    }
+    return stagingProfile;
   }
 
-  protected void releaseAfterClose()
-      throws MavenExecutionException
-  {
-    final StagingWorkflowV2Service stagingWorkflow = remoteNexus.getStagingWorkflowService();
-    final String message = topLevelProjectGav;
-    try {
-      if (stagingWorkflow instanceof StagingWorkflowV3Service) {
-        final StagingWorkflowV3Service v3 = (StagingWorkflowV3Service) stagingWorkflow;
-        StagingActionDTO action = new StagingActionDTO();
-        action.setDescription(message);
-        action.setStagedRepositoryIds(Collections.singletonList(stagingRepositoryId));
-        action.setAutoDropAfterRelease(parameters.isAutoDropAfterRelease());
-        v3.releaseStagingRepositories(action);
-      }
-      else {
-        stagingWorkflow.releaseStagingRepositories(message, stagingRepositoryId);
-      }
-    }
-    catch (NexusClientErrorResponseException e) {
-      dumpErrors(e);
-      // fail the build
-      throw new MavenExecutionException("Could not perform action: Nexus ErrorResponse received!", e);
-    }
-    catch (StagingRuleFailuresException e) {
-      dumpErrors(e);
-      // fail the build
-      throw new MavenExecutionException("Could not perform action: there are failing staging rules!", e);
-    }
-  }
-
+  /**
+   * Format staging rule failures for console output.
+   */
   private void dumpErrors(final StagingRuleFailuresException e) {
     log.error("");
     log.error("Nexus Staging Rules Failure Report");
@@ -202,7 +265,7 @@ public class LightweightStagingLifecycleParticipant
       for (RuleFailure ruleFailure : failure.getFailures()) {
         log.error("  Rule \"{}\" failures", ruleFailure.getRuleName());
         for (String message : ruleFailure.getMessages()) {
-          log.error("    * {}", unfick(message));
+          log.error("    * {}", shave(message));
         }
       }
       log.error("");
@@ -210,17 +273,23 @@ public class LightweightStagingLifecycleParticipant
     log.error("");
   }
 
+  /**
+   * Format Nexus Client error response for console output.
+   */
   private void dumpErrors(final NexusClientErrorResponseException e) {
     log.error("");
     log.error("Nexus Error Response: {} - {}", e.getResponseCode(), e.getReasonPhrase());
     for (NexusClientErrorResponseException.ErrorMessage errorEntry : e.errors()) {
-      log.error("  {} - {}", unfick(errorEntry.getId()),
-          unfick(errorEntry.getMessage()));
+      log.error("  {} - {}", shave(errorEntry.getId()),
+          shave(errorEntry.getMessage()));
     }
     log.error("");
   }
 
-  private String unfick(final String str) {
+  /**
+   * Shave off some constructs being ugly on console.
+   */
+  private String shave(final String str) {
     if (str != null) {
       return str.replace("&quot;", "").replace("&lt;b&gt;", "").replace("&lt;/b&gt;", "");
     }

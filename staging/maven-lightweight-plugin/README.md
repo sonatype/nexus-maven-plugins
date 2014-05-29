@@ -37,7 +37,7 @@ Required properties: following properties are *required* and must exist in top l
 |---------------|---------|
 | `staging.nexusUrl` | *Mandatory*. Has to point to the *base URL of target Nexus*. |
 | `staging.serverId` | *Mandatory*. Has to hold an ID of a `<server>` section from Maven's `settings.xml` to pick authentication information from. |
-| `staging.profileId` | *Mandatory*. Has to hold a Nexus Staging Profile ID to stage against. The profile has to exists, and user performing staging has to have access to it. |
+| `staging.profileId` | *Optional*. Has to hold a Nexus Staging Profile ID to stage against. The profile has to exists, and user performing staging has to have access to it. If not given, TLP will be matched for a profile. |
 
 # Behind the curtain
 

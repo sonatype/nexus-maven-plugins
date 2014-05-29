@@ -15,6 +15,8 @@ package org.sonatype.nexus.maven.staging.remote;
 
 import java.util.Locale;
 
+import javax.annotation.Nullable;
+
 import com.google.common.base.Strings;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -52,7 +54,7 @@ public class Parameters
 
   private boolean autoDropAfterRelease = true;
 
-  public Parameters(final String nexusUrl, final String serverId, final String stagingProfileId) {
+  public Parameters(final String nexusUrl, final String serverId, final @Nullable String stagingProfileId) {
     checkArgument(!Strings.isNullOrEmpty(nexusUrl), "Mandatory plugin parameter 'nexusUrl' is missing");
     checkArgument(nexusUrl.toLowerCase(Locale.ENGLISH).startsWith("https") ||
             nexusUrl.toLowerCase(Locale.ENGLISH).startsWith("http"),
@@ -62,11 +64,10 @@ public class Parameters
             " http://localhost:8081/nexus"
     );
     checkArgument(!Strings.isNullOrEmpty(serverId), "Mandatory plugin parameter 'serverId' is missing");
-    checkArgument(!Strings.isNullOrEmpty(stagingProfileId), "Mandatory plugin parameter 'stagingProfileId' is missing");
 
     this.nexusUrl = nexusUrl;
     this.serverId = serverId;
-    this.stagingProfileId = stagingProfileId;
+    this.stagingProfileId = stagingProfileId; // optional
   }
 
   public String getNexusUrl() {
@@ -77,6 +78,7 @@ public class Parameters
     return serverId;
   }
 
+  @Nullable
   public String getStagingProfileId() {
     return stagingProfileId;
   }
