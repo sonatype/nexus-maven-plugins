@@ -47,15 +47,15 @@ Optional properties: following properties have sensible defaults, but can be ove
 
 | Configuration | Meaning |
 |---------------|---------|
-| `staging.profileId` | Has to hold a Nexus Staging Profile ID to stage against. The profile has to exists, and user performing staging has to have access to it. If not given, TLP will be matched for a profile. |
-| `sslInsecure` | HTTPS connection will be established even against hosts having self signed certificates. |
-| `sslAllowAll` | HTTPS connection will neglect X509 certificate hostnames. |
-| `stagingProgressPauseDurationSeconds` | Staging rule evaluation progress pause in seconds. |
-| `stagingProgressTimeoutMinutes` | Staging rule evaluation progress in minutes. |
-| `autoReleaseAfterClose` | On successful close, should the repository be immediately released? |
-| `autoDropAfterRelease` | On successful release, should the repository be immediately dropped? |
-| `keepStagingRepositoryOnRuleFailure` | On staging rule failure, should be the staging repository kept? |
-| `keepStagingRepositoryOnBuildFailure` | On build failure, should  be the staging repository kept? |
+| `staging.profileId` (null) | Has to hold a Nexus Staging Profile ID to stage against. The profile has to exists, and user performing staging has to have access to it. If not given, TLP will be matched for a profile. |
+| `sslInsecure` (false) | HTTPS connection will be established even against hosts having self signed certificates. |
+| `sslAllowAll` (false) | HTTPS connection will neglect X509 certificate hostnames. |
+| `stagingProgressPauseDurationSeconds` (3) | Staging rule evaluation progress pause in seconds. |
+| `stagingProgressTimeoutMinutes` (5) | Staging rule evaluation progress in minutes. |
+| `autoReleaseAfterClose` (false) | On successful close, should the repository be immediately released? |
+| `autoDropAfterRelease` (true) | On successful release, should the repository be immediately dropped? |
+| `keepStagingRepositoryOnRuleFailure` (true) | On staging rule failure, should be the staging repository kept? |
+| `keepStagingRepositoryOnBuildFailure` (false) | On build failure, should  be the staging repository kept? |
 
 # Behind the curtain
 
