@@ -36,13 +36,25 @@ Limitations:
 
 Just enable this plugin as extension, for example from a profile in your `settings.xml`, set the required properties, and deploy/release as you usually would with Maven!
 
-Required properties: following properties are *required* and must exist in top level project of the POMs (or be defined in a profile in settings).
+Required properties: following properties are *required* to exists in profile, TLP, or user properties (passed with `-D`).
 
 | Configuration | Meaning |
 |---------------|---------|
 | `staging.nexusUrl` | *Mandatory*. Has to point to the *base URL of target Nexus*. |
 | `staging.serverId` | *Mandatory*. Has to hold an ID of a `<server>` section from Maven's `settings.xml` to pick authentication information from. |
-| `staging.profileId` | *Optional*. Has to hold a Nexus Staging Profile ID to stage against. The profile has to exists, and user performing staging has to have access to it. If not given, TLP will be matched for a profile. |
+
+Optional properties: following properties have sensible defaults, but can be overridden by users.
+
+| Configuration | Meaning |
+| `staging.profileId` | Has to hold a Nexus Staging Profile ID to stage against. The profile has to exists, and user performing staging has to have access to it. If not given, TLP will be matched for a profile. |
+| `sslInsecure` | HTTPS connection will be established even against hosts having self signed certificates. |
+| `sslAllowAll` | HTTPS connection will neglect X509 certificate hostnames. |
+| `stagingProgressPauseDurationSeconds` | Staging rule evaluation progress pause in seconds. |
+| `stagingProgressTimeoutMinutes` | Staging rule evaluation progress in minutes. |
+| `autoReleaseAfterClose` | On successful close, should the repository be immediately released? |
+| `autoDropAfterRelease` | On successful release, should the repository be immediately dropped? |
+| `keepStagingRepositoryOnRuleFailure` | On staging rule failure, should be the staging repository kept? |
+| `keepStagingRepositoryOnBuildFailure` | On build failure, should  be the staging repository kept? |
 
 # Behind the curtain
 
