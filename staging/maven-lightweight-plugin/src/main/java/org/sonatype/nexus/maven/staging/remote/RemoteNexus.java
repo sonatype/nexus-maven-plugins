@@ -170,7 +170,7 @@ public class RemoteNexus
       ).createFor(connectionInfo);
       final NexusStatus nexusStatus = nexusClient.getNexusStatus();
       log.info(" * Connected to Nexus version {}, edition \"{}\"",
-          connectionInfo.getBaseUrl(), nexusStatus.getVersion(), nexusStatus.getEditionLong());
+          nexusStatus.getVersion(), nexusStatus.getEditionLong());
       return nexusClient;
     }
     catch (MalformedURLException e) {

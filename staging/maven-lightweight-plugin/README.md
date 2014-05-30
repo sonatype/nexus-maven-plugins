@@ -16,7 +16,7 @@
 
 Maven Plugin to perform deploys combined with Nexus Staging workflow. While the maven plugin ("staging client") part is OSS, to use staging features it need a Sonatype Nexus Professional instance 2.1+ on the server side!
 
-Plugin is compatible with Maven 3.2.0 and newer!
+**Plugin is compatible with Maven 3.2.0 and newer!**
 
 Features:
  * it is meant as lightweight alternative to nexus-staging-maven-plugin
@@ -27,9 +27,9 @@ Features:
 Limitations:
  * **Experimental** use at own risk
  * the project being built will land in one single staging repository
- * the staging repository description is defaulted to the GAV of the first module and cannot be overridden
- * sends an extra status resource request at the beginning of the build
- * some relevant properties from the main staging plugin are not implemented, for example timeout values waiting for repo to close - these use defaults - further customization can be made by editing source
+ * sends an extra status resource request at the beginning of the build (as NexusClient, used in here too, always does)
+ * on build failures, the opened staging repository is not cleaned up (it seems Maven 3.2 does not invoke newly added
+ afterSessionEnd on lifecycle listener in some cases, see http://jira.codehaus.org/browse/MNG-5640)
  
 
 # Documentation

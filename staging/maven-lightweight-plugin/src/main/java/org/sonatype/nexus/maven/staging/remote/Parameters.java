@@ -30,9 +30,13 @@ public class Parameters
 
   private final String serverId;
 
-  private final String stagingProfileId;
+  // "optional" parts
 
-  // tuning, with sensible defaults
+  private String stagingProfileId;
+
+  private String description;
+
+  // connection tuning, with sensible defaults
 
   private int stagingProgressTimeoutMinutes = 5;
 
@@ -42,19 +46,17 @@ public class Parameters
 
   private boolean sslAllowAll = false;
 
-  // flags
+  // behaviour flags
 
-  private boolean keepStagingRepositoryOnCloseRuleFailure = true;
+  private boolean keepStagingRepositoryOnRuleFailure = true;
 
-  private boolean keepStagingRepositoryOnFailure = false;
-
-  private boolean skipStagingRepositoryClose = false;
+  private boolean keepStagingRepositoryOnBuildFailure = false;
 
   private boolean autoReleaseAfterClose = false;
 
   private boolean autoDropAfterRelease = true;
 
-  public Parameters(final String nexusUrl, final String serverId, final @Nullable String stagingProfileId) {
+  public Parameters(final String nexusUrl, final String serverId) {
     checkArgument(!Strings.isNullOrEmpty(nexusUrl), "Mandatory plugin parameter 'nexusUrl' is missing");
     checkArgument(nexusUrl.toLowerCase(Locale.ENGLISH).startsWith("https") ||
             nexusUrl.toLowerCase(Locale.ENGLISH).startsWith("http"),
@@ -67,7 +69,6 @@ public class Parameters
 
     this.nexusUrl = nexusUrl;
     this.serverId = serverId;
-    this.stagingProfileId = stagingProfileId; // optional
   }
 
   public String getNexusUrl() {
@@ -81,6 +82,19 @@ public class Parameters
   @Nullable
   public String getStagingProfileId() {
     return stagingProfileId;
+  }
+
+  public void setStagingProfileId(final @Nullable String stagingProfileId) {
+    this.stagingProfileId = stagingProfileId;
+  }
+
+  @Nullable
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(final @Nullable String description) {
+    this.description = description;
   }
 
   public int getStagingProgressTimeoutMinutes() {
@@ -115,28 +129,20 @@ public class Parameters
     this.sslAllowAll = sslAllowAll;
   }
 
-  public boolean isKeepStagingRepositoryOnCloseRuleFailure() {
-    return keepStagingRepositoryOnCloseRuleFailure;
+  public boolean isKeepStagingRepositoryOnRuleFailure() {
+    return keepStagingRepositoryOnRuleFailure;
   }
 
-  public void setKeepStagingRepositoryOnCloseRuleFailure(final boolean keepStagingRepositoryOnCloseRuleFailure) {
-    this.keepStagingRepositoryOnCloseRuleFailure = keepStagingRepositoryOnCloseRuleFailure;
+  public void setKeepStagingRepositoryOnRuleFailure(final boolean keepStagingRepositoryOnRuleFailure) {
+    this.keepStagingRepositoryOnRuleFailure = keepStagingRepositoryOnRuleFailure;
   }
 
-  public boolean isKeepStagingRepositoryOnFailure() {
-    return keepStagingRepositoryOnFailure;
+  public boolean isKeepStagingRepositoryOnBuildFailure() {
+    return keepStagingRepositoryOnBuildFailure;
   }
 
-  public void setKeepStagingRepositoryOnFailure(final boolean keepStagingRepositoryOnFailure) {
-    this.keepStagingRepositoryOnFailure = keepStagingRepositoryOnFailure;
-  }
-
-  public boolean isSkipStagingRepositoryClose() {
-    return skipStagingRepositoryClose;
-  }
-
-  public void setSkipStagingRepositoryClose(final boolean skipStagingRepositoryClose) {
-    this.skipStagingRepositoryClose = skipStagingRepositoryClose;
+  public void setKeepStagingRepositoryOnBuildFailure(final boolean keepStagingRepositoryOnBuildFailure) {
+    this.keepStagingRepositoryOnBuildFailure = keepStagingRepositoryOnBuildFailure;
   }
 
   public boolean isAutoReleaseAfterClose() {

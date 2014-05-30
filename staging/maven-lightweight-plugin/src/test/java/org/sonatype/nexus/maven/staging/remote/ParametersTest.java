@@ -24,41 +24,41 @@ public class ParametersTest
 
   @Test(expected = IllegalArgumentException.class)
   public void validateRemotingMissingNexusUrl() {
-    params = new Parameters("", "nexus", "profile");
+    params = new Parameters("", "nexus");
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void validateRemotingNexusUrlNoService() {
-    params = new Parameters("http://localhost:8081/nexus", "", "profile");
+    params = new Parameters("http://localhost:8081/nexus", "");
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void validateRemotingNexusUrlNoContent() {
-    params = new Parameters("http://localhost:8081/nexus/content/repositories/snapshots", "", "profile");
+    params = new Parameters("http://localhost:8081/nexus/content/repositories/snapshots", "");
   }
 
   @Test
   public void validateRemotingIsValid() {
-    params = new Parameters("http://localhost:8081/nexus", "nexus", "profile");
+    params = new Parameters("http://localhost:8081/nexus", "nexus");
   }
 
   @Test
   public void validateRemotingNexusUrlSlash() {
-    params = new Parameters("http://localhost:8081/nexus/", "nexus", "profile");
+    params = new Parameters("http://localhost:8081/nexus/", "nexus");
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void validateRemotingNexusUrlHttpOnly() {
-    params = new Parameters("scp://localhost:8081/nexus/", "nexus", "profile");
+    params = new Parameters("scp://localhost:8081/nexus/", "nexus");
   }
 
   @Test
   public void validateRemotingNexusUrlHttpsAllowed() {
-    params = new Parameters("https://localhost:8081/nexus/", "nexus", "profile");
+    params = new Parameters("https://localhost:8081/nexus/", "nexus");
   }
 
   @Test
   public void validateRemotingNexusUrlIgnoreCase() {
-    params = new Parameters("HTTPS://localhost:8081/nexus/", "nexus", "profile");
+    params = new Parameters("HTTPS://localhost:8081/nexus/", "nexus");
   }
 }

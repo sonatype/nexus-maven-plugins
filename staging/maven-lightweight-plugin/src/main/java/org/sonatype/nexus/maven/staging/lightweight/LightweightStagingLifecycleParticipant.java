@@ -104,11 +104,11 @@ public class LightweightStagingLifecycleParticipant
     }
 
     try {
-      final String startMessage = topLevelProjectGav;
+      final String startMessage = parameters.getDescription();
       stagingRepositoryId = remoteNexus.getStagingWorkflowService().startStaging(profile, startMessage, null);
+      log.info(" * Created Nexus staging repository {}...", stagingRepositoryId);
       stagingRepositoryUrl = remoteNexus.getStagingWorkflowService()
           .startedRepositoryBaseUrl(profile, stagingRepositoryId);
-      log.info(" * Nexus staging repository {} created...", stagingRepositoryId);
     }
     catch (NexusClientNotFoundException e) {
       log.error("Unexpected Nexus response during staging start", e);
@@ -149,66 +149,64 @@ public class LightweightStagingLifecycleParticipant
       return;
     }
     final StagingWorkflowV2Service stagingWorkflow = remoteNexus.getStagingWorkflowService();
-    final String endMessage = topLevelProjectGav;
+    final String endMessage = parameters.getDescription();
     if (session.getResult().hasExceptions()) {
-      if (!parameters.isKeepStagingRepositoryOnFailure()) {
+      if (!parameters.isKeepStagingRepositoryOnBuildFailure()) {
         log.info(" * Dropping staging repository {} due to build failure...", stagingRepositoryId);
         stagingWorkflow.dropStagingRepositories(stagingRepositoryId);
       }
     }
     else {
-      if (!parameters.isSkipStagingRepositoryClose()) {
-        try {
-          log.info(" * Closing staging repository {}...", stagingRepositoryId);
-          stagingWorkflow.finishStaging(profile, stagingRepositoryId, topLevelProjectGav);
-          if (!parameters.isAutoReleaseAfterClose()) {
-            log.info(" * Build artifacts are now accessible from URL: {}",
-                remoteNexus.getNexusClient().getConnectionInfo().getBaseUrl() + "content/repositories/" +
-                    stagingRepositoryId);
-          }
-          else {
-            log.info(" * Releasing staging repository {}...", stagingRepositoryId);
-            try {
-              if (stagingWorkflow instanceof StagingWorkflowV3Service) {
-                final StagingWorkflowV3Service v3 = (StagingWorkflowV3Service) stagingWorkflow;
-                StagingActionDTO action = new StagingActionDTO();
-                action.setDescription(endMessage);
-                action.setStagedRepositoryIds(Collections.singletonList(stagingRepositoryId));
-                action.setAutoDropAfterRelease(parameters.isAutoDropAfterRelease());
-                v3.releaseStagingRepositories(action);
-              }
-              else {
-                stagingWorkflow.releaseStagingRepositories(endMessage, stagingRepositoryId);
-              }
+      try {
+        log.info(" * Closing staging repository {}...", stagingRepositoryId);
+        stagingWorkflow.finishStaging(profile, stagingRepositoryId, endMessage);
+        if (!parameters.isAutoReleaseAfterClose()) {
+          log.info(" * Build artifacts are now accessible from URL: {}",
+              remoteNexus.getNexusClient().getConnectionInfo().getBaseUrl() + "content/repositories/" +
+                  stagingRepositoryId);
+        }
+        else {
+          log.info(" * Releasing staging repository {}...", stagingRepositoryId);
+          try {
+            if (stagingWorkflow instanceof StagingWorkflowV3Service) {
+              final StagingWorkflowV3Service v3 = (StagingWorkflowV3Service) stagingWorkflow;
+              StagingActionDTO action = new StagingActionDTO();
+              action.setDescription(endMessage);
+              action.setStagedRepositoryIds(Collections.singletonList(stagingRepositoryId));
+              action.setAutoDropAfterRelease(parameters.isAutoDropAfterRelease());
+              v3.releaseStagingRepositories(action);
             }
-            catch (StagingRuleFailuresException e) {
-              dumpErrors(e);
-              if (!parameters.isKeepStagingRepositoryOnCloseRuleFailure()) {
-                stagingWorkflow.dropStagingRepositories(stagingRepositoryId);
-              }
-              throw new MavenExecutionException(
-                  "Could not release staging repository: there are failing staging rules!", e);
-            }
-            catch (NexusClientErrorResponseException e) {
-              dumpErrors(e);
-              // fail the build, this is some communication error?
-              throw new MavenExecutionException("Could not release staging repository: Nexus ErrorResponse received!",
-                  e);
+            else {
+              stagingWorkflow.releaseStagingRepositories(endMessage, stagingRepositoryId);
             }
           }
-        }
-        catch (StagingRuleFailuresException e) {
-          dumpErrors(e);
-          if (!parameters.isKeepStagingRepositoryOnCloseRuleFailure()) {
-            stagingWorkflow.dropStagingRepositories(stagingRepositoryId);
+          catch (StagingRuleFailuresException e) {
+            dumpErrors(e);
+            if (!parameters.isKeepStagingRepositoryOnRuleFailure()) {
+              stagingWorkflow.dropStagingRepositories(stagingRepositoryId);
+            }
+            throw new MavenExecutionException(
+                "Could not release staging repository: there are failing staging rules!", e);
           }
-          throw new MavenExecutionException("Could not close staging repository: there are failing staging rules!", e);
+          catch (NexusClientErrorResponseException e) {
+            dumpErrors(e);
+            // fail the build, this is some communication error?
+            throw new MavenExecutionException("Could not release staging repository: Nexus ErrorResponse received!",
+                e);
+          }
         }
-        catch (NexusClientErrorResponseException e) {
-          dumpErrors(e);
-          // fail the build, this is some communication error?
-          throw new MavenExecutionException("Could not close staging repository: Nexus ErrorResponse received!", e);
+      }
+      catch (StagingRuleFailuresException e) {
+        dumpErrors(e);
+        if (!parameters.isKeepStagingRepositoryOnRuleFailure()) {
+          stagingWorkflow.dropStagingRepositories(stagingRepositoryId);
         }
+        throw new MavenExecutionException("Could not close staging repository: there are failing staging rules!", e);
+      }
+      catch (NexusClientErrorResponseException e) {
+        dumpErrors(e);
+        // fail the build, this is some communication error?
+        throw new MavenExecutionException("Could not close staging repository: Nexus ErrorResponse received!", e);
       }
     }
   }
@@ -219,13 +217,99 @@ public class LightweightStagingLifecycleParticipant
    * Extract parameters from various sources. Currently, it is TLP properties.
    */
   private Parameters createParameters(final MavenSession session) {
-    final String nexusUrl = session.getTopLevelProject().getProperties().getProperty("staging.nexusUrl");
-    final String serverId = session.getTopLevelProject().getProperties().getProperty("staging.serverId");
-    final String profileId = session.getTopLevelProject().getProperties().getProperty("staging.profileId");
+    final String nexusUrl = searchPropertyByNameOrAlias(session, null, "staging.nexusUrl", "nexusUrl");
+    final String serverId = searchPropertyByNameOrAlias(session, null, "staging.serverId", "serverId");
 
-    log.debug("nexusUrl={}. serverId={}, profileId={}", nexusUrl, serverId, profileId);
+    log.debug("nexusUrl={}. serverId={}", nexusUrl, serverId);
 
-    return new Parameters(nexusUrl, serverId, profileId);
+    final Parameters parameters = new Parameters(nexusUrl, serverId);
+
+    // try to gather some more by looking at system properties
+
+    parameters.setStagingProfileId(searchPropertyByNameOrAlias(session, null, "staging.profileId", "profileId"));
+    parameters.setDescription(searchPropertyByNameOrAlias(session, topLevelProjectGav, "staging.description", "description"));
+
+    // SSL settings (obey our but also "Wagon way" too)
+    parameters.setSslInsecure(getBoolean(session, false, "sslInsecure", "maven.wagon.http.ssl.insecure"));
+    parameters.setSslAllowAll(getBoolean(session, false, "sslAllowAll", "maven.wagon.http.ssl.allowall"));
+
+    // Staging timeout
+    parameters.setStagingProgressPauseDurationSeconds(getInteger(session, 3, "stagingProgressPauseDurationSeconds"));
+    parameters.setStagingProgressTimeoutMinutes(getInteger(session, 5, "stagingProgressTimeoutMinutes"));
+
+    // Behaviour flags
+    parameters.setAutoReleaseAfterClose(getBoolean(session, false, "autoReleaseAfterClose"));
+    parameters.setAutoDropAfterRelease(getBoolean(session, true, "autoDropAfterRelease"));
+    parameters.setKeepStagingRepositoryOnRuleFailure(getBoolean(session, true, "keepStagingRepositoryOnRuleFailure"));
+    parameters
+        .setKeepStagingRepositoryOnBuildFailure(getBoolean(session, false, "keepStagingRepositoryOnBuildFailure"));
+
+    return parameters;
+  }
+
+  private boolean getBoolean(final MavenSession session, final boolean defaultValue, final String name,
+                             final String... aliases)
+  {
+    return Boolean.valueOf(searchPropertyByNameOrAlias(session, String.valueOf(defaultValue), name, aliases));
+  }
+
+  private int getInteger(final MavenSession session, final int defaultValue, final String name,
+                         final String... aliases)
+  {
+    try {
+      return Integer.valueOf(searchPropertyByNameOrAlias(session, String.valueOf(defaultValue), name, aliases));
+    }
+    catch (NumberFormatException e) {
+      throw new IllegalArgumentException("Malformed integer parameter '" + name + "'!", e);
+    }
+  }
+
+  /**
+   * Searches for a {@code name} named or any alias of the property in maven session, returning default value if not
+   * found.
+   *
+   * @see #searchProperty(MavenSession, String)
+   */
+  private String searchPropertyByNameOrAlias(final MavenSession session, final String defaultValue, final String name,
+                                             final String... aliases)
+  {
+    String value = searchProperty(session, name);
+    if (value != null) {
+      log.debug("'{}'='{}'", name, value);
+      return value;
+    }
+    for (String alias : aliases) {
+      value = searchProperty(session, alias);
+      if (value != null) {
+        log.debug("'{}' (as '{}')='{}'", name, alias, value);
+        return value;
+      }
+    }
+    log.debug("'{}' (default)='{}'", name, defaultValue);
+    return defaultValue;
+  }
+
+  /**
+   * Searches for a {@code name} named property in maven session. It looks at these in following order:
+   * <ul>
+   * <li>TLP properties</li>
+   * <li>MavenSession user properties</li>
+   * <li>MavenSession system properties</li>
+   * </ul>
+   * If property not found, {@code null} is returned (as all these are java Property classes, value of {@code null}
+   * is not allowed).
+   */
+  private String searchProperty(final MavenSession session, final String name) {
+    if (session.getTopLevelProject().getProperties().containsKey(name)) {
+      return session.getTopLevelProject().getProperties().getProperty(name);
+    }
+    if (session.getUserProperties().containsKey(name)) {
+      return session.getUserProperties().getProperty(name);
+    }
+    if (session.getSystemProperties().containsKey(name)) {
+      return session.getSystemProperties().getProperty(name);
+    }
+    return null;
   }
 
   /**
