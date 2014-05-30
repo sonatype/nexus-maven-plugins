@@ -46,6 +46,7 @@ Required properties: following properties are *required* to exists in profile, T
 Optional properties: following properties have sensible defaults, but can be overridden by users.
 
 | Configuration | Meaning |
+|---------------|---------|
 | `staging.profileId` | Has to hold a Nexus Staging Profile ID to stage against. The profile has to exists, and user performing staging has to have access to it. If not given, TLP will be matched for a profile. |
 | `sslInsecure` | HTTPS connection will be established even against hosts having self signed certificates. |
 | `sslAllowAll` | HTTPS connection will neglect X509 certificate hostnames. |
