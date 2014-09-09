@@ -30,7 +30,7 @@ Unless noted otherwise in corresponding plugin documentation, following are the 
 
 ## Issue tracking
 
-Please use Sonatype JIRA to report issues (Component: Nexus Maven Plugins) and *please specify plugin version you use and Maven version you use it with*.
+Please use Sonatype JIRA to report issues (Component: Build Tooling) and *please specify plugin version you use and Maven version you use it with*.
 
 https://issues.sonatype.org/browse/NEXUS
 
