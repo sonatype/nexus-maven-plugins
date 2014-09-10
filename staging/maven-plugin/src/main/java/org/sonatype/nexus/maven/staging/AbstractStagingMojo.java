@@ -330,9 +330,15 @@ public abstract class AbstractStagingMojo
     }
     if (result) {
       try {
-        // In case of parallel build, we need to ensure everything else is built
-        waitForOtherProjectsIfNeeded();
+        if (mavenSession.isParallel()) {
+          // In case of parallel build, we need to ensure everything else is built
+          waitForOtherProjectsIfNeeded();
+        }
+      } catch (NoSuchMethodError e) {
+        // ignore and continue, maven2 cannot do parallel anyway
+      }
 
+      try {
         if (getMavenSession().getResult().hasExceptions()) {
           if (detectBuildFailures) {
             // log failures found and bail out
