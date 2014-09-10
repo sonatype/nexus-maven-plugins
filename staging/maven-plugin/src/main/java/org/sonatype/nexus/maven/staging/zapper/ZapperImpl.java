@@ -76,7 +76,7 @@ public class ZapperImpl
       final Parameters parameters = ParametersBuilder.defaults().build();
       final Hc4ClientBuilder clientBuilder = new Hc4ClientBuilder(parameters, zapperRequest.getRemoteUrl());
       if (credentialsProvider != null) {
-        clientBuilder.withRealm(credentialsProvider);
+        clientBuilder.withPreemptiveRealm(credentialsProvider);
       }
       if (proxyServer != null) {
         clientBuilder.withProxy(proxyServer);
