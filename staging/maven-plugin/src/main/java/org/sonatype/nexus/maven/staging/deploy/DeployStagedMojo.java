@@ -46,7 +46,11 @@ public class DeployStagedMojo
           deployStrategy = getDeployStrategy(Strategies.DEFERRED);
         }
         else {
-          deployStrategy = getDeployStrategy(Strategies.STAGING);
+          if (isSkipStaging()){
+        	deployStrategy = getDeployStrategy(Strategies.DEFERRED);
+          } else {
+        	deployStrategy = getDeployStrategy(Strategies.STAGING);
+          }
         }
 
         final FinalizeDeployRequest request = new FinalizeDeployRequest(getMavenSession(), buildParameters());
