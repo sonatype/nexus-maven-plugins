@@ -119,6 +119,7 @@ public abstract class AbstractStagingDeployStrategy
         }
         final String url =
             stagingService.startedRepositoryBaseUrl(stagingProfile, createdStagingRepositoryId);
+        getLogger().info(" * Staging repository at " + url);
         return new StagingRepository(stagingProfile, createdStagingRepositoryId, url, true);
       }
       else {
@@ -128,6 +129,7 @@ public abstract class AbstractStagingDeployStrategy
         // other automated component
         final String url =
             stagingService.startedRepositoryBaseUrl(stagingProfile, parameters.getStagingRepositoryId());
+        getLogger().info(" * Staging repository at " + url);
         return new StagingRepository(stagingProfile, parameters.getStagingRepositoryId(), url, false);
       }
     }
