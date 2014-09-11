@@ -109,7 +109,10 @@ public class TwoPassV2RoundtripIT
     // should not fail
     verifier.verifyErrorFreeLog();
     // v2 workflow: 2nd "shot"
-    verifier.getCliOptions().clear();
+    // TODO: Not using this below to kill skipRemoteStaging, as that would bork Verifier
+    // So, we are adding an "override" and last will prevail
+    // verifier.getCliOptions().clear();
+    verifier.addCliOption("-DskipRemoteStaging=false");
     verifier.executeGoals(Arrays.asList("nexus-staging:deploy-staged"));
     // should not fail
     verifier.verifyErrorFreeLog();
