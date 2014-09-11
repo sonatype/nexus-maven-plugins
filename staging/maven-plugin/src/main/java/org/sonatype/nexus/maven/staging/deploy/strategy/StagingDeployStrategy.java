@@ -103,8 +103,12 @@ public class StagingDeployStrategy
       getLogger().info("We have nothing locally staged, bailing out.");
       return;
     }
-    final RemoteNexus remoteNexus = checkNotNull(request.getRemoteNexus(),
-        "BUG: finalizeDeploy invoked before deployPerModule?");
+    if (request.getRemoteNexus() == null) {
+      // this happens from stage-deployed mojo, where 1st pass already locally staged
+      // but there is no client yet in 2nd invocation of maven
+      request.setRemoteNexus(createRemoteNexus(request.getMavenSession(), request.getParameters()));
+    }
+    final RemoteNexus remoteNexus = request.getRemoteNexus();
     final List<StagingRepository> zappedStagingRepositories = new ArrayList<StagingRepository>();
     for (File profileDirectory : localStageRepositories) {
       if (!profileDirectory.isDirectory()) {
