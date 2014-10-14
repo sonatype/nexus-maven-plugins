@@ -87,7 +87,7 @@ public class ProgressMonitorImpl
   public void stop() {
     stopwatch.stop();
     if (logger.isDebugEnabled()) {
-      logger.debug("STOP after {}");
+      logger.debug("STOP after {}", stopwatch);
     }
     else {
       maybePrintln();
