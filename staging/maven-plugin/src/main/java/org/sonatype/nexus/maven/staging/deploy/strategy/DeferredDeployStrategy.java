@@ -43,9 +43,9 @@ public class DeferredDeployStrategy
   public void deployPerModule(final DeployPerModuleRequest request)
       throws ArtifactInstallationException, ArtifactDeploymentException, MojoExecutionException
   {
-    getLogger().info(
-        "Performing deferred deploys (gathering into \""
-            + request.getParameters().getDeferredDirectoryRoot().getAbsolutePath() + "\")...");
+    log.info(
+        "Performing deferred deploys (gathering into \"{}\")...",
+        request.getParameters().getDeferredDirectoryRoot().getAbsolutePath());
     if (!request.getDeployableArtifacts().isEmpty()) {
       // deploys always to same stagingDirectory
       final File stagingDirectory = request.getParameters().getDeferredDirectoryRoot();
@@ -56,7 +56,7 @@ public class DeferredDeployStrategy
       }
     }
     else {
-      getLogger().info("Nothing to locally stage?");
+      log.info("Nothing to locally stage?");
     }
   }
 
@@ -67,30 +67,30 @@ public class DeferredDeployStrategy
   public void finalizeDeploy(final FinalizeDeployRequest request)
       throws ArtifactDeploymentException, MojoExecutionException
   {
-    getLogger().info("Deploying remotely...");
+    log.info("Deploying remotely...");
     final File stagingDirectory = request.getParameters().getDeferredDirectoryRoot();
     if (!stagingDirectory.isDirectory()) {
-      getLogger().warn(
-          "Nothing to deploy, directory \"" + stagingDirectory.getAbsolutePath() + "\" does not exists!");
+      log.warn(
+          "Nothing to deploy, directory \"{}\" does not exists!", stagingDirectory.getAbsolutePath());
       return;
     }
 
     // we do direct upload
-    getLogger().info("Bulk deploying locally gathered artifacts from directory: ");
+    log.info("Bulk deploying locally gathered artifacts from directory: ");
     try {
       // prepare the local staging directory
       // we have normal deploy
       final ArtifactRepository deploymentRepository = getDeploymentRepository(request.getMavenSession());
-      getLogger().info(
-          " * Bulk deploying locally gathered snapshot artifacts to URL " + deploymentRepository.getUrl());
+      log.info(
+          " * Bulk deploying locally gathered snapshot artifacts to URL {}", deploymentRepository.getUrl());
       deployUp(request.getMavenSession(), stagingDirectory, deploymentRepository);
-      getLogger().info(" * Bulk deploy of locally gathered snapshot artifacts finished.");
+      log.info(" * Bulk deploy of locally gathered snapshot artifacts finished.");
     }
     catch (IOException e) {
-      getLogger().error("Upload of locally deferred directory finished with a failure.");
+      log.error("Upload of locally deferred directory finished with a failure.");
       throw new ArtifactDeploymentException("Remote deploy failed: " + e.getMessage(), e);
     }
 
-    getLogger().info("Remote deploy finished with success.");
+    log.info("Remote deploy finished with success.");
   }
 }

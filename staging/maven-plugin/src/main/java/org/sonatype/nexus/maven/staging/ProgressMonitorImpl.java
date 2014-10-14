@@ -15,11 +15,8 @@ package org.sonatype.nexus.maven.staging;
 
 import com.sonatype.nexus.staging.client.StagingWorkflowV3Service.ProgressMonitor;
 
-import org.apache.maven.plugin.logging.Log;
-import org.codehaus.plexus.logging.Logger;
-import org.codehaus.plexus.logging.console.ConsoleLogger;
-
-import static com.google.common.base.Preconditions.checkNotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Default {@link ProgressMonitor} implementation.
@@ -33,24 +30,8 @@ public class ProgressMonitorImpl
 
   protected boolean needsNewline;
 
-  public ProgressMonitorImpl(final Logger logger) {
-    this.logger = checkNotNull(logger);
-  }
-
-  public ProgressMonitorImpl(final Log log) {
-    int level = Logger.LEVEL_INFO;
-    if (log.isDebugEnabled()) {
-      level = Logger.LEVEL_DEBUG;
-    }
-    this.logger = new ConsoleLogger(level, getClass().getName());
-  }
-
-  public ProgressMonitorImpl(final boolean debug) {
-    int level = Logger.LEVEL_INFO;
-    if (debug) {
-      level = Logger.LEVEL_DEBUG;
-    }
-    this.logger = new ConsoleLogger(level, getClass().getName());
+  public ProgressMonitorImpl() {
+    this.logger = LoggerFactory.getLogger(getClass());
   }
 
   protected void maybePrintln() {

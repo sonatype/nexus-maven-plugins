@@ -51,7 +51,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class RemoteNexus
 {
-  private static final Logger log = LoggerFactory.getLogger(RemoteNexus.class);
+  private final Logger log = LoggerFactory.getLogger(RemoteNexus.class);
 
   private final Server server;
 
@@ -63,7 +63,6 @@ public class RemoteNexus
 
   public RemoteNexus(final MavenSession mavenSession,
                      final SecDispatcher secDispatcher,
-                     final boolean debug,
                      final Parameters parameters)
   {
     checkNotNull(mavenSession);
@@ -102,7 +101,7 @@ public class RemoteNexus
 
     // create client and needed subsystem
     this.nexusClient = createNexusClient(parameters);
-    this.stagingWorkflowService = createStagingWorkflowV2Service(parameters, nexusClient, debug);
+    this.stagingWorkflowService = createStagingWorkflowV2Service(parameters, nexusClient);
   }
 
   /**
@@ -175,7 +174,7 @@ public class RemoteNexus
         else {
           proxyAuthentication = null;
         }
-        log.info(" + Using \"{}\" {} Proxy from Maven settings", proxy.getId(), proxy.getProtocol().toUpperCase());
+        log.info(" + Using \"{}\" {} Proxy from Maven settings.", proxy.getId(), proxy.getProtocol().toUpperCase());
         final ProxyInfo zProxy =
             new ProxyInfo(baseUrl.getProtocol(), proxy.getHost(),
                 proxy.getPort(), proxyAuthentication);
@@ -194,9 +193,8 @@ public class RemoteNexus
           new JerseyStagingWorkflowV3SubsystemFactory()
       ).createFor(connectionInfo);
       final NexusStatus nexusStatus = nexusClient.getNexusStatus();
-      log.info(
-          String.format(" * Connected to Nexus at %s, is version %s and edition \"%s\"",
-              connectionInfo.getBaseUrl(), nexusStatus.getVersion(), nexusStatus.getEditionLong()));
+      log.info(" * Connected to Nexus at {}, is version {} and edition \"{}\"",
+              connectionInfo.getBaseUrl(), nexusStatus.getVersion(), nexusStatus.getEditionLong());
       return nexusClient;
     }
     catch (MalformedURLException e) {
@@ -212,7 +210,7 @@ public class RemoteNexus
   }
 
   protected StagingWorkflowV2Service createStagingWorkflowV2Service(final Parameters parameters,
-                                                                    final NexusClient nexusClient, final boolean debug)
+                                                                    final NexusClient nexusClient)
   {
     StagingWorkflowV2Service workflowService = null;
     // First try v3
@@ -220,9 +218,11 @@ public class RemoteNexus
       StagingWorkflowV3Service service = nexusClient.getSubsystem(StagingWorkflowV3Service.class);
       log.debug("Using staging v3 service");
 
-      service.setProgressMonitor(new ProgressMonitorImpl(debug));
+      service.setProgressMonitor(new ProgressMonitorImpl());
       service.setProgressTimeoutMinutes(parameters.getStagingProgressTimeoutMinutes());
       service.setProgressPauseDurationSeconds(parameters.getStagingProgressPauseDurationSeconds());
+      log.debug("Using progressTimeoutMinutes={}, progressPauseDurationSeconds={}",
+          parameters.getStagingProgressTimeoutMinutes(), parameters.getStagingProgressPauseDurationSeconds());
 
       workflowService = service;
     }

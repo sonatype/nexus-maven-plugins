@@ -42,8 +42,6 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.component.annotations.Component;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 /**
  * Full staging V2 deploy strategy. It perform local staging and remote staging (on remote Nexus).
  *
@@ -65,9 +63,9 @@ public class StagingDeployStrategy
   public void deployPerModule(final DeployPerModuleRequest request)
       throws ArtifactInstallationException, ArtifactDeploymentException, MojoExecutionException
   {
-    getLogger().info(
-        "Performing local staging (local stagingDirectory=\""
-            + request.getParameters().getStagingDirectoryRoot().getAbsolutePath() + "\")...");
+    log.info(
+        "Performing local staging (local stagingDirectory=\"{}\")...",
+        request.getParameters().getStagingDirectoryRoot().getAbsolutePath());
     if (!request.getDeployableArtifacts().isEmpty()) {
       // we match only for 1st in list!
       final RemoteNexus remoteNexus = createRemoteNexus(request.getMavenSession(), request.getParameters());
@@ -85,7 +83,7 @@ public class StagingDeployStrategy
       }
     }
     else {
-      getLogger().info("Nothing to locally stage?");
+      log.info("Nothing to locally stage?");
     }
   }
 
@@ -96,11 +94,11 @@ public class StagingDeployStrategy
   public void finalizeDeploy(final FinalizeDeployRequest request)
       throws ArtifactDeploymentException, MojoExecutionException
   {
-    getLogger().info("Performing remote staging...");
+    log.info("Performing remote staging...");
     final File stageRoot = request.getParameters().getStagingDirectoryRoot();
     final File[] localStageRepositories = stageRoot.listFiles();
     if (localStageRepositories == null) {
-      getLogger().info("We have nothing locally staged, bailing out.");
+      log.info("We have nothing locally staged, bailing out.");
       return;
     }
     if (request.getRemoteNexus() == null) {
@@ -117,50 +115,48 @@ public class StagingDeployStrategy
 
       // we do remote staging
       final String profileId = profileDirectory.getName();
-      getLogger().info("");
-      getLogger().info(" * Remote staging into staging profile ID \"" + profileId + "\"");
+      log.info("");
+      log.info(" * Remote staging into staging profile ID \"{}\"", profileId);
 
       try {
         final Profile stagingProfile = remoteNexus.getStagingWorkflowV2Service().selectProfile(profileId);
         final StagingRepository stagingRepository = beforeUpload(request.getParameters(), remoteNexus, stagingProfile);
         zappedStagingRepositories.add(stagingRepository);
-        getLogger().info(" * Uploading locally staged artifacts to profile " + stagingProfile.name());
+        log.info(" * Uploading locally staged artifacts to profile {}", stagingProfile.name());
         deployUp(request.getMavenSession(), getStagingDirectory(request.getParameters().getStagingDirectoryRoot(),
             profileId),
             createDeploymentArtifactRepository(remoteNexus.getServer().getId(), stagingRepository.getUrl()));
-        getLogger().info(" * Upload of locally staged artifacts finished.");
+        log.info(" * Upload of locally staged artifacts finished.");
         afterUpload(request.getParameters(), remoteNexus, stagingRepository);
       }
       catch (NexusClientNotFoundException e) {
         afterUploadFailure(request.getParameters(), remoteNexus, zappedStagingRepositories, e);
-        getLogger().error("Remote staging finished with a failure: " + e.getMessage());
-        getLogger().error("");
-        getLogger().error("Possible causes of 404 Not Found error:");
-        getLogger().error(
+        log.error("Remote staging finished with a failure: {}", e.getMessage());
+        log.error("");
+        log.error("Possible causes of 404 Not Found error:");
+        log.error(
             " * your local workspace is \"dirty\" with previous runs, that locally staged artifacts? Run \"mvn clean\"...");
-        getLogger().error(
-            " * remote Nexus got the profile with ID \"" + profileId
-                + "\" removed during this build? Get to Nexus admin...");
+        log.error(
+            " * remote Nexus got the profile with ID \"{}\" removed during this build? Get to Nexus admin...",
+            profileId);
         throw new ArtifactDeploymentException("Remote staging failed: " + e.getMessage(), e);
       }
       catch (NexusClientAccessForbiddenException e) {
         afterUploadFailure(request.getParameters(), remoteNexus, zappedStagingRepositories, e);
-        getLogger().error("Remote staging finished with a failure: " + e.getMessage());
-        getLogger().error("");
-        getLogger().error("Possible causes of 403 Forbidden:");
-        getLogger().error(
-            " * you have no permissions to stage against profile with ID \"" + profileId
-                + "\"? Get to Nexus admin...");
+        log.error("Remote staging finished with a failure: {}", e.getMessage());
+        log.error("");
+        log.error("Possible causes of 403 Forbidden:");
+        log.error(
+            " * you have no permissions to stage against profile with ID \"{}\"? Get to Nexus admin...", profileId);
         throw new ArtifactDeploymentException("Remote staging failed: " + e.getMessage(), e);
       }
       catch (Exception e) {
         afterUploadFailure(request.getParameters(), remoteNexus, zappedStagingRepositories, e);
-        getLogger().error("Remote staging finished with a failure: " + e.getMessage());
+        log.error("Remote staging finished with a failure: {}", e.getMessage());
         throw new ArtifactDeploymentException("Remote staging failed: " + e.getMessage(), e);
       }
     }
-    getLogger().info(
-        "Remote staged " + zappedStagingRepositories.size() + " repositories, finished with success.");
+    log.info("Remote staged {} repositories, finished with success.", zappedStagingRepositories.size());
 
     if (!request.getParameters().isSkipStagingRepositoryClose() && request.getParameters().isAutoReleaseAfterClose()) {
       releaseAfterClose(request.getParameters(), remoteNexus, zappedStagingRepositories);
@@ -171,7 +167,7 @@ public class StagingDeployStrategy
                                    final List<StagingRepository> stagedRepositories)
       throws MojoExecutionException
   {
-    getLogger().info("Remote staging repositories are being released...");
+    log.info("Remote staging repositories are being released...");
     final List<String> stagedRepositoryIds = Lists.newArrayList(Collections2.transform(stagedRepositories,
         new Function<StagingRepository, String>()
         {
@@ -196,16 +192,16 @@ public class StagingDeployStrategy
       }
     }
     catch (NexusClientErrorResponseException e) {
-      ErrorDumper.dumpErrors(getLogger(), e);
+      ErrorDumper.dumpErrors(log, e);
       // fail the build
       throw new MojoExecutionException("Could not perform action: Nexus ErrorResponse received!", e);
     }
     catch (StagingRuleFailuresException e) {
-      ErrorDumper.dumpErrors(getLogger(), e);
+      ErrorDumper.dumpErrors(log, e);
       // fail the build
       throw new MojoExecutionException("Could not perform action: there are failing staging rules!", e);
     }
-    getLogger().info("Remote staging repositories released.");
+    log.info("Remote staging repositories released.");
   }
 
 }
