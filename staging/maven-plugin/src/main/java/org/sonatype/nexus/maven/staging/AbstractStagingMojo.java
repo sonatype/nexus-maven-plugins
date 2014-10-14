@@ -213,8 +213,7 @@ public abstract class AbstractStagingMojo
 
   // == Logging
 
-  public void setLog( Log log )
-  {
+  public void setLog(Log log) {
     super.setLog(log);
     LogbackUtils.syncLogLevelWithMaven(log);
   }
