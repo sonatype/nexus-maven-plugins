@@ -79,7 +79,7 @@ public class ReleaseAfterCloseIT
     final PreparedVerifier verifier =
         createMavenVerifier(getClass().getSimpleName() + "_releaseAfterClose",
             mavenVersion, testData().resolveFile("preset-nexus-maven-settings.xml"), new File(getBasedir(),
-                "target/test-classes/maven3-multiprofile-project"));
+                "target/test-classes/maven3-multiprofile-project"), mavenVersion); // artifact version == mavenVersion to avoid redeploy for m30, m31 and m32
 
     // plain v2 work-flow
     verifier.addCliOption("-DautoReleaseAfterClose=true");
@@ -97,6 +97,10 @@ public class ReleaseAfterCloseIT
       // ensure both are released
       assertThat(stagingRepositories.get(0).getState(), is(State.RELEASED));
       assertThat(stagingRepositories.get(1).getState(), is(State.RELEASED));
+
+      // drop them for subsequent invocation
+      getStagingWorkflowV2Service()
+          .dropStagingRepositories("cleanup", stagingRepositories.get(0).getId(), stagingRepositories.get(1).getId());
     }
   }
 
