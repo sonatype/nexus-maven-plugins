@@ -30,6 +30,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 /**
  * IT that "implements" the Staging V2 testing guide's "One Shot" scenario followed by the "release" Post Staging Steps
@@ -81,6 +82,14 @@ public class SimpleV2RoundtripIT
       Assert.fail(String.format(
           "Nexus should have staged artifact in releases repository with GAV=%s:%s:%s but those are not found on index!",
           verifier.getProjectGroupId(), verifier.getProjectArtifactId(), verifier.getProjectVersion()));
+    }
+
+    try {
+      // NEXUS-7586: Ensuring that DEBUG line emitted by NX Client is present in debug log output
+      verifier.verifyTextInLog("[DEBUG] Connected, received NexusStatus [appName=");
+    }
+    catch (VerificationException e) {
+      fail("NX Client debug output not found in log of Maven");
     }
   }
 

@@ -111,7 +111,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-invoker-plugin</artifactId>
-            <version>1.8</version>
+            <version>1.9</version>
             <executions>
               <execution>
                 <goals>
@@ -124,9 +124,12 @@
                     <!-- The plugin we test needs to be installed -->
                     <extraArtifact>org.sonatype.plugins:nexus-staging-maven-plugin:${project.version}</extraArtifact>
                     <extraArtifact>org.apache.maven:apache-maven:2.2.1:zip:bin</extraArtifact>
-                    <extraArtifact>org.apache.maven:apache-maven:3.0.4:zip:bin</extraArtifact>
+                    <extraArtifact>org.apache.maven:apache-maven:3.0.5:zip:bin</extraArtifact>
+                    <extraArtifact>org.apache.maven:apache-maven:3.1.1:zip:bin</extraArtifact>
+                    <extraArtifact>org.apache.maven:apache-maven:3.2.3:zip:bin</extraArtifact>
                     <extraArtifact>org.apache.maven.plugins:maven-clean-plugin:2.2</extraArtifact>
                     <extraArtifact>org.apache.maven.plugins:maven-clean-plugin:2.4.1</extraArtifact>
+                    <extraArtifact>org.apache.maven.plugins:maven-clean-plugin:2.5</extraArtifact>
                     <extraArtifact>org.apache.maven.plugins:maven-source-plugin:2.1.2</extraArtifact>
                     <extraArtifact>org.apache.maven.plugins:maven-resources-plugin:2.3</extraArtifact>
                     <extraArtifact>org.apache.maven.plugins:maven-resources-plugin:2.5</extraArtifact>
@@ -142,6 +145,7 @@
                     <extraArtifact>org.apache.maven.plugins:maven-jar-plugin:2.3.2</extraArtifact>
                     <extraArtifact>org.apache.maven.plugins:maven-install-plugin:2.2</extraArtifact>
                     <extraArtifact>org.apache.maven.plugins:maven-install-plugin:2.3.1</extraArtifact>
+                    <extraArtifact>org.apache.maven.plugins:maven-install-plugin:2.4</extraArtifact>
                     <extraArtifact>org.codehaus.plexus:plexus-utils:3.0.8</extraArtifact>
                   </extraArtifacts>
                   <localRepositoryPath>${project.build.directory}/maven-local-repository</localRepositoryPath>

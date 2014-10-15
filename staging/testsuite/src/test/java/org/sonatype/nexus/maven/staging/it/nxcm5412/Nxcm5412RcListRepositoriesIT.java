@@ -30,7 +30,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * IT for NXCM-5412 Add an rc-list goal to the nexus-staging-maven-plugin
  * <p>
  * Testing the rc-list goal.
- * 
+ *
  * @author cstamas
  * @see <a href="https://issues.sonatype.org/browse/NXCM-5412">NXCM-5412</a>
  */
@@ -49,17 +49,41 @@ public class Nxcm5412RcListRepositoriesIT
   public void roundtripWithM2() throws VerificationException, IOException {
     // HACK: The project passed in here is irrelevant, as goal we test does not require a project
     // but createMavenVerifier method must have a baseDir input!
-    roundtrip(createMavenVerifier(M2_VERSION, new File(getBasedir(), "target/test-classes/maven2-maven-plugin-project")));
+    roundtrip(
+        createMavenVerifier(M22_VERSION, new File(getBasedir(), "target/test-classes/maven2-maven-plugin-project")));
   }
 
   /**
    * Maven Plugin Project set up in m3-way using m3.
    */
   @Test
-  public void roundtripWithM3() throws VerificationException, IOException {
+  public void roundtripWithM30() throws VerificationException, IOException {
     // HACK: The project passed in here is irrelevant, as goal we test does not require a project
     // but createMavenVerifier method must have a baseDir input!
-    roundtrip(createMavenVerifier(M3_VERSION, new File(getBasedir(), "target/test-classes/maven3-maven-plugin-project")));
+    roundtrip(
+        createMavenVerifier(M30_VERSION, new File(getBasedir(), "target/test-classes/maven3-maven-plugin-project")));
+  }
+
+  /**
+   * Maven Plugin Project set up in m3-way using m3.
+   */
+  @Test
+  public void roundtripWithM31() throws VerificationException, IOException {
+    // HACK: The project passed in here is irrelevant, as goal we test does not require a project
+    // but createMavenVerifier method must have a baseDir input!
+    roundtrip(
+        createMavenVerifier(M31_VERSION, new File(getBasedir(), "target/test-classes/maven3-maven-plugin-project")));
+  }
+
+  /**
+   * Maven Plugin Project set up in m3-way using m3.
+   */
+  @Test
+  public void roundtripWithM32() throws VerificationException, IOException {
+    // HACK: The project passed in here is irrelevant, as goal we test does not require a project
+    // but createMavenVerifier method must have a baseDir input!
+    roundtrip(
+        createMavenVerifier(M32_VERSION, new File(getBasedir(), "target/test-classes/maven3-maven-plugin-project")));
   }
 
   @Override

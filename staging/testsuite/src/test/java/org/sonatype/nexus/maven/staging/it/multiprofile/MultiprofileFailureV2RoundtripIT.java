@@ -21,13 +21,10 @@ import java.util.List;
 import com.sonatype.nexus.staging.client.StagingRepository;
 
 import org.sonatype.nexus.maven.staging.it.PreparedVerifier;
-import org.sonatype.nexus.testsuite.support.NexusStartAndStopStrategy;
 
 import junit.framework.Assert;
 import org.apache.maven.it.VerificationException;
 import org.junit.Test;
-
-import static org.sonatype.nexus.testsuite.support.NexusStartAndStopStrategy.Strategy.EACH_METHOD;
 
 /**
  * IT that Verifies multi profile build, where a subsequent staged repository close operation fails. In these cases -
@@ -49,14 +46,13 @@ public class MultiprofileFailureV2RoundtripIT
   /**
    * Using "deploy".
    */
-  @Test
-  public void roundtripWithM3MultiprofileProjectUsingM3Deploy()
+  public void roundtripWithM3MultiprofileProjectUsingM3Deploy(final String mavenVersion)
       throws VerificationException, IOException
   {
     final PreparedVerifier verifier =
         createMavenVerifier(getClass().getSimpleName() + "_roundtripWithM3MultiprofileProjectUsingM3Deploy",
-            M3_VERSION, testData().resolveFile("preset-nexus-maven-settings.xml"), new File(getBasedir(),
-            "target/test-classes/maven3-multiprofile-project"));
+            mavenVersion, testData().resolveFile("preset-nexus-maven-settings.xml"), new File(getBasedir(),
+                "target/test-classes/maven3-multiprofile-project"));
 
     try {
       // skip javadoc, we want failing build but in m2
@@ -82,17 +78,46 @@ public class MultiprofileFailureV2RoundtripIT
   }
 
   /**
-   * Using "close" build action.
+   * Using "deploy".
    */
   @Test
-  public void roundtripWithM3MultiprofileProjectUsingM3BuildActionClose()
+  public void roundtripWithM3MultiprofileProjectUsingM30Deploy()
+      throws VerificationException, IOException
+  {
+    roundtripWithM3MultiprofileProjectUsingM3Deploy(M30_VERSION);
+  }
+
+  /**
+   * Using "deploy".
+   */
+  @Test
+  public void roundtripWithM3MultiprofileProjectUsingM31Deploy()
+      throws VerificationException, IOException
+  {
+    roundtripWithM3MultiprofileProjectUsingM3Deploy(M31_VERSION);
+  }
+
+  /**
+   * Using "deploy".
+   */
+  @Test
+  public void roundtripWithM3MultiprofileProjectUsingM32Deploy()
+      throws VerificationException, IOException
+  {
+    roundtripWithM3MultiprofileProjectUsingM3Deploy(M32_VERSION);
+  }
+
+  /**
+   * Using "close" build action.
+   */
+  public void roundtripWithM3MultiprofileProjectUsingM3BuildActionClose(final String mavenVersion)
       throws VerificationException, IOException
   {
     final PreparedVerifier verifier =
         createMavenVerifier(getClass().getSimpleName()
-            + "_roundtripWithM3MultiprofileProjectUsingM3BuildActionClose", M3_VERSION,
+                + "_roundtripWithM3MultiprofileProjectUsingM3BuildActionClose", mavenVersion,
             testData().resolveFile("preset-nexus-maven-settings.xml"), new File(getBasedir(),
-            "target/test-classes/maven3-multiprofile-project"));
+                "target/test-classes/maven3-multiprofile-project"));
 
     try {
       // skip javadoc, we want failing build but in m2
@@ -121,5 +146,35 @@ public class MultiprofileFailureV2RoundtripIT
         Assert.fail("Nexus should have 0 staging repositories, but it has: " + stagingRepositories);
       }
     }
+  }
+
+  /**
+   * Using "close" build action.
+   */
+  @Test
+  public void roundtripWithM3MultiprofileProjectUsingM30BuildActionClose()
+      throws VerificationException, IOException
+  {
+    roundtripWithM3MultiprofileProjectUsingM3BuildActionClose(M30_VERSION);
+  }
+
+  /**
+   * Using "close" build action.
+   */
+  @Test
+  public void roundtripWithM3MultiprofileProjectUsingM31BuildActionClose()
+      throws VerificationException, IOException
+  {
+    roundtripWithM3MultiprofileProjectUsingM3BuildActionClose(M31_VERSION);
+  }
+
+  /**
+   * Using "close" build action.
+   */
+  @Test
+  public void roundtripWithM3MultiprofileProjectUsingM32BuildActionClose()
+      throws VerificationException, IOException
+  {
+    roundtripWithM3MultiprofileProjectUsingM3BuildActionClose(M32_VERSION);
   }
 }

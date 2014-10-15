@@ -108,15 +108,19 @@ public abstract class StagingMavenPluginITSupport
 
   private final Map<String, File> mavenHomes = new LinkedHashMap<String, File>();
 
-  public static final String M2_VERSION = "2.2.1";
+  public static final String M22_VERSION = "2.2.1";
 
-  public static final String M3_VERSION = "3.0.4";
+  public static final String M30_VERSION = "3.0.5";
+
+  public static final String M31_VERSION = "3.1.1";
+
+  public static final String M32_VERSION = "3.2.3";
 
   /**
    * Override this method to have other than default versions involved.
    */
   protected List<String> getMavenVersions() {
-    return Arrays.asList(M2_VERSION, M3_VERSION);
+    return Arrays.asList(M22_VERSION, M30_VERSION, M31_VERSION, M32_VERSION);
   }
 
   // {@code <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>} formatted string.
