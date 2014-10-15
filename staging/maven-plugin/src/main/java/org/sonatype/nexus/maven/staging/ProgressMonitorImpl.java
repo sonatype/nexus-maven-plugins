@@ -53,6 +53,9 @@ public class ProgressMonitorImpl
     }
     else {
       System.out.println();
+      // NEXUS-7586: println used here, to make sure this output appear on separate line than
+      // ticks (the dots), and have separate timestamp in case of some CIs that flushes stdout
+      // per newline (like Bamboo).
       System.out.println("Waiting for operation to complete...");
     }
   }
