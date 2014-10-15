@@ -46,15 +46,13 @@ import org.codehaus.plexus.component.annotations.Requirement;
 public abstract class AbstractStagingDeployStrategy
     extends AbstractDeployStrategy
 {
-
   @Requirement
   private SecDispatcher secDispatcher;
 
   protected RemoteNexus createRemoteNexus(MavenSession mavenSession, Parameters parameters) {
     parameters.validateRemoting();
     parameters.validateStaging();
-    return new RemoteNexus(mavenSession, secDispatcher, getLogger().isDebugEnabled(),
-        parameters);
+    return new RemoteNexus(mavenSession, secDispatcher, parameters);
   }
 
   // ==
@@ -79,18 +77,18 @@ public abstract class AbstractStagingDeployStrategy
             new ProfileMatchingParameters(artifact.getGroupId(), artifact.getArtifactId(),
                 artifact.getVersion());
         stagingProfile = stagingService.matchProfile(params);
-        getLogger().info(
-            " * Using staging profile ID \"" + stagingProfile.id() + "\" (matched by Nexus).");
+        log.info(
+            " * Using staging profile ID \"{}\" (matched by Nexus).", stagingProfile.id());
       }
       else {
         stagingProfile = stagingService.selectProfile(parameters.getStagingProfileId());
-        getLogger().info(
-            " * Using staging profile ID \"" + stagingProfile.id() + "\" (configured by user).");
+        log.info(
+            " * Using staging profile ID \"{}\" (configured by user).", stagingProfile.id());
       }
       return stagingProfile.id();
     }
     catch (NexusClientErrorResponseException e) {
-      ErrorDumper.dumpErrors(getLogger(), e);
+      ErrorDumper.dumpErrors(log, e);
       // fail the build
       throw new MojoExecutionException("Could not perform action: Nexus ErrorResponse received!", e);
     }
@@ -110,31 +108,31 @@ public abstract class AbstractStagingDeployStrategy
         // store the one just created for us, as it means we need to "babysit" it (close or drop, depending
         // on outcome)
         if (parameters.getTags() != null && !parameters.getTags().isEmpty()) {
-          getLogger().info(
-              " * Created staging repository with ID \"" + createdStagingRepositoryId + "\", applied tags: "
-                  + parameters.getTags());
+          log.info(
+              " * Created staging repository with ID \"{}\", applied tags: {}",
+              createdStagingRepositoryId, parameters.getTags());
         }
         else {
-          getLogger().info(" * Created staging repository with ID \"" + createdStagingRepositoryId + "\".");
+          log.info(" * Created staging repository with ID \"{}\".", createdStagingRepositoryId);
         }
         final String url =
             stagingService.startedRepositoryBaseUrl(stagingProfile, createdStagingRepositoryId);
-        getLogger().info(" * Staging repository at " + url);
+        log.info(" * Staging repository at {}", url);
         return new StagingRepository(stagingProfile, createdStagingRepositoryId, url, true);
       }
       else {
-        getLogger().info(
-            " * Using non-managed staging repository with ID \"" + parameters.getStagingRepositoryId()
-                + "\" (we are NOT managing it)."); // we will not close it! This might be created by some
+        log.info(
+            " * Using non-managed staging repository with ID \"{}\" (we are NOT managing it).",
+            parameters.getStagingRepositoryId()); // we will not close it! This might be created by some
         // other automated component
         final String url =
             stagingService.startedRepositoryBaseUrl(stagingProfile, parameters.getStagingRepositoryId());
-        getLogger().info(" * Staging repository at " + url);
+        log.info(" * Staging repository at {}", url);
         return new StagingRepository(stagingProfile, parameters.getStagingRepositoryId(), url, false);
       }
     }
     catch (NexusClientErrorResponseException e) {
-      ErrorDumper.dumpErrors(getLogger(), e);
+      ErrorDumper.dumpErrors(log, e);
       // fail the build
       throw new MojoExecutionException("Could not perform action: Nexus ErrorResponse received!", e);
     }
@@ -200,32 +198,31 @@ public abstract class AbstractStagingDeployStrategy
       try {
         if (!parameters.isSkipStagingRepositoryClose()) {
           try {
-            getLogger().info(
-                " * Closing staging repository with ID \"" + stagingRepository.getRepositoryId() + "\".");
+            log.info(
+                " * Closing staging repository with ID \"{}\".", stagingRepository.getRepositoryId());
             stagingService.finishStaging(stagingRepository.getProfile(),
                 stagingRepository.getRepositoryId(),
                 parameters.getActionDescription(StagingAction.FINISH));
           }
           catch (StagingRuleFailuresException e) {
-            getLogger().error(
-                "Rule failure while trying to close staging repository with ID \""
-                    + stagingRepository.getRepositoryId() + "\".");
+            log.error(
+                "Rule failure while trying to close staging repository with ID \"{}\".",
+                stagingRepository.getRepositoryId());
             // report staging repository failures
-            ErrorDumper.dumpErrors(getLogger(), e);
+            ErrorDumper.dumpErrors(log, e);
             // rethrow
             throw e;
           }
         }
         else {
-          getLogger().info(
-              " * Not closing staging repository with ID \"" + stagingRepository.getRepositoryId() + "\".");
+          log.info(
+              " * Not closing staging repository with ID \"{}\".", stagingRepository.getRepositoryId());
         }
       }
       catch (NexusClientErrorResponseException e) {
-        getLogger().error(
-            "Error while trying to close staging repository with ID \"" + stagingRepository.getRepositoryId()
-                + "\".");
-        ErrorDumper.dumpErrors(getLogger(), e);
+        log.error(
+            "Error while trying to close staging repository with ID \"{}\".", stagingRepository.getRepositoryId());
+        ErrorDumper.dumpErrors(log, e);
         // fail the build
         throw new MojoExecutionException("Could not perform action against repository \""
             + stagingRepository.getRepositoryId()
@@ -267,36 +264,34 @@ public abstract class AbstractStagingDeployStrategy
       return;
     }
 
-    getLogger().error("Cleaning up local stage directory after a " + msg);
+    log.error("Cleaning up local stage directory after a {}", msg);
     // delete properties (as they are getting created when remotely staged)
     final File stageRoot = parameters.getStagingDirectoryRoot();
     final File[] localStageRepositories = stageRoot.listFiles();
     if (localStageRepositories != null) {
       for (File file : localStageRepositories) {
         if (file.isFile() && file.getName().endsWith(STAGING_REPOSITORY_PROPERTY_FILE_NAME_SUFFIX)) {
-          getLogger().error(" * Deleting context " + file.getName());
+          log.error(" * Deleting context {}", file.getName());
           file.delete();
         }
       }
     }
 
-    getLogger().error("Cleaning up remote stage repositories after a " + msg);
+    log.error("Cleaning up remote stage repositories after a {}", msg);
     // drop all created staging repositories
     final StagingWorkflowV2Service stagingService = remoteNexus.getStagingWorkflowV2Service();
     for (StagingRepository stagingRepository : stagingRepositories) {
       if (stagingRepository.isManaged()) {
         if (!keep) {
-          getLogger().error(
-              " * Dropping failed staging repository with ID \"" + stagingRepository.getRepositoryId()
-                  + "\" (" + msg + ").");
+          log.error(
+              " * Dropping failed staging repository with ID \"{}\" ({}).", stagingRepository.getRepositoryId(), msg);
           stagingService.dropStagingRepositories(parameters.getActionDescription(StagingAction.DROP)
               + " (" + msg + ").",
               stagingRepository.getRepositoryId());
         }
         else {
-          getLogger().error(
-              " * Not dropping failed staging repository with ID \"" + stagingRepository.getRepositoryId()
-                  + "\" (" + msg + ").");
+          log.error(
+              " * Not dropping failed staging repository with ID \"{}\" ({}).", stagingRepository.getRepositoryId(), msg);
         }
       }
     }

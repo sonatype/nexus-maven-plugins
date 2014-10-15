@@ -27,7 +27,8 @@ import junit.framework.Assert;
 import org.apache.maven.it.VerificationException;
 import org.junit.Test;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -47,14 +48,13 @@ public class MultiprofileV2RoundtripIT
   /**
    * Using "deploy".
    */
-  @Test
-  public void roundtripWithM3MultiprofileProjectUsingM3Deploy()
+  public void roundtripWithM3MultiprofileProjectUsingM3Deploy(final String mavenVersion)
       throws VerificationException, IOException
   {
     final PreparedVerifier verifier =
         createMavenVerifier(getClass().getSimpleName() + "_roundtripWithM3MultiprofileProjectUsingM3Deploy",
-            M3_VERSION, testData().resolveFile("preset-nexus-maven-settings.xml"), new File(getBasedir(),
-            "target/test-classes/maven3-multiprofile-project"));
+            mavenVersion, testData().resolveFile("preset-nexus-maven-settings.xml"), new File(getBasedir(),
+                "target/test-classes/maven3-multiprofile-project"));
 
     // v2 workflow
     verifier.executeGoals(Arrays.asList("clean", "deploy"));
@@ -107,17 +107,46 @@ public class MultiprofileV2RoundtripIT
   }
 
   /**
-   * Using "close" build action.
+   * Using "deploy".
    */
   @Test
-  public void roundtripWithM3MultiprofileProjectUsingM3BuildActionClose()
+  public void roundtripWithM3MultiprofileProjectUsingM30Deploy()
+      throws VerificationException, IOException
+  {
+    roundtripWithM3MultiprofileProjectUsingM3Deploy(M30_VERSION);
+  }
+
+  /**
+   * Using "deploy".
+   */
+  @Test
+  public void roundtripWithM3MultiprofileProjectUsingM31Deploy()
+      throws VerificationException, IOException
+  {
+    roundtripWithM3MultiprofileProjectUsingM3Deploy(M31_VERSION);
+  }
+
+  /**
+   * Using "deploy".
+   */
+  @Test
+  public void roundtripWithM3MultiprofileProjectUsingM32Deploy()
+      throws VerificationException, IOException
+  {
+    roundtripWithM3MultiprofileProjectUsingM3Deploy(M32_VERSION);
+  }
+
+  /**
+   * Using "close" build action.
+   */
+  public void roundtripWithM3MultiprofileProjectUsingM3BuildActionClose(final String mavenVersion)
       throws VerificationException, IOException
   {
     final PreparedVerifier verifier =
         createMavenVerifier(getClass().getSimpleName()
-            + "_roundtripWithM3MultiprofileProjectUsingM3BuildActionClose", M3_VERSION,
+                + "_roundtripWithM3MultiprofileProjectUsingM3BuildActionClose", mavenVersion,
             testData().resolveFile("preset-nexus-maven-settings.xml"), new File(getBasedir(),
-            "target/test-classes/maven3-multiprofile-project"));
+                "target/test-classes/maven3-multiprofile-project"));
 
     // we want to test the "close" build action here
     verifier.addCliOption("-DskipStagingRepositoryClose=true");
@@ -173,5 +202,35 @@ public class MultiprofileV2RoundtripIT
       // Assert.assertEquals( "We deployed 1 module of this GAV but none or more was found!", 1,
       // searchResponse.getHits().size() );
     }
+  }
+
+  /**
+   * Using "close" build action.
+   */
+  @Test
+  public void roundtripWithM3MultiprofileProjectUsingM30BuildActionClose()
+      throws VerificationException, IOException
+  {
+    roundtripWithM3MultiprofileProjectUsingM3BuildActionClose(M30_VERSION);
+  }
+
+  /**
+   * Using "close" build action.
+   */
+  @Test
+  public void roundtripWithM3MultiprofileProjectUsingM31BuildActionClose()
+      throws VerificationException, IOException
+  {
+    roundtripWithM3MultiprofileProjectUsingM3BuildActionClose(M31_VERSION);
+  }
+
+  /**
+   * Using "close" build action.
+   */
+  @Test
+  public void roundtripWithM3MultiprofileProjectUsingM32BuildActionClose()
+      throws VerificationException, IOException
+  {
+    roundtripWithM3MultiprofileProjectUsingM3BuildActionClose(M32_VERSION);
   }
 }

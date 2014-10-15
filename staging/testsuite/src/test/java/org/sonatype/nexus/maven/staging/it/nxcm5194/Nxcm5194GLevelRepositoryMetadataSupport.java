@@ -65,7 +65,7 @@ public abstract class Nxcm5194GLevelRepositoryMetadataSupport
   public void roundtripWithM2ProjectUsingM2()
       throws VerificationException, IOException
   {
-    roundtrip(createMavenVerifier(M2_VERSION, new File(getBasedir(),
+    roundtrip(createMavenVerifier(M22_VERSION, new File(getBasedir(),
         "target/test-classes/maven2-maven-plugin-project")));
   }
 
@@ -73,10 +73,32 @@ public abstract class Nxcm5194GLevelRepositoryMetadataSupport
    * Maven Plugin Project set up in m2-way with m3.
    */
   @Test
-  public void roundtripWithM2ProjectUsingM3()
+  public void roundtripWithM2ProjectUsingM30()
       throws VerificationException, IOException
   {
-    roundtrip(createMavenVerifier(M3_VERSION, new File(getBasedir(),
+    roundtrip(createMavenVerifier(M30_VERSION, new File(getBasedir(),
+        "target/test-classes/maven2-maven-plugin-project")));
+  }
+
+  /**
+   * Maven Plugin Project set up in m2-way with m3.
+   */
+  @Test
+  public void roundtripWithM2ProjectUsingM31()
+      throws VerificationException, IOException
+  {
+    roundtrip(createMavenVerifier(M31_VERSION, new File(getBasedir(),
+        "target/test-classes/maven2-maven-plugin-project")));
+  }
+
+  /**
+   * Maven Plugin Project set up in m2-way with m3.
+   */
+  @Test
+  public void roundtripWithM2ProjectUsingM32()
+      throws VerificationException, IOException
+  {
+    roundtrip(createMavenVerifier(M32_VERSION, new File(getBasedir(),
         "target/test-classes/maven2-maven-plugin-project")));
   }
 
@@ -84,12 +106,35 @@ public abstract class Nxcm5194GLevelRepositoryMetadataSupport
    * Maven Plugin Project set up in m3-way using m3.
    */
   @Test
-  public void roundtripWithM3ProjectUsingM3()
+  public void roundtripWithM3ProjectUsingM30()
       throws VerificationException, IOException
   {
-    roundtrip(createMavenVerifier(M3_VERSION, new File(getBasedir(),
+    roundtrip(createMavenVerifier(M30_VERSION, new File(getBasedir(),
         "target/test-classes/maven3-maven-plugin-project")));
   }
+
+  /**
+   * Maven Plugin Project set up in m3-way using m3.
+   */
+  @Test
+  public void roundtripWithM3ProjectUsingM31()
+      throws VerificationException, IOException
+  {
+    roundtrip(createMavenVerifier(M31_VERSION, new File(getBasedir(),
+        "target/test-classes/maven3-maven-plugin-project")));
+  }
+
+  /**
+   * Maven Plugin Project set up in m3-way using m3.
+   */
+  @Test
+  public void roundtripWithM3ProjectUsingM32()
+      throws VerificationException, IOException
+  {
+    roundtrip(createMavenVerifier(M32_VERSION, new File(getBasedir(),
+        "target/test-classes/maven3-maven-plugin-project")));
+  }
+
 
   // we always invoke the same, but results will be different: with deferred deploy
   // they will land into snapshots, with staging they will land in some

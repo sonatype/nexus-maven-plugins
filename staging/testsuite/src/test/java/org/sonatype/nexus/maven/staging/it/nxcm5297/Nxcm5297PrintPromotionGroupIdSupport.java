@@ -53,7 +53,7 @@ public abstract class Nxcm5297PrintPromotionGroupIdSupport
   public void roundtripWithM2ProjectUsingM2()
       throws VerificationException, IOException
   {
-    roundtrip(createMavenVerifier(M2_VERSION, new File(getBasedir(),
+    roundtrip(createMavenVerifier(M22_VERSION, new File(getBasedir(),
         "target/test-classes/maven2-maven-plugin-project")));
   }
 
@@ -61,10 +61,32 @@ public abstract class Nxcm5297PrintPromotionGroupIdSupport
    * Maven Plugin Project set up in m2-way with m3.
    */
   @Test
-  public void roundtripWithM2ProjectUsingM3()
+  public void roundtripWithM2ProjectUsingM30()
       throws VerificationException, IOException
   {
-    roundtrip(createMavenVerifier(M3_VERSION, new File(getBasedir(),
+    roundtrip(createMavenVerifier(M30_VERSION, new File(getBasedir(),
+        "target/test-classes/maven2-maven-plugin-project")));
+  }
+
+  /**
+   * Maven Plugin Project set up in m2-way with m3.
+   */
+  @Test
+  public void roundtripWithM2ProjectUsingM31()
+      throws VerificationException, IOException
+  {
+    roundtrip(createMavenVerifier(M31_VERSION, new File(getBasedir(),
+        "target/test-classes/maven2-maven-plugin-project")));
+  }
+
+  /**
+   * Maven Plugin Project set up in m2-way with m3.
+   */
+  @Test
+  public void roundtripWithM2ProjectUsingM32()
+      throws VerificationException, IOException
+  {
+    roundtrip(createMavenVerifier(M32_VERSION, new File(getBasedir(),
         "target/test-classes/maven2-maven-plugin-project")));
   }
 
@@ -72,10 +94,32 @@ public abstract class Nxcm5297PrintPromotionGroupIdSupport
    * Maven Plugin Project set up in m3-way using m3.
    */
   @Test
-  public void roundtripWithM3ProjectUsingM3()
+  public void roundtripWithM3ProjectUsingM30()
       throws VerificationException, IOException
   {
-    roundtrip(createMavenVerifier(M3_VERSION, new File(getBasedir(),
+    roundtrip(createMavenVerifier(M30_VERSION, new File(getBasedir(),
+        "target/test-classes/maven3-maven-plugin-project")));
+  }
+
+  /**
+   * Maven Plugin Project set up in m3-way using m3.
+   */
+  @Test
+  public void roundtripWithM3ProjectUsingM31()
+      throws VerificationException, IOException
+  {
+    roundtrip(createMavenVerifier(M31_VERSION, new File(getBasedir(),
+        "target/test-classes/maven3-maven-plugin-project")));
+  }
+
+  /**
+   * Maven Plugin Project set up in m3-way using m3.
+   */
+  @Test
+  public void roundtripWithM3ProjectUsingM32()
+      throws VerificationException, IOException
+  {
+    roundtrip(createMavenVerifier(M32_VERSION, new File(getBasedir(),
         "target/test-classes/maven3-maven-plugin-project")));
   }
 

@@ -34,29 +34,69 @@ public abstract class SimpleRoundtripMatrixBaseTests
    * Project set up in m2-way with m2.
    */
   @Test
-  public void roundtripWithM2ProjectUsingM2()
+  public void roundtripWithM2ProjectUsingM22()
       throws VerificationException, IOException
   {
-    roundtrip(createMavenVerifier(M2_VERSION, new File(getBasedir(), "target/test-classes/maven2-project")));
+    roundtrip(createMavenVerifier(M22_VERSION, new File(getBasedir(), "target/test-classes/maven2-project")));
   }
 
   /**
-   * Project set up in m2-way with m3.
+   * Project set up in m2-way with m3.0.
    */
   @Test
-  public void roundtripWithM2ProjectUsingM3()
+  public void roundtripWithM2ProjectUsingM30()
       throws VerificationException, IOException
   {
-    roundtrip(createMavenVerifier(M3_VERSION, new File(getBasedir(), "target/test-classes/maven2-project")));
+    roundtrip(createMavenVerifier(M30_VERSION, new File(getBasedir(), "target/test-classes/maven2-project")));
   }
 
   /**
-   * Project set up in m3-way using m3.
+   * Project set up in m2-way with m3.1.
    */
   @Test
-  public void roundtripWithM3ProjectUsingM3()
+  public void roundtripWithM2ProjectUsingM31()
       throws VerificationException, IOException
   {
-    roundtrip(createMavenVerifier(M3_VERSION, new File(getBasedir(), "target/test-classes/maven3-project")));
+    roundtrip(createMavenVerifier(M31_VERSION, new File(getBasedir(), "target/test-classes/maven2-project")));
+  }
+
+  /**
+   * Project set up in m2-way with m3.2.
+   */
+  @Test
+  public void roundtripWithM2ProjectUsingM32()
+      throws VerificationException, IOException
+  {
+    roundtrip(createMavenVerifier(M32_VERSION, new File(getBasedir(), "target/test-classes/maven2-project")));
+  }
+
+  /**
+   * Project set up in m3-way using m3.0.
+   */
+  @Test
+  public void roundtripWithM3ProjectUsingM30()
+      throws VerificationException, IOException
+  {
+    roundtrip(createMavenVerifier(M30_VERSION, new File(getBasedir(), "target/test-classes/maven3-project")));
+  }
+
+  /**
+   * Project set up in m3-way using m3.1.
+   */
+  @Test
+  public void roundtripWithM3ProjectUsingM31()
+      throws VerificationException, IOException
+  {
+    roundtrip(createMavenVerifier(M31_VERSION, new File(getBasedir(), "target/test-classes/maven3-project")));
+  }
+
+  /**
+   * Project set up in m3-way using m3.2.
+   */
+  @Test
+  public void roundtripWithM3ProjectUsingM32()
+      throws VerificationException, IOException
+  {
+    roundtrip(createMavenVerifier(M32_VERSION, new File(getBasedir(), "target/test-classes/maven3-project")));
   }
 }

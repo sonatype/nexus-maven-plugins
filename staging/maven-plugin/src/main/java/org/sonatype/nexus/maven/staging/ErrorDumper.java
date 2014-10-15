@@ -20,7 +20,7 @@ import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
 import org.sonatype.nexus.client.core.exception.NexusClientErrorResponseException;
 
 import org.apache.maven.plugin.logging.Log;
-import org.codehaus.plexus.logging.Logger;
+import org.slf4j.Logger;
 
 /**
  * A simple helper class to "dump" meaningful console error messages using various output methods.

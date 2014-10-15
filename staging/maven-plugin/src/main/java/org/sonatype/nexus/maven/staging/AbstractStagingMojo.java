@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.sonatype.maven.mojo.execution.MojoExecution;
+import org.sonatype.maven.mojo.logback.LogbackUtils;
 import org.sonatype.nexus.maven.staging.deploy.DeployMojo;
 import org.sonatype.nexus.maven.staging.remote.Parameters;
 import org.sonatype.nexus.maven.staging.workflow.CloseStageRepositoryMojo;
@@ -28,6 +29,7 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
@@ -208,6 +210,13 @@ public abstract class AbstractStagingMojo
    */
   @Parameter(property = "maven.wagon.http.ssl.allowall", defaultValue = "false")
   private boolean sslAllowAll;
+
+  // == Logging
+
+  public void setLog(Log log) {
+    super.setLog(log);
+    LogbackUtils.syncLogLevelWithMaven(log);
+  }
 
   // == getters for stuff above
 

@@ -15,6 +15,9 @@ package org.sonatype.nexus.maven.staging.it.nxcm4548;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
+
+import com.sonatype.nexus.staging.client.StagingRepository;
 
 import org.sonatype.nexus.maven.staging.it.PreparedVerifier;
 import org.sonatype.nexus.maven.staging.it.SimpleRoundtripMatrixSupport;
@@ -64,7 +67,11 @@ public class Nxcm4548StandaloneDeployStagedIT
 
   @Override
   protected void postNexusAssertions(final PreparedVerifier verifier) {
-    assertThat(getAllStagingRepositories().toString(), getAllStagingRepositories(), hasSize(1));
+    final List<StagingRepository> stagingRepositories = getAllStagingRepositories();
+    assertThat(stagingRepositories.toString(), stagingRepositories, hasSize(1));
+
+    // cleanup
+    getStagingWorkflowV2Service().dropStagingRepositories("cleanup", stagingRepositories.get(0).getId());
   }
 
   @Override
@@ -95,9 +102,23 @@ public class Nxcm4548StandaloneDeployStagedIT
   }
 
   @Test
-  public void testDeployStaged()
+  public void testDeployStagedM30()
       throws VerificationException, IOException
   {
-    roundtrip(createMavenVerifier(M3_VERSION, new File(getBasedir(), "target/test-classes/plain-project")));
+    roundtrip(createMavenVerifier(M30_VERSION, new File(getBasedir(), "target/test-classes/plain-project")));
+  }
+
+  @Test
+  public void testDeployStagedM31()
+      throws VerificationException, IOException
+  {
+    roundtrip(createMavenVerifier(M31_VERSION, new File(getBasedir(), "target/test-classes/plain-project")));
+  }
+
+  @Test
+  public void testDeployStagedM32()
+      throws VerificationException, IOException
+  {
+    roundtrip(createMavenVerifier(M32_VERSION, new File(getBasedir(), "target/test-classes/plain-project")));
   }
 }

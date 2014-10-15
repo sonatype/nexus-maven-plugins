@@ -68,24 +68,24 @@ public class ImageDeployStrategy
   public void finalizeDeploy(final FinalizeDeployRequest request)
       throws ArtifactDeploymentException, MojoExecutionException
   {
-    getLogger().info("Staging remotely locally deployed repository...");
+    log.info("Staging remotely locally deployed repository...");
     final RemoteNexus remoteNexus = createRemoteNexus(request.getMavenSession(), request.getParameters());
     final String profileId = request.getParameters().getStagingProfileId();
     final Profile stagingProfile = remoteNexus.getStagingWorkflowV2Service().selectProfile(profileId);
     final StagingRepository stagingRepository = beforeUpload(request.getParameters(), remoteNexus, stagingProfile);
     try {
-      getLogger().info(" * Uploading locally staged artifacts to profile " + stagingProfile.name());
+      log.info(" * Uploading locally staged artifacts to profile {}", stagingProfile.name());
       zapUp(remoteNexus.getServer(), remoteNexus.getProxy(), request.getParameters().getStagingDirectoryRoot(),
           stagingRepository.getUrl());
-      getLogger().info(" * Upload of locally staged artifacts finished.");
+      log.info(" * Upload of locally staged artifacts finished.");
       afterUpload(request.getParameters(), remoteNexus, stagingRepository);
     }
     catch (Exception e) {
       afterUploadFailure(request.getParameters(), remoteNexus, Collections.singletonList(stagingRepository), e);
-      getLogger().error("Remote staging finished with a failure.");
+      log.error("Remote staging finished with a failure.");
       throw new ArtifactDeploymentException("Remote staging failed: " + e.getMessage(), e);
     }
-    getLogger().info("Remote staging finished with success.");
+    log.info("Remote staging finished with success.");
   }
 
   /**

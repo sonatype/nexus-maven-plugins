@@ -43,14 +43,15 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.artifact.ProjectArtifactMetadata;
 import org.codehaus.plexus.component.annotations.Requirement;
-import org.codehaus.plexus.logging.AbstractLogEnabled;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public abstract class AbstractDeployStrategy
-    extends AbstractLogEnabled
     implements DeployStrategy
 {
+  protected final Logger log = LoggerFactory.getLogger(getClass());
 
   @Requirement
   private ArtifactInstaller artifactInstaller;

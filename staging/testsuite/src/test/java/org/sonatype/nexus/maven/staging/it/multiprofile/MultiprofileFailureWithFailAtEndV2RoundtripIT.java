@@ -18,23 +18,13 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.inject.Inject;
-
 import com.sonatype.nexus.staging.client.StagingRepository;
 
-import org.sonatype.nexus.bundle.launcher.NexusBundleConfiguration;
 import org.sonatype.nexus.maven.staging.it.PreparedVerifier;
-import org.sonatype.nexus.maven.staging.it.StagingMavenPluginITSupport;
-import org.sonatype.nexus.testsuite.support.NexusStartAndStopStrategy;
-import org.sonatype.sisu.filetasks.FileTaskBuilder;
 
 import junit.framework.Assert;
 import org.apache.maven.it.VerificationException;
 import org.junit.Test;
-
-import static org.sonatype.nexus.testsuite.support.NexusStartAndStopStrategy.Strategy.EACH_METHOD;
-import static org.sonatype.sisu.filetasks.builder.FileRef.file;
-import static org.sonatype.sisu.filetasks.builder.FileRef.path;
 
 /**
  * IT that Verifies multi module build along with CLI "-fae" switch, and asserts that staging plugin
@@ -50,16 +40,15 @@ public class MultiprofileFailureWithFailAtEndV2RoundtripIT
   }
 
   /**
-   * Using "deploy".
+   * Using "deploy" + fae
    */
-  @Test
-  public void roundtripWithM3AndFae()
+  public void roundtripWithM3AndFae(final String mavenVersion)
       throws VerificationException, IOException
   {
     final PreparedVerifier verifier =
         createMavenVerifier(getClass().getSimpleName() + "_roundtripWithM3MultiprofileProjectUsingM3Deploy",
-            M3_VERSION, testData().resolveFile("preset-nexus-maven-settings.xml"), new File(getBasedir(),
-            "target/test-classes/maven3-multiprofile-project"));
+            mavenVersion, testData().resolveFile("preset-nexus-maven-settings.xml"), new File(getBasedir(),
+                "target/test-classes/maven3-multiprofile-project"));
 
     try {
       // add FAE
@@ -86,4 +75,35 @@ public class MultiprofileFailureWithFailAtEndV2RoundtripIT
       }
     }
   }
+
+  /**
+   * Using "deploy" + fae
+   */
+  @Test
+  public void roundtripWithM30AndFae()
+      throws VerificationException, IOException
+  {
+    roundtripWithM3AndFae(M30_VERSION);
+  }
+
+  /**
+   * Using "deploy" + fae
+   */
+  @Test
+  public void roundtripWithM31AndFae()
+      throws VerificationException, IOException
+  {
+    roundtripWithM3AndFae(M31_VERSION);
+  }
+
+  /**
+   * Using "deploy" + fae
+   */
+  @Test
+  public void roundtripWithM32AndFae()
+      throws VerificationException, IOException
+  {
+    roundtripWithM3AndFae(M32_VERSION);
+  }
+
 }

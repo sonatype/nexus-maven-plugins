@@ -15,11 +15,9 @@ package org.sonatype.nexus.maven.staging;
 
 import com.sonatype.nexus.staging.client.StagingWorkflowV3Service.ProgressMonitor;
 
-import org.apache.maven.plugin.logging.Log;
-import org.codehaus.plexus.logging.Logger;
-import org.codehaus.plexus.logging.console.ConsoleLogger;
-
-import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.base.Stopwatch;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Default {@link ProgressMonitor} implementation.
@@ -31,26 +29,13 @@ public class ProgressMonitorImpl
 {
   protected final Logger logger;
 
+  protected final Stopwatch stopwatch;
+
   protected boolean needsNewline;
 
-  public ProgressMonitorImpl(final Logger logger) {
-    this.logger = checkNotNull(logger);
-  }
-
-  public ProgressMonitorImpl(final Log log) {
-    int level = Logger.LEVEL_INFO;
-    if (log.isDebugEnabled()) {
-      level = Logger.LEVEL_DEBUG;
-    }
-    this.logger = new ConsoleLogger(level, getClass().getName());
-  }
-
-  public ProgressMonitorImpl(final boolean debug) {
-    int level = Logger.LEVEL_INFO;
-    if (debug) {
-      level = Logger.LEVEL_DEBUG;
-    }
-    this.logger = new ConsoleLogger(level, getClass().getName());
+  public ProgressMonitorImpl() {
+    this.logger = LoggerFactory.getLogger(getClass());
+    this.stopwatch = new Stopwatch();
   }
 
   protected void maybePrintln() {
@@ -62,19 +47,23 @@ public class ProgressMonitorImpl
 
   @Override
   public void start() {
+    stopwatch.reset().start();
     if (logger.isDebugEnabled()) {
       logger.debug("START");
     }
     else {
       System.out.println();
-      System.out.print("Waiting for operation to complete...");
+      // NEXUS-7586: println used here, to make sure this output appear on separate line than
+      // ticks (the dots), and have separate timestamp in case of some CIs that flushes stdout
+      // per newline (like Bamboo).
+      System.out.println("Waiting for operation to complete...");
     }
   }
 
   @Override
   public void tick() {
     if (logger.isDebugEnabled()) {
-      logger.debug("TICK");
+      logger.debug("TICK at {}", stopwatch);
     }
     else {
       needsNewline = true;
@@ -84,7 +73,7 @@ public class ProgressMonitorImpl
 
   @Override
   public void pause() {
-    logger.debug("PAUSE");
+    logger.debug("PAUSE at {}", stopwatch);
   }
 
   @Override
@@ -99,8 +88,9 @@ public class ProgressMonitorImpl
 
   @Override
   public void stop() {
+    stopwatch.stop();
     if (logger.isDebugEnabled()) {
-      logger.debug("STOP");
+      logger.debug("STOP after {}", stopwatch);
     }
     else {
       maybePrintln();
@@ -111,12 +101,12 @@ public class ProgressMonitorImpl
   @Override
   public void timeout() {
     maybePrintln();
-    logger.warn("TIMEOUT");
+    logger.warn("TIMEOUT after {}", stopwatch);
   }
 
   @Override
   public void interrupted() {
     maybePrintln();
-    logger.warn("INTERRUPTED");
+    logger.warn("INTERRUPTED after {}", stopwatch);
   }
 }

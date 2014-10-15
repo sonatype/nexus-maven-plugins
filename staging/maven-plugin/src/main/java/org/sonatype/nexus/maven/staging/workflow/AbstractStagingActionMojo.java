@@ -91,8 +91,7 @@ public abstract class AbstractStagingActionMojo
   {
     try {
       final Parameters parameters = buildParameters();
-      final RemoteNexus remoteNexus = new RemoteNexus(getMavenSession(), getSecDispatcher(), getLog().isDebugEnabled(),
-          parameters);
+      final RemoteNexus remoteNexus = new RemoteNexus(getMavenSession(), getSecDispatcher(), parameters);
       return remoteNexus.getStagingWorkflowV2Service();
     }
     catch (Exception e) {
