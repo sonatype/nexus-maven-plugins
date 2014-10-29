@@ -39,11 +39,8 @@ import org.sonatype.nexus.client.core.exception.NexusClientNotFoundException;
 /**
  * IT Support for https://issues.sonatype.org/browse/NEXUS-7601
  * <p>
- * It verifies that G level repository metadata is properly deployed and contains the proper bits about the maven
- * plugin
- * being built.
- *
- * @author cstamas
+ * It verifies that in a multi module setup with multiple distributionManagement sections
+ * the proper one is used for each module.
  */
 public abstract class Nexus7601MultiDistManMetadataSupport
     extends SimpleRoundtripMatrixSupport

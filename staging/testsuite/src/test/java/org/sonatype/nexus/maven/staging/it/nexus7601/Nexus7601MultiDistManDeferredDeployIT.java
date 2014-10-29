@@ -21,11 +21,10 @@ import org.sonatype.nexus.maven.staging.it.PreparedVerifier;
 import org.apache.maven.it.VerificationException;
 
 /**
- * IT for https://issues.sonatype.org/browse/NXCM-5194
+ * IT for https://issues.sonatype.org/browse/NEXUS-7601
  * <p>
- * It builds Snapshot of Maven Plugin, hence uses Deferred Deploy to deploy them directly into "snapshots" repo.
- *
- * @author cstamas
+ * It verifies that in a multi module setup with multiple distributionManagement sections
+ * the proper one is used for each module.
  */
 public class Nexus7601MultiDistManDeferredDeployIT
     extends Nexus7601MultiDistManMetadataSupport
