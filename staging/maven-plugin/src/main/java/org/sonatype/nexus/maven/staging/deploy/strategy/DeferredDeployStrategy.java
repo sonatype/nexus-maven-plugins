@@ -50,9 +50,11 @@ public class DeferredDeployStrategy
       // deploys always to same stagingDirectory
       final File stagingDirectory = request.getParameters().getDeferredDirectoryRoot();
       final ArtifactRepository stagingRepository = getArtifactRepositoryForDirectory(stagingDirectory);
+      final ArtifactRepository deploymentRepository = getDeploymentRepository(request.getMavenSession());
+      
       for (DeployableArtifact deployableArtifact : request.getDeployableArtifacts()) {
         install(deployableArtifact.getFile(), deployableArtifact.getArtifact(), stagingRepository,
-            stagingDirectory);
+            stagingDirectory, deploymentRepository);
       }
     }
     else {
@@ -80,10 +82,9 @@ public class DeferredDeployStrategy
     try {
       // prepare the local staging directory
       // we have normal deploy
-      final ArtifactRepository deploymentRepository = getDeploymentRepository(request.getMavenSession());
       log.info(
-          " * Bulk deploying locally gathered snapshot artifacts to URL {}", deploymentRepository.getUrl());
-      deployUp(request.getMavenSession(), stagingDirectory, deploymentRepository);
+          " * Bulk deploying locally gathered snapshot artifacts");
+      deployUp(request.getMavenSession(), stagingDirectory, null);
       log.info(" * Bulk deploy of locally gathered snapshot artifacts finished.");
     }
     catch (IOException e) {
