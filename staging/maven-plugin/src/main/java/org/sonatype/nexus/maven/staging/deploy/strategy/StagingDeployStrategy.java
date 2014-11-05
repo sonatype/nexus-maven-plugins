@@ -79,7 +79,7 @@ public class StagingDeployStrategy
       for (DeployableArtifact deployableArtifact : request.getDeployableArtifacts()) {
         final ArtifactRepository stagingRepository = getArtifactRepositoryForDirectory(stagingDirectory);
         install(deployableArtifact.getFile(), deployableArtifact.getArtifact(), stagingRepository,
-            stagingDirectory);
+            stagingDirectory, null);
       }
     }
     else {

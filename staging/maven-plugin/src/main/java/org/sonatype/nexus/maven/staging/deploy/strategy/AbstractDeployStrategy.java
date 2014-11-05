@@ -97,7 +97,7 @@ public abstract class AbstractDeployStrategy
    * do only local FS ops here.
    */
   protected void install(final File source, final Artifact artifact, final ArtifactRepository stagingRepository,
-                         final File stagingDirectory)
+                         final File stagingDirectory, final ArtifactRepository remoteRepository)
       throws ArtifactInstallationException, MojoExecutionException
   {
     synchronized (parallelLock) {
@@ -126,11 +126,13 @@ public abstract class AbstractDeployStrategy
             pomFileName = (artifactMetadata).getLocalFilename(stagingRepository);
           }
         }
-        pw.println(String.format("%s=%s:%s:%s:%s:%s:%s:%s:%s", path, artifact.getGroupId(),
+        pw.println(String.format("%s=%s:%s:%s:%s:%s:%s:%s:%s:%s:%s", path, artifact.getGroupId(),
             artifact.getArtifactId(), artifact.getVersion(),
             Strings.isNullOrEmpty(artifact.getClassifier()) ? "n/a" : artifact.getClassifier(), artifact.getType(),
             artifact.getArtifactHandler().getExtension(), Strings.isNullOrEmpty(pomFileName) ? "n/a" : pomFileName,
-            Strings.isNullOrEmpty(pluginPrefix) ? "n/a" : pluginPrefix));
+            Strings.isNullOrEmpty(pluginPrefix) ? "n/a" : pluginPrefix,
+            remoteRepository != null ? remoteRepository.getId() : "n/a",
+            remoteRepository != null ? remoteRepository.getUrl() : "n/a"));
         pw.flush();
         pw.close();
       }
@@ -140,11 +142,11 @@ public abstract class AbstractDeployStrategy
     }
   }
 
-  // G:A:V:C:P:Ext:PomFileName:PluginPrefix
-  private final Pattern indexProps = Pattern.compile("(.*):(.*):(.*):(.*):(.*):(.*):(.*):(.*)");
+  // G:A:V:C:P:Ext:PomFileName:PluginPrefix:repoId:repoUrl
+  private final Pattern indexProps = Pattern.compile("([^:]*):([^:]*):([^:]*):([^:]*):([^:]*):([^:]*):([^:]*):([^:]*):([^:]*):(.*)");
 
   protected void deployUp(final MavenSession mavenSession, final File sourceDirectory,
-                          final ArtifactRepository remoteRepository)
+                          ArtifactRepository remoteRepository)
       throws ArtifactDeploymentException, IOException
   {
     // I'd need Aether RepoSystem and create one huge DeployRequest will _all_ artifacts (would be FAST as it would
@@ -157,7 +159,7 @@ public abstract class AbstractDeployStrategy
     finally {
       Closeables.closeQuietly(fis);
     }
-
+    ArtifactRepository repoToUse = remoteRepository;
     for (String includedFilePath : index.stringPropertyNames()) {
       final File includedFile = new File(sourceDirectory, includedFilePath);
       final String includedFileProps = index.getProperty(includedFilePath);
@@ -175,6 +177,15 @@ public abstract class AbstractDeployStrategy
       final String extension = matcher.group(6);
       final String pomFileName = "n/a".equals(matcher.group(7)) ? null : matcher.group(7);
       final String pluginPrefix = "n/a".equals(matcher.group(8)) ? null : matcher.group(8);
+      final String repoId = "n/a".equals(matcher.group(9)) ? null : matcher.group(9);
+      final String repoUrl = "n/a".equals(matcher.group(10)) ? null : matcher.group(10);
+      if (remoteRepository == null) {
+          if (repoUrl != null && repoId != null) {
+            repoToUse = createDeploymentArtifactRepository(repoId, repoUrl);
+          } else {
+              throw new ArtifactDeploymentException("Internal error! Remote repository for deployment not defined.");
+          }
+      }
 
       // just a synthetic one, to properly set extension
       final FakeArtifactHandler artifactHandler = new FakeArtifactHandler(packaging, extension);
@@ -200,7 +211,7 @@ public abstract class AbstractDeployStrategy
           artifact.addMetadata(groupMetadata);
         }
       }
-      artifactDeployer.deploy(includedFile, artifact, remoteRepository, mavenSession.getLocalRepository());
+      artifactDeployer.deploy(includedFile, artifact, repoToUse, mavenSession.getLocalRepository());
     }
   }
 
