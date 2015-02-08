@@ -17,11 +17,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-import com.google.common.hash.Hasher;
-import com.google.common.hash.Hashing;
+import com.google.common.collect.Maps;
 import com.sonatype.nexus.staging.api.dto.StagingActionDTO;
 import com.sonatype.nexus.staging.client.Profile;
 import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
@@ -47,7 +46,6 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.component.annotations.Component;
 
-import javax.xml.bind.DatatypeConverter;
 
 /**
  * Full staging V2 deploy strategy. It perform local staging and remote staging (on remote Nexus).
@@ -97,17 +95,6 @@ public class StagingDeployStrategy
     else {
       log.info("Nothing to locally stage?");
     }
-  }
-
-  /**
-   * Generate md5 string for a given string.
-   * @param str
-   * @return
-   */
-  private String generateMD5String(String str)
-  {
-    final Hasher hasher = Hashing.md5().newHasher();
-    return DatatypeConverter.printHexBinary(hasher.putString(str).hash().asBytes());
   }
 
   /**
@@ -179,7 +166,7 @@ public class StagingDeployStrategy
       request.setRemoteNexus(createRemoteNexus(request.getMavenSession(), request.getParameters()));
     }
 
-    final List<StagingRepository> zappedStagingRepositories = new ArrayList<StagingRepository>();
+    final Map<String, List<StagingRepository>> zappedStagingRepositories = Maps.newHashMap();
     for (File nexusUrlFolder : nexusUrlFolders)
     {
       if (!nexusUrlFolder.isDirectory())
@@ -190,6 +177,7 @@ public class StagingDeployStrategy
       String nexusUrl = readNexusUrl(nexusUrlFolder);
       request.getParameters().setNexusUrl(nexusUrl); //side effect
       RemoteNexus remoteNexus = createRemoteNexus(request.getMavenSession(), request.getParameters());
+      zappedStagingRepositories.put(nexusUrl, Lists.<StagingRepository>newArrayList());
       log.info(" * Remote staging into staging nexus url \"{}\"", nexusUrl);
       final File[] localStagingRepositories = nexusUrlFolder.listFiles();
       for (File localStagingRepository : localStagingRepositories)
@@ -207,7 +195,7 @@ public class StagingDeployStrategy
         {
           final Profile stagingProfile = remoteNexus.getStagingWorkflowV2Service().selectProfile(profileId);
           final StagingRepository stagingRepository = beforeUpload(request.getParameters(), remoteNexus, stagingProfile);
-          zappedStagingRepositories.add(stagingRepository);
+          zappedStagingRepositories.get(nexusUrl).add(stagingRepository);
           log.info(" * Uploading locally staged artifacts to profile {}", stagingProfile.name());
           deployUp(request.getMavenSession(), getStagingDirectory(nexusUrlFolder, profileId),
                   createDeploymentArtifactRepository(remoteNexus.getServer().getId(), stagingRepository.getUrl()));
@@ -215,7 +203,7 @@ public class StagingDeployStrategy
           afterUpload(request.getParameters(), remoteNexus, stagingRepository);
         } catch (NexusClientNotFoundException e)
         {
-          afterUploadFailure(request.getParameters(), remoteNexus, zappedStagingRepositories, e);
+          afterUploadFailure(request, zappedStagingRepositories, e);
           log.error("Remote staging finished with a failure: {}", e.getMessage());
           log.error("");
           log.error("Possible causes of 404 Not Found error:");
@@ -227,7 +215,7 @@ public class StagingDeployStrategy
           throw new ArtifactDeploymentException("Remote staging failed: " + e.getMessage(), e);
         } catch (NexusClientAccessForbiddenException e)
         {
-          afterUploadFailure(request.getParameters(), remoteNexus, zappedStagingRepositories, e);
+          afterUploadFailure(request, zappedStagingRepositories, e);
           log.error("Remote staging finished with a failure: {}", e.getMessage());
           log.error("");
           log.error("Possible causes of 403 Forbidden:");
@@ -236,17 +224,34 @@ public class StagingDeployStrategy
           throw new ArtifactDeploymentException("Remote staging failed: " + e.getMessage(), e);
         } catch (Exception e)
         {
-          afterUploadFailure(request.getParameters(), remoteNexus, zappedStagingRepositories, e);
+          afterUploadFailure(request, zappedStagingRepositories, e);
           log.error("Remote staging finished with a failure: {}", e.getMessage());
           throw new ArtifactDeploymentException("Remote staging failed: " + e.getMessage(), e);
         }
       }
-      log.info("Remote staged {} repositories, finished with success.", zappedStagingRepositories.size());
+      log.info("Remote staged {} repositories to {}, finished with success.", zappedStagingRepositories.get(nexusUrl).size(), nexusUrl);
+    }
 
-      if (!request.getParameters().isSkipStagingRepositoryClose() && request.getParameters().isAutoReleaseAfterClose())
+    if (!request.getParameters().isSkipStagingRepositoryClose() && request.getParameters().isAutoReleaseAfterClose())
+    {
+      RemoteNexus remoteNexus;
+      for(Map.Entry<String, List<StagingRepository>> reposOfEachNexusInstance : zappedStagingRepositories.entrySet())
       {
-        releaseAfterClose(request.getParameters(), remoteNexus, zappedStagingRepositories);
+        request.getParameters().setNexusUrl(reposOfEachNexusInstance.getKey());
+        remoteNexus = createRemoteNexus(request.getMavenSession(), request.getParameters());
+        releaseAfterClose(request.getParameters(), remoteNexus, reposOfEachNexusInstance.getValue());
       }
+    }
+  }
+
+  private void afterUploadFailure(FinalizeDeployRequest request, Map<String, List<StagingRepository>> zappedStagingRepositories, Exception e) throws MojoExecutionException
+  {
+    RemoteNexus remoteNexus;
+    for(Map.Entry<String, List<StagingRepository>> reposOfEachNexusInstance : zappedStagingRepositories.entrySet())
+    {
+      request.getParameters().setNexusUrl(reposOfEachNexusInstance.getKey());
+      remoteNexus = createRemoteNexus(request.getMavenSession(), request.getParameters());
+      afterUploadFailure(request.getParameters(), remoteNexus, reposOfEachNexusInstance.getValue(), e);
     }
   }
 

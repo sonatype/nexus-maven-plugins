@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import com.google.common.hash.Hasher;
+import com.google.common.hash.Hashing;
 import com.sonatype.nexus.staging.client.Profile;
 import com.sonatype.nexus.staging.client.ProfileMatchingParameters;
 import com.sonatype.nexus.staging.client.StagingRuleFailures;
@@ -42,6 +44,8 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.component.annotations.Requirement;
+
+import javax.xml.bind.DatatypeConverter;
 
 public abstract class AbstractStagingDeployStrategy
     extends AbstractDeployStrategy
@@ -148,6 +152,17 @@ public abstract class AbstractStagingDeployStrategy
 
   public static final String STAGING_REPOSITORY_MANAGED = "stagingRepository.managed";
 
+  /**
+   * Generate md5 string for a given string.
+   * @param str
+   * @return
+   */
+  protected String generateMD5String(String str)
+  {
+    final Hasher hasher = Hashing.md5().newHasher();
+    return DatatypeConverter.printHexBinary(hasher.putString(str).hash().asBytes());
+  }
+
   protected void afterUpload(final Parameters parameters, final RemoteNexus remoteNexus,
                              final StagingRepository stagingRepository)
       throws MojoExecutionException, StagingRuleFailuresException
@@ -168,8 +183,10 @@ public abstract class AbstractStagingDeployStrategy
     // exists if not yet closed....
     stagingProperties.put(STAGING_REPOSITORY_MANAGED, String.valueOf(stagingRepository.isManaged()));
 
+    File nexusUrlFolder = new File(parameters.getStagingDirectoryRoot(), generateMD5String(parameters.getNexusUrl()));
+    final File stagingDirectoryRoot = nexusUrlFolder.exists()? nexusUrlFolder : parameters.getStagingDirectoryRoot();
     final File stagingPropertiesFile =
-        new File(parameters.getStagingDirectoryRoot(), stagingRepository.getProfile().id()
+        new File(stagingDirectoryRoot, stagingRepository.getProfile().id()
             + STAGING_REPOSITORY_PROPERTY_FILE_NAME_SUFFIX);
 
     // this below is the case with DeployRepositoryMojo, where we have no folder created
@@ -266,7 +283,8 @@ public abstract class AbstractStagingDeployStrategy
 
     log.error("Cleaning up local stage directory after a {}", msg);
     // delete properties (as they are getting created when remotely staged)
-    final File stageRoot = parameters.getStagingDirectoryRoot();
+    final File nexusUrlFolder = new File(parameters.getStagingDirectoryRoot(), generateMD5String(parameters.getNexusUrl()));
+    final File stageRoot = nexusUrlFolder.exists()? nexusUrlFolder : parameters.getStagingDirectoryRoot();
     final File[] localStageRepositories = stageRoot.listFiles();
     if (localStageRepositories != null) {
       for (File file : localStageRepositories) {
