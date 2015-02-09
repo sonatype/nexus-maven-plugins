@@ -14,6 +14,7 @@
 package org.sonatype.nexus.maven.staging.workflow;
 
 import java.util.Arrays;
+import java.util.Map;
 
 import com.sonatype.nexus.staging.api.dto.StagingActionDTO;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
@@ -39,26 +40,32 @@ public class ReleaseStageRepositoryMojo
   public void doExecute(final StagingWorkflowV2Service stagingWorkflow)
       throws MojoExecutionException, MojoFailureException
   {
-    // FIXME: Some duplication here between RcReleaseStageRepositoryMojo and ReleaseStageRepositoryMojo
+    Map<String, String[]> stagingRepositoryIds = getStagingRepositoryIds();
+    for(Map.Entry<String, String[]> stagingRepos : stagingRepositoryIds.entrySet())
+    {
+      // FIXME: Some duplication here between RcReleaseStageRepositoryMojo and ReleaseStageRepositoryMojo
 
-    getLog().info("Releasing staging repository with IDs=" + Arrays.toString(getStagingRepositoryIds()));
+      getLog().info("Releasing staging repository with IDs=" + Arrays.toString(stagingRepos.getValue())
+                    + ", nexusUrl=" + stagingRepos.getKey());
 
-    String description = getDescriptionWithDefaultsForAction(StagingAction.RELEASE);
+      String description = getDescriptionWithDefaultsForAction(StagingAction.RELEASE);
+      StagingWorkflowV2Service stagingWorkflowV2Service = createStagingWorkflowService(stagingRepos.getKey());
+      if (stagingWorkflowV2Service instanceof StagingWorkflowV3Service)
+      {
+        StagingWorkflowV3Service v3 = (StagingWorkflowV3Service) stagingWorkflow;
 
-    if (stagingWorkflow instanceof StagingWorkflowV3Service) {
-      StagingWorkflowV3Service v3 = (StagingWorkflowV3Service) stagingWorkflow;
+        StagingActionDTO action = new StagingActionDTO();
+        action.setDescription(description);
+        action.setStagedRepositoryIds(Arrays.asList(stagingRepos.getValue()));
+        action.setAutoDropAfterRelease(isAutoDropAfterRelease());
 
-      StagingActionDTO action = new StagingActionDTO();
-      action.setDescription(description);
-      action.setStagedRepositoryIds(Arrays.asList(getStagingRepositoryIds()));
-      action.setAutoDropAfterRelease(isAutoDropAfterRelease());
-
-      v3.releaseStagingRepositories(action);
+        v3.releaseStagingRepositories(action);
+      } else
+      {
+        stagingWorkflowV2Service.releaseStagingRepositories(description, stagingRepos.getValue());
+      }
+      getLog().info("Released");
     }
-    else {
-      stagingWorkflow.releaseStagingRepositories(description, getStagingRepositoryIds());
-    }
 
-    getLog().info("Released");
   }
 }

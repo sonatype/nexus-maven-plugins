@@ -14,6 +14,7 @@
 package org.sonatype.nexus.maven.staging.workflow;
 
 import java.util.Arrays;
+import java.util.Map;
 
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
@@ -37,9 +38,15 @@ public class DropStageRepositoryMojo
   public void doExecute(final StagingWorkflowV2Service stagingWorkflow)
       throws MojoExecutionException, MojoFailureException
   {
-    getLog().info("Dropping staging repository with IDs=" + Arrays.toString(getStagingRepositoryIds()));
-    stagingWorkflow.dropStagingRepositories(getDescriptionWithDefaultsForAction(StagingAction.DROP),
-        getStagingRepositoryIds());
-    getLog().info("Dropped");
+    Map<String, String[]> stagingRepositories = getStagingRepositoryIds();
+    for(Map.Entry<String, String[]> stagingRepos : stagingRepositories.entrySet())
+    {
+        getLog().info("Dropping staging repository with IDs=" + Arrays.toString(stagingRepos.getValue())
+                + " nexusUrl=" + stagingRepos.getKey());
+        StagingWorkflowV2Service stagingWorkflowV2Service = createStagingWorkflowService(stagingRepos.getKey());
+        stagingWorkflowV2Service.dropStagingRepositories(getDescriptionWithDefaultsForAction(StagingAction.DROP),
+                stagingRepos.getValue());
+        getLog().info("Dropped");
+    }
   }
 }

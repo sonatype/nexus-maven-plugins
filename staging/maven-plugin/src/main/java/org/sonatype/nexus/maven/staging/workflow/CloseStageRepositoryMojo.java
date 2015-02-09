@@ -16,7 +16,9 @@ package org.sonatype.nexus.maven.staging.workflow;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
+import com.google.common.base.Preconditions;
 import com.sonatype.nexus.staging.client.StagingRuleFailures;
 import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
@@ -27,6 +29,8 @@ import org.sonatype.nexus.maven.staging.StagingAction;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.sonatype.nexus.maven.staging.remote.Parameters;
+import org.sonatype.nexus.maven.staging.remote.RemoteNexus;
 
 /**
  * Closes a Nexus staging repository.
@@ -42,31 +46,46 @@ public class CloseStageRepositoryMojo
   public void doExecute(final StagingWorkflowV2Service stagingWorkflow)
       throws MojoExecutionException, MojoFailureException
   {
-    final String[] stagingRepositoryIds = getStagingRepositoryIds();
-    try {
-      getLog().info("Closing staging repository with IDs=" + Arrays.toString(getStagingRepositoryIds()));
-      stagingWorkflow.finishStagingRepositories(getDescriptionWithDefaultsForAction(StagingAction.FINISH),
-          stagingRepositoryIds);
-      getLog().info("Closed");
-    }
-    catch (StagingRuleFailuresException e) {
-      // report staging repository failures
-      ErrorDumper.dumpErrors(getLog(), e);
+    final Map<String, String[]> stagingRepositories = getStagingRepositoryIds();
 
-      // drop the repository (this will break exception chain if there's new failure, like network)
-      if (!isKeepStagingRepositoryOnCloseRuleFailure()) {
-        final List<String> failedRepositories = new ArrayList<String>();
-        for (StagingRuleFailures failures : e.getFailures()) {
-          failedRepositories.add(failures.getRepositoryId());
+    for(Map.Entry<String, String[]> stagingRepo : stagingRepositories.entrySet())
+    {
+      StagingWorkflowV2Service stagingWorkflowV2Service = null;
+      try {
+        stagingWorkflowV2Service = createStagingWorkflowService(getNexusUrl());
+        getLog().info("Closing staging repository with IDs=" + Arrays.toString(stagingRepo.getValue()) + ", nexus url: " + stagingRepo.getKey());
+        stagingWorkflowV2Service.finishStagingRepositories(getDescriptionWithDefaultsForAction(StagingAction.FINISH),
+                stagingRepo.getValue());
+        getLog().info("Closed");
+      } catch (StagingRuleFailuresException e) {
+        // report staging repository failures
+        ErrorDumper.dumpErrors(getLog(), e);
+
+        // drop the repository (this will break exception chain if there's new failure, like network)
+        if (!isKeepStagingRepositoryOnCloseRuleFailure()) {
+          final List<String> failedRepositories = new ArrayList<String>();
+          for (StagingRuleFailures failures : e.getFailures()) {
+            failedRepositories.add(failures.getRepositoryId());
+          }
+          final String msg = "Rule failure during close of staging repositories: " + failedRepositories;
+
+          getLog().error("Cleaning up remote stage repositories after a " + msg);
+
+          dropStagingRepos(getDescriptionWithDefaultsForAction(StagingAction.DROP) + " ("
+                  + msg + ").", stagingRepositories);
         }
-        final String msg = "Rule failure during close of staging repositories: " + failedRepositories;
-
-        getLog().error("Cleaning up remote stage repositories after a " + msg);
-        stagingWorkflow.dropStagingRepositories(getDescriptionWithDefaultsForAction(StagingAction.DROP) + " ("
-            + msg + ").", stagingRepositoryIds);
+        // fail the build
+        throw new MojoExecutionException("Could not perform action: there are failing staging rules!", e);
       }
-      // fail the build
-      throw new MojoExecutionException("Could not perform action: there are failing staging rules!", e);
     }
+
+  }
+
+  private void dropStagingRepos(String msg, Map<String, String[]> stagingRepositories) throws MojoExecutionException{
+    for(Map.Entry<String, String[]> stagingRepos : stagingRepositories.entrySet()) {
+      StagingWorkflowV2Service stagingWorkflowV2Service = createStagingWorkflowService(stagingRepos.getKey());
+      stagingWorkflowV2Service.dropStagingRepositories(msg, stagingRepos.getValue());
+    }
+
   }
 }

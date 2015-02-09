@@ -14,6 +14,7 @@
 package org.sonatype.nexus.maven.staging.workflow;
 
 import java.util.Arrays;
+import java.util.Map;
 
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
@@ -58,17 +59,24 @@ public class PromoteToStageProfileMojo
   public void doExecute(final StagingWorkflowV2Service stagingWorkflow)
       throws MojoExecutionException, MojoFailureException
   {
-    getLog().info(
-        "Promoting staging repository with IDs=" + Arrays.toString(getStagingRepositoryIds())
-            + " to build profile ID=\"" + getBuildPromotionProfileId() + "\"");
-    final String promotionGroupId =
-        stagingWorkflow.promoteStagingRepositories(getDescriptionWithDefaultsForAction(StagingAction.PROMOTE),
-            getBuildPromotionProfileId(), getStagingRepositoryIds());
-    if (Strings.isNullOrEmpty(promotionGroupId)) {
-      getLog().info("Promoted, but created promotion group ID unknown (needs Nexus Pro version 2.4+).");
-    }
-    else {
-      getLog().info("Promoted, created promotion group with ID " + promotionGroupId);
+    Map<String, String[]> stagingRepositoryIds = getStagingRepositoryIds();
+    for(Map.Entry<String, String[]> stagingRepo : stagingRepositoryIds.entrySet())
+    {
+        getLog().info(
+                "Promoting staging repository with IDs=" + Arrays.toString(stagingRepo.getValue())
+                        + " to build profile ID=\"" + getBuildPromotionProfileId() + "\""
+                        + ", nexusUrl=\"" + stagingRepo.getKey() + "\"");
+        StagingWorkflowV2Service stagingWorkflowV2Service = createStagingWorkflowService(stagingRepo.getKey());
+        final String promotionGroupId =
+                stagingWorkflowV2Service.promoteStagingRepositories(getDescriptionWithDefaultsForAction(StagingAction.PROMOTE),
+                        getBuildPromotionProfileId(), stagingRepo.getValue());
+        if (Strings.isNullOrEmpty(promotionGroupId))
+        {
+            getLog().info("Promoted, but created promotion group ID unknown (needs Nexus Pro version 2.4+).");
+        } else
+        {
+            getLog().info("Promoted, created promotion group with ID " + promotionGroupId);
+        }
     }
   }
 }

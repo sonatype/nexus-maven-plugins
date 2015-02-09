@@ -17,8 +17,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Properties;
 
+import com.google.common.collect.Maps;
+import org.apache.commons.io.FileUtils;
 import org.sonatype.nexus.maven.staging.deploy.DeployMojo;
 import org.sonatype.nexus.maven.staging.deploy.strategy.AbstractStagingDeployStrategy;
 
@@ -47,41 +50,65 @@ public abstract class AbstractStagingBuildActionMojo
   @Parameter(property = "stagingRepositoryId")
   private String stagingRepositoryId;
 
-  protected String[] getStagingRepositoryIds()
+  protected Map<String, String[]> getStagingRepositoryIds()
       throws MojoExecutionException
   {
-    String[] result = null;
+    Map<String, String[]> result = Maps.newHashMap();
     if (stagingRepositoryId != null) {
       // explicitly configured either via config or CLI, use that
-      result = Iterables.toArray(Splitter.on(",").split(stagingRepositoryId), String.class);
+      result.put(this.getNexusUrl(), Iterables.toArray(Splitter.on(",").split(stagingRepositoryId), String.class));
     }
-    if (result == null) {
+
+    if (result.isEmpty()) {
       // collect all the repositories we created
       final ArrayList<String> resultNames = new ArrayList<String>();
       final File stageRoot = getStagingDirectoryRoot();
-      final File[] localStageRepositories = stageRoot.listFiles();
-      if (localStageRepositories == null) {
+      final File [] nexusInstanceDirs = stageRoot.listFiles();
+
+      if (nexusInstanceDirs == null) {
         getLog().info("We have nothing locally staged, bailing out.");
         result = null; // this will fail the build later below
       }
       else {
-        for (File profileDirectory : localStageRepositories) {
-          if (!(profileDirectory.isFile() && profileDirectory.getName().endsWith(
-              AbstractStagingDeployStrategy.STAGING_REPOSITORY_PROPERTY_FILE_NAME_SUFFIX))) {
+        for (File nexusInstanceDir : nexusInstanceDirs)
+        {
+          final File dotNexusUrl = new File(nexusInstanceDir, ".nexusUrl");
+          if(!dotNexusUrl.exists() || dotNexusUrl.isDirectory()) {
+            getLog().info("No .nexusUrl file in directory" + nexusInstanceDir.getName() + ", skipping");
             continue;
           }
-          final String managedStagingRepositoryId =
-              readStagingRepositoryIdFromPropertiesFile(profileDirectory);
-          if (managedStagingRepositoryId != null) {
-            resultNames.add(managedStagingRepositoryId);
+          String nexusUrl;
+          try
+          {
+            nexusUrl = FileUtils.readFileToString(dotNexusUrl);
+          }catch (IOException e) {
+            throw new MojoExecutionException("Failed to read .nexusUrl", e);
           }
+          getLog().info("nexus url: " + nexusUrl);
+          final File[] localStageRepositories = nexusInstanceDir.listFiles();
+          for (File profileDirectory : localStageRepositories)
+          {
+            if (!(profileDirectory.isFile() && profileDirectory.getName().endsWith(
+                    AbstractStagingDeployStrategy.STAGING_REPOSITORY_PROPERTY_FILE_NAME_SUFFIX)))
+            {
+              continue;
+            }
+
+            final String managedStagingRepositoryId =
+                    readStagingRepositoryIdFromPropertiesFile(profileDirectory);
+            if (managedStagingRepositoryId != null)
+            {
+              resultNames.add(managedStagingRepositoryId);
+            }
+          }
+          result.put(nexusUrl, resultNames.toArray(new String[resultNames.size()]));
+          resultNames.clear();
         }
       }
-      result = resultNames.toArray(new String[resultNames.size()]);
     }
 
     // check did we get any result at all
-    if (result == null || result.length == 0) {
+    if (result == null || result.isEmpty()) {
       throw new MojoExecutionException(
           "The staging repository to operate against is not defined! (use \"-DstagingRepositoryId=foo1,foo2\" on CLI)");
     }

@@ -13,6 +13,7 @@
 
 package org.sonatype.nexus.maven.staging.workflow;
 
+import com.google.common.base.Preconditions;
 import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 
@@ -91,6 +92,24 @@ public abstract class AbstractStagingActionMojo
   {
     try {
       final Parameters parameters = buildParameters();
+      final RemoteNexus remoteNexus = new RemoteNexus(getMavenSession(), getSecDispatcher(), parameters);
+      return remoteNexus.getStagingWorkflowV2Service();
+    }
+    catch (Exception e) {
+      throw new MojoExecutionException("Nexus connection problem: " + e.getMessage(), e);
+    }
+  }
+
+  /**
+   * Initialized stuff needed for transport, stuff like: Server, Proxy and RemoteNexus.
+   */
+  protected StagingWorkflowV2Service createStagingWorkflowService(String nexusUrl)
+          throws MojoExecutionException
+  {
+    Preconditions.checkNotNull(nexusUrl);
+    try {
+      final Parameters parameters = buildParameters();
+      parameters.setNexusUrl(nexusUrl);
       final RemoteNexus remoteNexus = new RemoteNexus(getMavenSession(), getSecDispatcher(), parameters);
       return remoteNexus.getStagingWorkflowV2Service();
     }
