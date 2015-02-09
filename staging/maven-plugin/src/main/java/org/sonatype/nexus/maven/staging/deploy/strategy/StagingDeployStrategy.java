@@ -175,7 +175,7 @@ public class StagingDeployStrategy
       }
 
       String nexusUrl = readNexusUrl(nexusUrlFolder);
-      request.getParameters().setNexusUrl(nexusUrl); //side effect
+      request.getParameters().setNexusUrl(nexusUrl); // All nexus staging configurations are reused except nexus url
       RemoteNexus remoteNexus = createRemoteNexus(request.getMavenSession(), request.getParameters());
       zappedStagingRepositories.put(nexusUrl, Lists.<StagingRepository>newArrayList());
       log.info(" * Remote staging into staging nexus url \"{}\"", nexusUrl);
