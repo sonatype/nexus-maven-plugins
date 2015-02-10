@@ -17,10 +17,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.Maps;
+import com.google.common.io.Files;
 import com.sonatype.nexus.staging.api.dto.StagingActionDTO;
 import com.sonatype.nexus.staging.client.Profile;
 import com.sonatype.nexus.staging.client.StagingRuleFailuresException;
@@ -106,43 +108,25 @@ public class StagingDeployStrategy
    */
   private void storeNexusUrl(DeployPerModuleRequest request, File stagingDirectory) throws MojoExecutionException
   {
-    FileOutputStream fos = null;
     try{
       final File nexusUrlFile = new File(stagingDirectory, ".nexusUrl");
       if(nexusUrlFile.exists()) {
         return;
       }
-      fos = new FileOutputStream(nexusUrlFile);
-      fos.write(request.getParameters().getNexusUrl().getBytes("ISO-8859-1"));
-      fos.flush();
+      Files.write(request.getParameters().getNexusUrl(), nexusUrlFile, Charset.forName("UTF-8"));
     } catch(IOException e) {
       throw new MojoExecutionException("Failed to store nexus url", e);
-    } finally {
-      if(fos != null) {
-        try{
-          fos.close();
-        } catch(IOException e){}
-      }
     }
   }
 
   private String readNexusUrl(File profileDirectory) throws MojoExecutionException
   {
-    FileInputStream fis = null;
     try
     {
-      fis = new FileInputStream(new File(profileDirectory, ".nexusUrl"));
-      byte b[] = new byte[2048];
-      int len = fis.read(b);
-      return new String(b, 0, len);
+      File nexusUrlFile = new File(profileDirectory, ".nexusUrl");
+      return Files.readFirstLine(nexusUrlFile, Charset.forName("UTF-8"));
     } catch(IOException e) {
       throw new MojoExecutionException("Failed to read nexus url", e);
-    } finally {
-      if(fis != null) {
-        try {
-          fis.close();
-        } catch (IOException e) {}
-      }
     }
   }
 
