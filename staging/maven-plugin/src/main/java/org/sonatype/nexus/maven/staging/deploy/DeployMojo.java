@@ -90,10 +90,11 @@ public class DeployMojo
   private boolean skipNexusStagingDeployMojo;
 
   /**
-   * Set this to {@code true} to bypass staging features completely, and make this plugin behave in exact way as
-   * "maven-deploy-plugin" would, such as deploying at "deploy" phase in every module build to remote. In this case,
-   * the repository deployment goes against is taken in from Dependency Management section, again, same as in case of
-   * "maven-deploy-plugin".
+   * When {@code true}, bypass all staging specific features. Remote deploys happen inline at deploy phase of each
+   * module, not at build end. The deployment repository is "sourced" from pom.xml distributionManagement. Which
+   * deployment repository is used depends on the project having a release or snapshot version. Essentially this
+   * option makes the staging plugin execution act like the default maven-deploy-plugin. The default setting is
+   * {@code false}.
    */
   @Parameter(property = "skipLocalStaging")
   private boolean skipLocalStaging;
