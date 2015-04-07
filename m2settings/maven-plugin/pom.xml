@@ -169,6 +169,7 @@
             <configuration>
               <artifactSet>
                 <includes>
+                  <include>org.slf4j:slf4j-api</include>
                   <include>org.sonatype.plexus:plexus-sec-dispatcher</include>
                   <include>org.sonatype.plexus:plexus-cipher</include>
                   <include>com.sonatype.nexus.plugins:nexus-m2-settings-template-model</include>
