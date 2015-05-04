@@ -44,7 +44,7 @@ ratio stands).
 
 Example invocation:
 ```
-$ mvn clean deploy -Ddescription="Description of the staged repository"
+$ mvn clean deploy -DstagingDescription="Description of the staged repository"
 ```
 
 
@@ -57,7 +57,7 @@ Example invocation:
 ```
 $ mvn clean deploy -DskipRemoteStaging=true
 ...
-$ mvn nexus:deploy-staged -Ddescription="Description of the staged repository"
+$ mvn nexus:deploy-staged -DstagingDescription="Description of the staged repository"
 ```
 
 
@@ -101,7 +101,7 @@ module build that has modules specifying different profiles in plugin configurat
 
 Example invocation in CLI:
 ```
-$ mvn clean deploy -DstagingProfileId=12928995ef7eaecc -Ddescription="Description of the staged repository"
+$ mvn clean deploy -DstagingProfileId=12928995ef7eaecc -DstagingDescription="Description of the staged repository"
 ```
 
 Note: direct consequence of using this mode is lack of need to manage profiles on server side
@@ -199,17 +199,17 @@ easily perform "post staging steps without setting any parameters on CLI.
 
 To release:
 ```
-mvn nexus-staging:release -Ddescription="Yippie!"
+mvn nexus-staging:release -DstagingDescription="Yippie!"
 ```
 
 To give up on staged repository:
 ```
-mvn nexus-staging:drop -Ddescription="Bah, failed QA"
+mvn nexus-staging:drop -DstagingDescription="Bah, failed QA"
 ```
 
 To close (in case you used `-DskipStagingRepositoryClose=true` only!):
 ```
-mvn nexus-staging:close -Ddescription="Supercool description"
+mvn nexus-staging:close -DstagingDescription="Supercool description"
 ```
 
 
