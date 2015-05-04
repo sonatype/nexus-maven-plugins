@@ -485,7 +485,7 @@ Closes the specified staging repositories.
 
 Example invocation:
 
-		mvn nexus-staging:rc-close -DserverId=local-nexus -DnexusUrl=http://localhost:8081/nexus -DstagingRepositoryId=repo1,repo2 -Ddescription="The reason I close these is..."
+		mvn nexus-staging:rc-close -DserverId=local-nexus -DnexusUrl=http://localhost:8081/nexus -DstagingRepositoryId=repo1,repo2 -DstagingDescription="The reason I close these is..."
 
 
 #### `rc-drop`
@@ -494,7 +494,7 @@ Drops the specified staging repositories.
 
 Example invocation:
 
-		mvn nexus-staging:rc-drop -DserverId=local-nexus -DnexusUrl=http://localhost:8081/nexus -DstagingRepositoryId=repo1,repo2 -Ddescription="The reason I drop these is..."
+		mvn nexus-staging:rc-drop -DserverId=local-nexus -DnexusUrl=http://localhost:8081/nexus -DstagingRepositoryId=repo1,repo2 -DstagingDescription="The reason I drop these is..."
 
 #### `rc-release`
 
@@ -502,7 +502,7 @@ Releases the specified closed staging repositories.
 
 Example invocation:
 
-		mvn nexus-staging:rc-release -DserverId=local-nexus -DnexusUrl=http://localhost:8081/nexus -DstagingRepositoryId=repo1,repo2 -Ddescription="The reason I release these is..."
+		mvn nexus-staging:rc-release -DserverId=local-nexus -DnexusUrl=http://localhost:8081/nexus -DstagingRepositoryId=repo1,repo2 -DstagingDescription="The reason I release these is..."
 
 #### `rc-promote`
 
@@ -511,4 +511,4 @@ Performs a build profile promotion on the specified closed staging repositories.
 Example invocation:
 
 
-		mvn nexus-staging:rc-promote -DserverId=local-nexus -DnexusUrl=http://localhost:8081/nexus -DbuildPromotionProfileId=foo -DstagingRepositoryId=repo1,repo2 -Ddescription="The reason I promote these is..."
+		mvn nexus-staging:rc-promote -DserverId=local-nexus -DnexusUrl=http://localhost:8081/nexus -DbuildPromotionProfileId=foo -DstagingRepositoryId=repo1,repo2 -DstagingDescription="The reason I promote these is..."
