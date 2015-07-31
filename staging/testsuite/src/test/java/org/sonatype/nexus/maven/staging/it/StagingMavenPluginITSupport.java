@@ -115,11 +115,13 @@ public abstract class StagingMavenPluginITSupport
 
   public static final String M32_VERSION = "3.2.3";
 
+  public static final String M33_VERSION = "3.3.3";
+
   /**
    * Override this method to have other than default versions involved.
    */
   protected List<String> getMavenVersions() {
-    return Arrays.asList(M22_VERSION, M30_VERSION, M31_VERSION, M32_VERSION);
+    return Arrays.asList(M22_VERSION, M30_VERSION, M31_VERSION, M32_VERSION, M33_VERSION);
   }
 
   // {@code <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>} formatted string.

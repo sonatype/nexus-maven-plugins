@@ -66,7 +66,7 @@ public class ReleaseAfterCloseIT
 
   @Override
   protected List<String> getMavenVersions() {
-    return Arrays.asList(M30_VERSION, M31_VERSION, M32_VERSION);
+    return Arrays.asList(M30_VERSION, M31_VERSION, M32_VERSION, M33_VERSION);
   }
 
   /**
@@ -131,5 +131,15 @@ public class ReleaseAfterCloseIT
       throws VerificationException, IOException
   {
     releaseAfterClose(M32_VERSION);
+  }
+
+  /**
+   * Using "deploy" with -DreleaseAfterClose.
+   */
+  @Test
+  public void releaseAfterCloseM33()
+      throws VerificationException, IOException
+  {
+    releaseAfterClose(M33_VERSION);
   }
 }

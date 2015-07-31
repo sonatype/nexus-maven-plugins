@@ -127,6 +127,7 @@
                     <extraArtifact>org.apache.maven:apache-maven:3.0.5:zip:bin</extraArtifact>
                     <extraArtifact>org.apache.maven:apache-maven:3.1.1:zip:bin</extraArtifact>
                     <extraArtifact>org.apache.maven:apache-maven:3.2.3:zip:bin</extraArtifact>
+                    <extraArtifact>org.apache.maven:apache-maven:3.3.3:zip:bin</extraArtifact>
                     <extraArtifact>org.apache.maven.plugins:maven-clean-plugin:2.2</extraArtifact>
                     <extraArtifact>org.apache.maven.plugins:maven-clean-plugin:2.4.1</extraArtifact>
                     <extraArtifact>org.apache.maven.plugins:maven-clean-plugin:2.5</extraArtifact>

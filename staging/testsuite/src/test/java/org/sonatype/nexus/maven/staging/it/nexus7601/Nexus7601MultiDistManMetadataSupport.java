@@ -96,6 +96,16 @@ public abstract class Nexus7601MultiDistManMetadataSupport
         "target/test-classes/multi-dist-management")));
   }
 
+  /**
+   * Maven Plugin Project set up in m3-way using m3.
+   */
+  @Test
+  public void roundtripWithM3ProjectUsingM33()
+      throws VerificationException, IOException
+  {
+    roundtrip(createMavenVerifier(M33_VERSION, new File(getBasedir(),
+        "target/test-classes/multi-dist-management")));
+  }
 
   // we always invoke the same, but results will be different: with deferred deploy
   // they will land into snapshots, with staging they will land in some

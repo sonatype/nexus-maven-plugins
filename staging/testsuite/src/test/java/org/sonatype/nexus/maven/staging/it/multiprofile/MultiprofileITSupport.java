@@ -51,6 +51,6 @@ public abstract class MultiprofileITSupport
 
   @Override
   protected List<String> getMavenVersions() {
-    return Arrays.asList(M30_VERSION, M31_VERSION, M32_VERSION);
+    return Arrays.asList(M30_VERSION, M31_VERSION, M32_VERSION, M33_VERSION);
   }
 }

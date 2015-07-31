@@ -102,6 +102,17 @@ public abstract class Nxcm5194GLevelRepositoryMetadataSupport
   }
 
   /**
+   * Maven Plugin Project set up in m2-way with m3.
+   */
+  @Test
+  public void roundtripWithM2ProjectUsingM33()
+      throws VerificationException, IOException
+  {
+    roundtrip(createMavenVerifier(M33_VERSION, new File(getBasedir(),
+        "target/test-classes/maven2-maven-plugin-project")));
+  }
+
+  /**
    * Maven Plugin Project set up in m3-way using m3.
    */
   @Test
@@ -131,6 +142,17 @@ public abstract class Nxcm5194GLevelRepositoryMetadataSupport
       throws VerificationException, IOException
   {
     roundtrip(createMavenVerifier(M32_VERSION, new File(getBasedir(),
+        "target/test-classes/maven3-maven-plugin-project")));
+  }
+
+  /**
+   * Maven Plugin Project set up in m3-way using m3.
+   */
+  @Test
+  public void roundtripWithM3ProjectUsingM33()
+      throws VerificationException, IOException
+  {
+    roundtrip(createMavenVerifier(M33_VERSION, new File(getBasedir(),
         "target/test-classes/maven3-maven-plugin-project")));
   }
 
