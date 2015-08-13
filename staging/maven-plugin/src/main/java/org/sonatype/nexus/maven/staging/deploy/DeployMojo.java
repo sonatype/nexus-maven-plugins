@@ -78,7 +78,7 @@ public class DeployMojo
   private List<Artifact> attachedArtifacts;
 
   /**
-   * Parameter used to update the metadata to make the artifact as release.
+   * Parameter used to update the metadata to mark the artifact as release.
    */
   @Parameter(property = "updateReleaseInfo")
   private boolean updateReleaseInfo;
