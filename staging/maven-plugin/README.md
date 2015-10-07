@@ -18,7 +18,7 @@ Maven Plugin to control Nexus Staging workflow. While the maven plugin ("staging
 
 Plugin is compatible with Maven 2.2.1 and Maven 3.0.x.
 
-This plugin replaces any staging functionality from the depreacted Nexus Maven Plugin. 
+This plugin replaces any staging functionality from the deprecated Nexus Maven Plugin. 
 
 Features:
  * it is meant to _completely replace_ (or buy out) the maven-deploy-plugin
@@ -86,7 +86,7 @@ in case of (transport or staging rule) failure.
 This mode is used when you did not specify any of the parameters mentioned in previous modes, and the project you deploy
 has release version.
 
-For supported staging workflows, refer to [Staging Workflows](nexus-staging-maven-plugin/WORKFLOWS.md) page.
+For supported staging workflows, refer to [Staging Workflows](WORKFLOWS.md) page.
 
 ### Image upload
 
