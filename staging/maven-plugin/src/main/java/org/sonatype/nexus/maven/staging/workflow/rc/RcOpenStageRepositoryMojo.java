@@ -13,15 +13,12 @@
 
 package org.sonatype.nexus.maven.staging.workflow.rc;
 
-import com.sonatype.nexus.staging.client.*;
-import org.apache.maven.plugins.annotations.Mojo;
-import java.util.*;
-import org.apache.maven.plugins.annotations.Parameter;
-
+import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-
-
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.sonatype.nexus.maven.staging.StagingAction;
 import org.sonatype.nexus.maven.staging.workflow.AbstractStagingActionMojo;
 
 /**
@@ -37,15 +34,16 @@ public class RcOpenStageRepositoryMojo
     @Parameter(property = "stagingProfileId", required = true)
     private String stagingProfileId;
 
-    @Parameter(property = "stagingDescription", required = true)
-    private String stagingDescription;
-
     @Override
     public void doExecute(final StagingWorkflowV2Service stagingWorkflow)
             throws MojoExecutionException, MojoFailureException
     {
         getLog().info("RC-Starting new staging repository with Profile ID: " + stagingProfileId);
-        final String stagingRepositoryId = stagingWorkflow.startStaging(stagingWorkflow.selectProfile(stagingProfileId), stagingDescription, null );
+        final String stagingRepositoryId = stagingWorkflow.startStaging(
+                stagingWorkflow.selectProfile(stagingProfileId),
+                getStagingActionMessages().getMessageForAction(StagingAction.START),
+                null
+              );
         getLog().info("Opened new staging repository with Id: " + stagingRepositoryId);
     }
 }
