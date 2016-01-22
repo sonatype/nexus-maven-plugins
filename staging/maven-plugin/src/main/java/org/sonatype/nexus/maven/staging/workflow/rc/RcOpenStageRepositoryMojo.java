@@ -52,6 +52,6 @@ public class RcOpenStageRepositoryMojo
                 getStagingActionMessages().getMessageForAction(StagingAction.START),
                 null
               );
-        getLog().info(String.format(openedRepositoryMessageFormat, stagingProfileId));
+        getLog().info(String.format(openedRepositoryMessageFormat, stagingRepositoryId));
     }
 }
