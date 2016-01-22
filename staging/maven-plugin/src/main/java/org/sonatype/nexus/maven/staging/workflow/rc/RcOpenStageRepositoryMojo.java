@@ -62,6 +62,7 @@ public class RcOpenStageRepositoryMojo
               );
 
         getLog().info(String.format(openedRepositoryMessageFormat, stagingRepositoryId));
+        // optional
         if (!openedRepositoryTargetFilename.isEmpty()){
             PrintWriter printWriter = null;
             try {
