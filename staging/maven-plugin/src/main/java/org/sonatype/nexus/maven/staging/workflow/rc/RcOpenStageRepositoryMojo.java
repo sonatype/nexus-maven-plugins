@@ -21,11 +21,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.sonatype.nexus.maven.staging.StagingAction;
 import org.sonatype.nexus.maven.staging.workflow.AbstractStagingActionMojo;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-
 /**
  * Opens a new Nexus staging repository.
  *
@@ -46,41 +41,16 @@ public class RcOpenStageRepositoryMojo
     @Parameter(property = "openedRepositoryMessageFormat", required=false, defaultValue = "Opened new staging repository with Id: %s")
     private String openedRepositoryMessageFormat;
 
-    @Parameter(property = "openedRepositoryTargetFilename", required = false)
-    private String openedRepositoryTargetFilename;
-
     @Override
     public void doExecute(final StagingWorkflowV2Service stagingWorkflow)
             throws MojoExecutionException, MojoFailureException
     {
         getLog().info("RC-Starting new staging repository with Profile ID: "+ stagingProfileId);
-
         final String stagingRepositoryId = stagingWorkflow.startStaging(
                 stagingWorkflow.selectProfile(stagingProfileId),
                 getStagingActionMessages().getMessageForAction(StagingAction.START),
                 null
               );
-
         getLog().info(String.format(openedRepositoryMessageFormat, stagingRepositoryId));
-        // optional
-        if (!openedRepositoryTargetFilename.isEmpty()){
-            PrintWriter printWriter = null;
-            try {
-                File file = new File(openedRepositoryTargetFilename);
-                FileWriter fileWriter = new FileWriter(file, false);
-                printWriter = new PrintWriter(fileWriter);
-                printWriter.println(stagingRepositoryId);
-            } catch (IOException e){
-                e.printStackTrace();
-            } finally {
-                if (printWriter != null){
-                    printWriter.close();
-                }
-            }
-        }
-
-
-
-
     }
 }
