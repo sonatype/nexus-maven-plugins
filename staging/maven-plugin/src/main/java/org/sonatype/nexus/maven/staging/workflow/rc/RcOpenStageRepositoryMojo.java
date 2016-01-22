@@ -34,11 +34,18 @@ public class RcOpenStageRepositoryMojo
     @Parameter(property = "stagingProfileId", required = true)
     private String stagingProfileId;
 
+    /* This method creates a new repository who's ID would otherwise not be known.
+     *  It is important to allow end-users to output it's name in the format suitable to them.
+     *  We provide a sensible default here
+    **/
+    @Parameter(property = "openedRepositoryMessageFormat", required=false, defaultValue = "RC-Starting new staging repository with Profile ID: %s")
+    private String openedRepositoryMessageFormat;
+
     @Override
     public void doExecute(final StagingWorkflowV2Service stagingWorkflow)
             throws MojoExecutionException, MojoFailureException
     {
-        getLog().info("RC-Starting new staging repository with Profile ID: " + stagingProfileId);
+        getLog().info(String.format(openedRepositoryMessageFormat, stagingProfileId));
         final String stagingRepositoryId = stagingWorkflow.startStaging(
                 stagingWorkflow.selectProfile(stagingProfileId),
                 getStagingActionMessages().getMessageForAction(StagingAction.START),
