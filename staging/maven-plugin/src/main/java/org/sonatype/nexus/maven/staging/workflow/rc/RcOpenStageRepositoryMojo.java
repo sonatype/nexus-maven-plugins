@@ -14,12 +14,14 @@
 package org.sonatype.nexus.maven.staging.workflow.rc;
 
 import com.sonatype.nexus.staging.client.StagingWorkflowV2Service;
+
+import org.sonatype.nexus.maven.staging.StagingAction;
+import org.sonatype.nexus.maven.staging.workflow.AbstractStagingActionMojo;
+
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.sonatype.nexus.maven.staging.StagingAction;
-import org.sonatype.nexus.maven.staging.workflow.AbstractStagingActionMojo;
 
 /**
  * Opens a new Nexus staging repository.
@@ -29,28 +31,28 @@ import org.sonatype.nexus.maven.staging.workflow.AbstractStagingActionMojo;
  */
 @Mojo(name = "rc-open", requiresProject = false, requiresDirectInvocation = true, requiresOnline = true)
 public class RcOpenStageRepositoryMojo
-        extends AbstractStagingActionMojo
+    extends AbstractStagingActionMojo
 {
-    @Parameter(property = "stagingProfileId", required = true)
-    private String stagingProfileId;
+  @Parameter(property = "stagingProfileId", required = true)
+  private String stagingProfileId;
 
-    /* This method creates a new repository who's ID would otherwise not be known.
-     *  It is important to allow end-users to output it's name in the format suitable to them.
-     *  We provide a sensible default here
-    **/
-    @Parameter(property = "openedRepositoryMessageFormat", required=false, defaultValue = "RC-Opening staging repository with ID=%s")
-    private String openedRepositoryMessageFormat;
+  /* This method creates a new repository who's ID would otherwise not be known.
+   *  It is important to allow end-users to output it's name in the format suitable to them.
+   *  We provide a sensible default here
+  **/
+  @Parameter(property = "openedRepositoryMessageFormat", required = false, defaultValue = "RC-Opening staging repository with ID=%s")
+  private String openedRepositoryMessageFormat;
 
-    @Override
-    public void doExecute(final StagingWorkflowV2Service stagingWorkflow)
-            throws MojoExecutionException, MojoFailureException
-    {
-        getLog().info("RC-Opening staging repository using staging profile ID="+ stagingProfileId);
-        final String stagingRepositoryId = stagingWorkflow.startStaging(
-                stagingWorkflow.selectProfile(stagingProfileId),
-                getStagingActionMessages().getMessageForAction(StagingAction.START),
-                null
-              );
-        getLog().info(String.format(openedRepositoryMessageFormat, stagingRepositoryId));
-    }
+  @Override
+  public void doExecute(final StagingWorkflowV2Service stagingWorkflow)
+      throws MojoExecutionException, MojoFailureException
+  {
+    getLog().info("RC-Opening staging repository using staging profile ID=" + stagingProfileId);
+    final String stagingRepositoryId = stagingWorkflow.startStaging(
+        stagingWorkflow.selectProfile(stagingProfileId),
+        getStagingActionMessages().getMessageForAction(StagingAction.START),
+        null
+    );
+    getLog().info(String.format(openedRepositoryMessageFormat, stagingRepositoryId));
+  }
 }
