@@ -124,33 +124,14 @@ repository lifecycle_: the entity creating it should manage it too, so is respon
 
 Example workflow:
 
-1) create the staging repository in some profile. Here, profile with ID "12928995ef7eaecc" is used,
-and it happens using cURL on REST service:
+1) create the staging repository in some profile. Here, profile with ID "12928995ef7eaecc" is used:
 ```
-  $ curl -H "Content-Type: application/json" --data-binary "{\"data\":{\"description\":\"This is description\"}}" -v -X POST --user deployment:deployment123 http://localhost:8081/nexus/service/local/staging/profiles/12928995ef7eaecc/start
-  * About to connect() to localhost port 8081 (#0)
-  *   Trying ::1... connected
-  * Connected to localhost (::1) port 8081 (#0)
-  * Server auth using Basic with user 'deployment'
-  > POST /nexus/service/local/staging/profiles/12928995ef7eaecc/start HTTP/1.1
-  > Authorization: Basic ZGVwbG95bWVudDpkZXBsb3ltZW50MTIz
-  > User-Agent: curl/7.21.4 (universal-apple-darwin11.0) libcurl/7.21.4 OpenSSL/0.9.8r zlib/1.2.5
-  > Host: localhost:8081
-  > Accept: */*
-  > Content-Type: application/json
-  > Content-Length: 46
-  > 
-  < HTTP/1.1 201 Created
-  < Date: Tue, 29 May 2012 10:15:46 GMT
-  < Set-Cookie: rememberMe=deleteMe; Path=/nexus; Max-Age=0; Expires=Mon, 28-May-2012 10:15:46 GMT
-  < Content-Type: application/json; charset=UTF-8
-  < Date: Tue, 29 May 2012 10:15:47 GMT
-  < Server: Noelios-Restlet-Engine/1.1.6-SONATYPE-5348-V4
-  < Content-Length: 79
-  < 
-  * Connection #0 to host localhost left intact
-  * Closing connection #0
-  {"data":{"stagedRepositoryId":"test1-004","description":"This is description"}}
+  $ mvn nexus-staging:rc-open -DstagingProfileId=12928995ef7eaecc
+  ...
+  [INFO] RC-Opening staging repository using staging profile ID=[12928995ef7eaecc]
+  [INFO] Opened test1-004
+  ...
+  
 ```
 
 2) share the newly created staging repository ID across multiple builds, as needed,
@@ -164,28 +145,12 @@ do you want to execute builds in parallel or sequentially one by one...
 
 3) when all the builds you needed were invoked and are done, close the staging repository:
 ```
-  $ curl -H "Content-Type: application/json" --data-binary "{\"data\":{\"description\":\"This is description\",\"stagedRepositoryId\":\"test1-004\"}}" -v -X POST --user deployment:deployment123 http://localhost:8081/nexus/service/local/staging/profiles/12928995ef7eaecc/finish
-  * About to connect() to localhost port 8081 (#0)
-  *   Trying ::1... connected
-  * Connected to localhost (::1) port 8081 (#0)
-  * Server auth using Basic with user 'deployment'
-  > POST /nexus/service/local/staging/profiles/12928995ef7eaecc/finish HTTP/1.1
-  > Authorization: Basic ZGVwbG95bWVudDpkZXBsb3ltZW50MTIz
-  > User-Agent: curl/7.21.4 (universal-apple-darwin11.0) libcurl/7.21.4 OpenSSL/0.9.8r zlib/1.2.5
-  > Host: localhost:8081
-  > Accept: */*
-  > Content-Type: application/json
-  > Content-Length: 79
-  > 
-  < HTTP/1.1 201 Created
-  < Date: Tue, 29 May 2012 10:23:06 GMT
-  < Set-Cookie: rememberMe=deleteMe; Path=/nexus; Max-Age=0; Expires=Mon, 28-May-2012 10:23:06 GMT
-  < Date: Tue, 29 May 2012 10:23:06 GMT
-  < Server: Noelios-Restlet-Engine/1.1.6-SONATYPE-5348-V4
-  < Content-Length: 0
-  < 
-  * Connection #0 to host localhost left intact
-  * Closing connection #0
+  $ mvn nexus-staging:rc-close -DstagingRepositoryId=test1-004
+  ...
+  [INFO] RC-Closing staging repository with IDs=[test1-004]
+  [INFO] Closed
+  ...
+
 ```
 
 This results in _artifacts of all maven invocations happened in step 2 being deployed into one staging repository_.
