@@ -40,14 +40,14 @@ public class RcOpenStageRepositoryMojo
    *  It is important to allow end-users to output it's name in the format suitable to them.
    *  We provide a sensible default here
   **/
-  @Parameter(property = "openedRepositoryMessageFormat", required = false, defaultValue = "RC-Opening staging repository with ID=%s")
+  @Parameter(property = "openedRepositoryMessageFormat", required = false, defaultValue = "Opened %s")
   private String openedRepositoryMessageFormat;
 
   @Override
   public void doExecute(final StagingWorkflowV2Service stagingWorkflow)
       throws MojoExecutionException, MojoFailureException
   {
-    getLog().info("RC-Opening staging repository using staging profile ID=" + stagingProfileId);
+    getLog().info("RC-Opening staging repository using staging profile ID=[" + stagingProfileId +"]");
     final String stagingRepositoryId = stagingWorkflow.startStaging(
         stagingWorkflow.selectProfile(stagingProfileId),
         getStagingActionMessages().getMessageForAction(StagingAction.START),
