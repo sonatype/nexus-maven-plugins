@@ -20,4 +20,4 @@ Maven Plugin to download Maven settings.xml files from templates stored in Nexus
 
 All user documentation is available in the Managing Maven Settings chapter of the free book Repository Management with Nexus:
 
-http://books.sonatype.com/nexus-book/reference/settings.html
+http://books.sonatype.com/nexus-book/reference/maven-settings.html
