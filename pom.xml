@@ -28,7 +28,7 @@
   <artifactId>nexus-maven-plugins</artifactId>
   <packaging>pom</packaging>
 
-  <version>1.6.8-SNAPSHOT</version>
+  <version>1.6.8</version>
 
   <licenses>
     <license>
@@ -297,7 +297,7 @@
       <dependency>
         <groupId>org.sonatype.nexus.maven</groupId>
         <artifactId>nexus-common</artifactId>
-        <version>1.6.8-SNAPSHOT</version>
+        <version>1.6.8</version>
       </dependency>
 
     </dependencies>
