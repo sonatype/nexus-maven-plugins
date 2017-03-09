@@ -36,4 +36,4 @@ https://issues.sonatype.org/browse/NEXUS
 
 ## Warning
 
-Please not that the Nexus Maven Plugin is deprecated and replaced by the plugins in this project.
+Please note that the Nexus Maven Plugin is deprecated and replaced by the plugins in this project.
