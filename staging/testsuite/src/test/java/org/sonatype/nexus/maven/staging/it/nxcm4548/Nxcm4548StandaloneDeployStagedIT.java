@@ -120,4 +120,11 @@ public class Nxcm4548StandaloneDeployStagedIT
   {
     roundtrip(createMavenVerifier(M32_VERSION, new File(getBasedir(), "target/test-classes/plain-project")));
   }
+
+  @Test
+  public void testDeployStagedM33()
+      throws VerificationException, IOException
+  {
+    roundtrip(createMavenVerifier(M33_VERSION, new File(getBasedir(), "target/test-classes/plain-project")));
+  }
 }

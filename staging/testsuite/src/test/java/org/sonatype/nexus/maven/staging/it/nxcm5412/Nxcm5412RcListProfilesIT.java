@@ -47,7 +47,8 @@ public class Nxcm5412RcListProfilesIT
   public void roundtripWithM2() throws VerificationException, IOException {
     // HACK: The project passed in here is irrelevant, as goal we test does not require a project
     // but createMavenVerifier method must have a baseDir input!
-    roundtrip(createMavenVerifier(M22_VERSION, new File(getBasedir(), "target/test-classes/maven2-maven-plugin-project")));
+    roundtrip(
+        createMavenVerifier(M22_VERSION, new File(getBasedir(), "target/test-classes/maven2-maven-plugin-project")));
   }
 
   /**
@@ -78,6 +79,16 @@ public class Nxcm5412RcListProfilesIT
     // HACK: The project passed in here is irrelevant, as goal we test does not require a project
     // but createMavenVerifier method must have a baseDir input!
     roundtrip(createMavenVerifier(M32_VERSION, new File(getBasedir(), "target/test-classes/maven3-maven-plugin-project")));
+  }
+
+  /**
+   * Maven Plugin Project set up in m3-way using m3.
+   */
+  @Test
+  public void roundtripWithM33() throws VerificationException, IOException {
+    // HACK: The project passed in here is irrelevant, as goal we test does not require a project
+    // but createMavenVerifier method must have a baseDir input!
+    roundtrip(createMavenVerifier(M33_VERSION, new File(getBasedir(), "target/test-classes/maven3-maven-plugin-project")));
   }
 
   @Override

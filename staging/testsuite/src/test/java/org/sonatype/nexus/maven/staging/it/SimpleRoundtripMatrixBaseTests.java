@@ -70,6 +70,16 @@ public abstract class SimpleRoundtripMatrixBaseTests
   }
 
   /**
+   * Project set up in m2-way with m3.3.
+   */
+  @Test
+  public void roundtripWithM2ProjectUsingM33()
+      throws VerificationException, IOException
+  {
+    roundtrip(createMavenVerifier(M33_VERSION, new File(getBasedir(), "target/test-classes/maven2-project")));
+  }
+
+  /**
    * Project set up in m3-way using m3.0.
    */
   @Test
@@ -97,5 +107,15 @@ public abstract class SimpleRoundtripMatrixBaseTests
       throws VerificationException, IOException
   {
     roundtrip(createMavenVerifier(M32_VERSION, new File(getBasedir(), "target/test-classes/maven3-project")));
+  }
+
+  /**
+   * Project set up in m3-way using m3.3.
+   */
+  @Test
+  public void roundtripWithM3ProjectUsingM33()
+      throws VerificationException, IOException
+  {
+    roundtrip(createMavenVerifier(M33_VERSION, new File(getBasedir(), "target/test-classes/maven3-project")));
   }
 }
