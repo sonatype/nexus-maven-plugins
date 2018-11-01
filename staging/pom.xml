@@ -74,6 +74,7 @@
 
   <modules>
     <module>maven-plugin</module>
+    <module>maven-lightweight-plugin</module>
     <module>testsuite</module>
   </modules>
 
