@@ -29,6 +29,60 @@ Notes:
  * to _build this plugin_ from sources you need access to Sonatype commercial components!
  * to _use this plugin_ in your build, access to Central only is enough!
 
+# Vulnerabilities
+
+## Dependency Vulnerabilities Not Impacting nexus-staging-maven-plugin
+
+Some vulnerabilities may be reported against this plugin by security analysis tools. Sonatype investigation has determined the following are not applicable.
+
+### CVE-2017-1000487
+
+The identified vulnerabilities are in classes which are not used.
+
+#### Dependency
+
+org.codehaus.plexus:plexus-utils:3.0.8
+
+### CVE-2017-5929
+
+The out-of-the-box logback configuration used is not vulnerable.
+
+#### Dependency
+
+ch.qos.logback:logback-classic:1.1.2
+
+### sonatype-2015-0173
+
+The identified vulnerabilities are in methods not used.
+
+#### Dependency
+
+org.codehaus.plexus : plexus-utils : 3.0.8
+
+### sonatype-2016-0398
+
+The identified vulnerabilities are in classes which are not used directly or in any of the plugin dependency code.
+
+#### Dependency
+
+org.codehaus.plexus : plexus-utils : 3.0.8
+
+### sonatype-2020-0926
+
+The identified vulnerabilities are in methods not used.
+
+#### Dependency
+
+com.google.guava : guava : 14.0.1
+
+### CVE-2018-10237
+
+The identified vulnerabilities are in classes not used.
+
+#### Dependency
+
+com.google.guava : guava : 14.0.1
+
 # Documentation
 
 Nexus Staging V2 focuses more on client-server automated interaction.
