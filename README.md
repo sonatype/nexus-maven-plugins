@@ -16,6 +16,8 @@
 
 Collection of Apache Maven plugins supporting Nexus Suite. 
 
+[![Maven Central](https://img.shields.io/maven-central/v/org.sonatype.nexus.maven/nexus-maven-plugins.svg?label=Maven%20Central)](https://search.maven.org/artifact/org.sonatype.nexus.maven/nexus-maven-plugins)
+
 ## Plugins available
 
 * [Nexus Staging Plugin](https://github.com/sonatype/nexus-maven-plugins/tree/master/staging/maven-plugin) - Maven Plugin to perform Sonatype Nexus Staging Workflow steps from your build. 
