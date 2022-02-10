@@ -29,9 +29,9 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>jline</groupId>
+        <groupId>org.jline</groupId>
         <artifactId>jline</artifactId>
-        <version>2.9</version>
+        <version>3.21.0</version>
       </dependency>
 
       <dependency>

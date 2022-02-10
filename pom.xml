@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.sonatype.buildsupport</groupId>
     <artifactId>public-parent</artifactId>
-    <version>6</version>
+    <version>32</version>
   </parent>
 
   <groupId>org.sonatype.nexus.maven</groupId>
@@ -89,7 +89,7 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>14.0.1</version>
+        <version>31.0.1-jre</version>
       </dependency>
 
       <dependency>
@@ -173,31 +173,31 @@
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
-        <version>1.7.7</version>
+        <version>1.7.36</version>
       </dependency>
 
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-simple</artifactId>
-        <version>1.7.7</version>
+        <version>1.7.36</version>
       </dependency>
 
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>jcl-over-slf4j</artifactId>
-        <version>1.7.7</version>
+        <version>1.7.36</version>
       </dependency>
 
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-core</artifactId>
-        <version>1.1.2</version>
+        <version>1.2.10</version>
       </dependency>
 
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
-        <version>1.1.2</version>
+        <version>1.2.10</version>
       </dependency>
 
       <dependency>
@@ -219,8 +219,8 @@
       -->
       <dependency>
         <groupId>commons-beanutils</groupId>
-        <artifactId>commons-beanutils-core</artifactId>
-        <version>1.8.3</version>
+        <artifactId>commons-beanutils</artifactId>
+        <version>1.9.4</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -245,13 +245,13 @@
       <dependency>
         <groupId>com.thoughtworks.xstream</groupId>
         <artifactId>xstream</artifactId>
-        <version>1.4.7</version>
+        <version>1.4.19</version>
       </dependency>
 
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpclient</artifactId>
-        <version>4.3.5</version>
+        <version>4.5.13</version>
         <exclusions>
           <exclusion>
             <artifactId>commons-logging</artifactId>
@@ -263,7 +263,7 @@
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpcore</artifactId>
-        <version>4.3.2</version>
+        <version>4.4.15</version>
       </dependency>
 
       <dependency>
@@ -289,7 +289,7 @@
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>4.11</version>
+        <version>4.13.1</version>
       </dependency>
 
       <!-- INTERNAL -->
