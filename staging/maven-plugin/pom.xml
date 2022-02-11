@@ -35,6 +35,11 @@
     Provides support to access staging functionality in a remote Nexus Professional server.
   </description>
 
+  <properties>
+    <clm.skip>false</clm.skip>
+    <clm.applicationId>nexus-maven-plugins-staging</clm.applicationId>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.sonatype.nexus.maven</groupId>

@@ -72,6 +72,8 @@
     <maven-plugin-plugin.version>3.6.4</maven-plugin-plugin.version>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+    <clm.skip>true</clm.skip>
+    <clm.applicationId>nexus-maven-plugins</clm.applicationId>
   </properties>
 
   <dependencyManagement>
@@ -314,6 +316,12 @@
   <build>
     <pluginManagement>
       <plugins>
+        <plugin>
+          <groupId>com.sonatype.clm</groupId>
+          <artifactId>clm-maven-plugin</artifactId>
+          <version>2.30.2-01</version>
+        </plugin>
+
         <plugin>
           <groupId>org.codehaus.plexus</groupId>
           <artifactId>plexus-component-metadata</artifactId>
