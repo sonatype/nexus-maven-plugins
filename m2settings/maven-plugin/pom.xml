@@ -35,6 +35,11 @@
     Provides support to download m2-settings templates from a remote Nexus Professional server.
   </description>
 
+  <properties>
+    <clm.skip>false</clm.skip>
+    <clm.applicationId>nexus-maven-plugins-m2settings</clm.applicationId>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.slf4j</groupId>
