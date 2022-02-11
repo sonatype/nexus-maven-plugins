@@ -14,6 +14,8 @@
 -->
 # Nexus Staging Maven Plugin
 
+[![Maven Central](https://img.shields.io/maven-central/v/org.sonatype.plugins/nexus-staging-maven-plugin.svg?label=Maven%20Central)](https://search.maven.org/artifact/org.sonatype.plugins/nexus-staging-maven-plugin)
+
 Maven Plugin to control Nexus Staging workflow. While the maven plugin ("staging client") part is OSS, to use staging features it need a Sonatype Nexus Professional instance 2.1+ on the server side!
 
 Plugin is compatible with Maven 2.2.1 and Maven 3.0.x.
