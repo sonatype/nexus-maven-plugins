@@ -69,7 +69,7 @@
     <cobertura.skip>true</cobertura.skip>
 
     <!-- reporting section does not inherit report plugin versions, so we use a property to force the version -->
-    <maven-plugin-plugin.version>3.2</maven-plugin-plugin.version>
+    <maven-plugin-plugin.version>3.6.4</maven-plugin-plugin.version>
   </properties>
 
   <dependencyManagement>
