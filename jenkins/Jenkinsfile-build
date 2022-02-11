@@ -8,9 +8,5 @@ mavenSnapshotPipeline(usePublicSettingsXmlFile: false,
         },
         onFailure: { build, env ->
             notifyChat(env: env, currentBuild: build, room: 'nxrm-notifications')
-        },
-        iqPolicyEvaluation: { stage ->
-          nexusPolicyEvaluation iqStage: stage, iqApplication: 'nexus-maven-plugins',
-              iqScanPatterns: [[scanPattern: '**/target/*.jar']]
         }
 )
