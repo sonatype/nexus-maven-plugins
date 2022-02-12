@@ -74,6 +74,8 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <clm.skip>true</clm.skip>
     <clm.applicationId>nexus-maven-plugins</clm.applicationId>
+
+    <staging.autoReleaseAfterClose>true</staging.autoReleaseAfterClose>
   </properties>
 
   <dependencyManagement>
