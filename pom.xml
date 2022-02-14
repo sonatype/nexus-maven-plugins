@@ -21,14 +21,14 @@
   <parent>
     <groupId>org.sonatype.buildsupport</groupId>
     <artifactId>public-parent</artifactId>
-    <version>6</version>
+    <version>32</version>
   </parent>
 
   <groupId>org.sonatype.nexus.maven</groupId>
   <artifactId>nexus-maven-plugins</artifactId>
   <packaging>pom</packaging>
 
-  <version>1.6.9-SNAPSHOT</version>
+  <version>1.6.11-SNAPSHOT</version>
 
   <licenses>
     <license>
@@ -54,7 +54,8 @@
   </scm>
 
   <properties>
-    <nexus.version>2.14.3-02</nexus.version>
+    <jackson.version>2.12.6</jackson.version>
+    <nexus.version>2.14.21-02</nexus.version>
     <maven.version>3.0.4</maven.version>
 
     <!-- Nexus integration-tests configuration -->
@@ -69,7 +70,13 @@
     <cobertura.skip>true</cobertura.skip>
 
     <!-- reporting section does not inherit report plugin versions, so we use a property to force the version -->
-    <maven-plugin-plugin.version>3.2</maven-plugin-plugin.version>
+    <maven-plugin-plugin.version>3.6.4</maven-plugin-plugin.version>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <clm.skip>true</clm.skip>
+    <clm.applicationId>nexus-maven-plugins</clm.applicationId>
+
+    <staging.autoReleaseAfterClose>true</staging.autoReleaseAfterClose>
   </properties>
 
   <dependencyManagement>
@@ -89,7 +96,7 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>14.0.1</version>
+        <version>31.0.1-jre</version>
       </dependency>
 
       <dependency>
@@ -101,7 +108,7 @@
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-utils</artifactId>
-        <version>3.0.8</version>
+        <version>3.0.24</version>
       </dependency>
 
       <dependency>
@@ -173,37 +180,67 @@
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
-        <version>1.7.7</version>
+        <version>1.7.36</version>
       </dependency>
 
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-simple</artifactId>
-        <version>1.7.7</version>
+        <version>1.7.36</version>
       </dependency>
 
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>jcl-over-slf4j</artifactId>
-        <version>1.7.7</version>
+        <version>1.7.36</version>
       </dependency>
 
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-core</artifactId>
-        <version>1.1.2</version>
+        <version>1.2.10</version>
       </dependency>
 
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
-        <version>1.1.2</version>
+        <version>1.2.10</version>
       </dependency>
 
       <dependency>
         <groupId>org.sonatype.gossip</groupId>
         <artifactId>gossip-bootstrap</artifactId>
         <version>1.8</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-annotations</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-core</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.fasterxml.jackson.jaxrs</groupId>
+        <artifactId>jackson-jaxrs-json-provider</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.fasterxml.jackson.module</groupId>
+        <artifactId>jackson-module-jaxb-annotations</artifactId>
+        <version>${jackson.version}</version>
       </dependency>
 
       <dependency>
@@ -219,8 +256,8 @@
       -->
       <dependency>
         <groupId>commons-beanutils</groupId>
-        <artifactId>commons-beanutils-core</artifactId>
-        <version>1.8.3</version>
+        <artifactId>commons-beanutils</artifactId>
+        <version>1.9.4</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -245,13 +282,13 @@
       <dependency>
         <groupId>com.thoughtworks.xstream</groupId>
         <artifactId>xstream</artifactId>
-        <version>1.4.7</version>
+        <version>1.4.19</version>
       </dependency>
 
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpclient</artifactId>
-        <version>4.3.5</version>
+        <version>4.5.13</version>
         <exclusions>
           <exclusion>
             <artifactId>commons-logging</artifactId>
@@ -260,10 +297,17 @@
         </exclusions>
       </dependency>
 
+      <!-- Transitive dependency of httpclient -->
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>1.15</version>
+      </dependency>
+
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpcore</artifactId>
-        <version>4.3.2</version>
+        <version>4.4.15</version>
       </dependency>
 
       <dependency>
@@ -289,7 +333,7 @@
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>4.11</version>
+        <version>4.13.1</version>
       </dependency>
 
       <!-- INTERNAL -->
@@ -297,7 +341,7 @@
       <dependency>
         <groupId>org.sonatype.nexus.maven</groupId>
         <artifactId>nexus-common</artifactId>
-        <version>1.6.9-SNAPSHOT</version>
+        <version>1.6.11-SNAPSHOT</version>
       </dependency>
 
     </dependencies>
@@ -312,6 +356,12 @@
   <build>
     <pluginManagement>
       <plugins>
+        <plugin>
+          <groupId>com.sonatype.clm</groupId>
+          <artifactId>clm-maven-plugin</artifactId>
+          <version>2.30.2-01</version>
+        </plugin>
+
         <plugin>
           <groupId>org.codehaus.plexus</groupId>
           <artifactId>plexus-component-metadata</artifactId>
@@ -355,13 +405,13 @@
           <configuration>
             <signature>
               <groupId>org.codehaus.mojo.signature</groupId>
-              <artifactId>java16</artifactId>
-              <version>1.1</version>
+              <artifactId>java18</artifactId>
+              <version>1.0</version>
             </signature>
           </configuration>
           <executions>
             <execution>
-              <id>check-java16</id>
+              <id>check-java18</id>
               <goals>
                 <goal>check</goal>
               </goals>

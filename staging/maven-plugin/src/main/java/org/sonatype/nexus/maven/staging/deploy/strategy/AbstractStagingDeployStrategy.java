@@ -15,9 +15,13 @@ package org.sonatype.nexus.maven.staging.deploy.strategy;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import javax.annotation.CheckForNull;
 
 import com.sonatype.nexus.staging.client.Profile;
 import com.sonatype.nexus.staging.client.ProfileMatchingParameters;
@@ -188,7 +192,7 @@ public abstract class AbstractStagingDeployStrategy
           + stagingPropertiesFile, e);
     }
     finally {
-      Closeables.closeQuietly(fout);
+      closeQuietly(fout);
     }
 
     // if repository is managed, then manage it
@@ -336,6 +340,15 @@ public abstract class AbstractStagingDeployStrategy
     }
     else {
       throw new MojoExecutionException("Staging failed: staging directory is null!");
+    }
+  }
+
+  private static void closeQuietly(OutputStream outputStream) {
+    try {
+      Closeables.close(outputStream, true);
+    }
+    catch (IOException impossible) {
+      throw new AssertionError(impossible);
     }
   }
 }

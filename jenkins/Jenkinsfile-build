@@ -1,0 +1,12 @@
+library('private-pipeline-library')
+library('jenkins-shared')
+
+mavenSnapshotPipeline(usePublicSettingsXmlFile: false,
+        mavenVersion: 'Maven 3.5.x',
+        onSuccess: { build, env ->
+            notifyChat(env: env, currentBuild: build, room: 'nxrm-notifications')
+        },
+        onFailure: { build, env ->
+            notifyChat(env: env, currentBuild: build, room: 'nxrm-notifications')
+        }
+)

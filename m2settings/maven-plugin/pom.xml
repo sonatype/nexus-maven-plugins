@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.sonatype.nexus.maven</groupId>
     <artifactId>nexus-m2settings</artifactId>
-    <version>1.6.9-SNAPSHOT</version>
+    <version>1.6.11-SNAPSHOT</version>
   </parent>
 
   <groupId>org.sonatype.plugins</groupId>
@@ -34,6 +34,11 @@
   <description>
     Provides support to download m2-settings templates from a remote Nexus Professional server.
   </description>
+
+  <properties>
+    <clm.skip>false</clm.skip>
+    <clm.applicationId>nexus-maven-plugins-m2settings</clm.applicationId>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -49,11 +54,19 @@
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-plugin-api</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-core</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-model</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -84,7 +97,7 @@
 
     <dependency>
       <groupId>commons-beanutils</groupId>
-      <artifactId>commons-beanutils-core</artifactId>
+      <artifactId>commons-beanutils</artifactId>
     </dependency>
 
     <dependency>
