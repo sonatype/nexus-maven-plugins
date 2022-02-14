@@ -16,7 +16,7 @@
 
 [![Maven Central](https://img.shields.io/maven-central/v/org.sonatype.plugins/nexus-staging-maven-plugin.svg?label=Maven%20Central)](https://search.maven.org/artifact/org.sonatype.plugins/nexus-staging-maven-plugin)
 
-Maven Plugin to control Nexus Staging workflow. While the maven plugin ("staging client") part is OSS, to use staging features it need a Sonatype Nexus Professional instance 2.1+ on the server side!
+Maven Plugin to control [Nexus Staging](https://help.sonatype.com/repomanager2/staging-releases/staging-overview) workflow. While the Maven Plugin ("staging client") part is OSS, you must have a Sonatype Nexus Professional 2.x instance on the server side to use staging features.
 
 Plugin is compatible with Maven 2.2.1 and Maven 3.0.x.
 
@@ -107,7 +107,7 @@ and the deployment repository is "sourced" in same way, from POMs `distributionM
 depends is the project being built a release or snapshot naturally).
 
 Direct deploy is used when you skip local staging (so to say, the staging functionality altogether), for example by
-using the `-DskipLocalStaging=true` CLI parameter.
+using the `-DskipLocalStaging` CLI parameter.
 
 This mode is new in version 1.1.
 
@@ -125,7 +125,7 @@ end (literally last moments) of your build, instead "throughout" the build (wher
 the duration of the build).
 
 As said above, this mode is used when you either deploy snapshots (the project you build and deploy has snapshot version)
-or you skip staging, for example by using the `-DskipStaging=true` CLI parameter. Note: multi project builds where one
+or you skip staging, for example by using the `-DskipStaging` CLI parameter. Note: multi project builds where one
 project is release version and other is snapshot might result in unpredictable results and such cases are not supported!
 
 This mode is new in version 1.1.
@@ -176,7 +176,7 @@ Example snippet of plugin entry with minimal required configuration in build:
 				<plugin>
 					<groupId>org.sonatype.plugins</groupId>
 					<artifactId>nexus-staging-maven-plugin</artifactId>
-					<version>1.1</version>
+					<version>1.6.8</version>
 					<extensions>true</extensions>
 					<configuration>
   					<!-- The Base URL of Nexus instance where we want to stage -->
@@ -245,7 +245,7 @@ Add the following to any parent pom ( not aggregator ) of your project to be bui
           <plugin>
             <groupId>org.sonatype.plugins</groupId>
             <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>1.1</version>
+            <version>1.6.8</version>
             <executions>
               <execution>
                 <id>default-deploy</id>
@@ -283,7 +283,7 @@ Add the following to any parent pom ( not aggregator ) of your project to be bui
           <plugin>
             <groupId>org.sonatype.plugins</groupId>
             <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>1.1</version>
+            <version>1.6.8</version>
             <extensions>true</extensions>
             <configuration>
               <serverId>local-nexus</serverId>
@@ -305,7 +305,7 @@ Add the following to any parent pom ( not aggregator ) of your project to be bui
 
 We define here two profiles controlled by Maven activation.
 
-CAVEAT: The one caveat using this approach is profiles that would have been active by <activeByDefault/> config will not be since
+CAVEAT: The one caveat using this approach is profiles that would have been active by `<activeByDefault/>` config will not be since
 one of these profiles for staging will override the default profile.
 
 Depending, is it used in Maven3 or Maven2, it almost needs same configuration applied, but Maven2 needs more labour.
