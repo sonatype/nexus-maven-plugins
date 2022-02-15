@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.sonatype.nexus.maven</groupId>
     <artifactId>nexus-maven-plugins</artifactId>
-    <version>1.6.11-SNAPSHOT</version>
+    <version>1.6.11</version>
   </parent>
 
   <artifactId>nexus-staging</artifactId>
@@ -67,7 +67,7 @@
       <dependency>
         <groupId>org.sonatype.plugins</groupId>
         <artifactId>nexus-staging-maven-plugin</artifactId>
-        <version>1.6.11-SNAPSHOT</version>
+        <version>1.6.11</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
