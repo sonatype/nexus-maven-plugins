@@ -34,7 +34,7 @@ public class ProgressMonitorImpl
 
   public ProgressMonitorImpl() {
     this.logger = LoggerFactory.getLogger(getClass());
-    this.stopwatch = Stopwatch.createUnstarted();
+    this.stopwatch = new Stopwatch();
   }
 
   protected void maybePrintln() {
