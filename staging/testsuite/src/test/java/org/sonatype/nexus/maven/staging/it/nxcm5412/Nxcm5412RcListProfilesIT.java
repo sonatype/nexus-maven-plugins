@@ -18,11 +18,11 @@ import java.util.Arrays;
 
 import org.sonatype.nexus.maven.staging.it.PreparedVerifier;
 import org.sonatype.nexus.maven.staging.it.SimpleRoundtripMatrixSupport;
-import org.sonatype.sisu.litmus.testsupport.hamcrest.FileMatchers;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Test;
 import org.apache.maven.it.VerificationException;
+import org.sonatype.sisu.goodies.testsupport.hamcrest.FileMatchers;
 
 /**
  * IT for NXCM-5412 Add an rc-list goal to the nexus-staging-maven-plugin
