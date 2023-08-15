@@ -31,12 +31,6 @@ Unless noted otherwise in corresponding plugin documentation, following are the 
 * Java: Java 1.6+
 * Nexus Repository Pro 2.x
 
-## Issue tracking
-
-Please use Sonatype JIRA to report issues (Component: Build Tooling) and *please specify plugin version you use and Maven version you use it with*.
-
-https://issues.sonatype.org/browse/NEXUS
-
 ## Warning
 
 Please note that the Nexus Maven Plugin is deprecated and replaced by the plugins in this project.
