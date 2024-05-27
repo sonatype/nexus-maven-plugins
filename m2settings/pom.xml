@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.sonatype.nexus.maven</groupId>
     <artifactId>nexus-maven-plugins</artifactId>
-    <version>1.6.14</version>
+    <version>1.7.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>nexus-m2settings</artifactId>
@@ -51,7 +51,7 @@
       <dependency>
         <groupId>org.sonatype.plugins</groupId>
         <artifactId>nexus-m2settings-maven-plugin</artifactId>
-        <version>1.6.14</version>
+        <version>1.7.0-SNAPSHOT</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
