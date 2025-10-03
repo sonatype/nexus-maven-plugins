@@ -12,11 +12,11 @@
     Eclipse Foundation. All other trademarks are the property of their respective owners.
 
 -->
-# Nexus Maven Plugins
+# Nexus Maven Plugins [![Maven Central](https://img.shields.io/maven-central/v/org.sonatype.nexus.maven/nexus-maven-plugins.svg?label=Maven%20Central)](https://search.maven.org/artifact/org.sonatype.nexus.maven/nexus-maven-plugins)
+
+***Please see https://central.sonatype.org/pages/ossrh-eol!***
 
 Collection of Apache Maven plugins supporting Nexus Suite. 
-
-[![Maven Central](https://img.shields.io/maven-central/v/org.sonatype.nexus.maven/nexus-maven-plugins.svg?label=Maven%20Central)](https://search.maven.org/artifact/org.sonatype.nexus.maven/nexus-maven-plugins)
 
 ## Plugins available
 
